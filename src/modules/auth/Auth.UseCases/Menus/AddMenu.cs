@@ -1,10 +1,7 @@
-using System;
 using Auth.Data.Persistence;
 using Auth.Dtos.Modules;
 using Microsoft.EntityFrameworkCore;
-using Shared.Extensions;
 using Shared.Result;
-
 namespace Auth.UseCases.Menus;
 
 public class AddMenu(AuthDbContext dbContext)
@@ -16,7 +13,7 @@ public class AddMenu(AuthDbContext dbContext)
                 .AnyAsync(m => m.Name == dto.Name && m.ModuleId == dto.ModuleId);
             
             if (exists)
-                return new Error("DUPLICATE", "Ya existe un menú con ese nombre");
+                return new Error("DUPLICATE", "Ya existe un menú con ese nombre en el mismo modulo");
             var menu = new Data.Entities.Menu
             {
                 Name = dto.Name,
