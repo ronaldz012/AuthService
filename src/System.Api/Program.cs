@@ -1,3 +1,4 @@
+using System.Api.Middlewares;
 using System.Api.Result;
 using Auth.Data;
 using Auth.Data.Persistence;
@@ -31,7 +32,7 @@ builder.Services.AddAuthData()
 
 
 var app = builder.Build();
-
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

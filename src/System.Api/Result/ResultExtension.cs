@@ -12,6 +12,8 @@ using Shared.Result;
 /// </summary>
 public static class ResultExtensions
 {
+
+    
     /// <summary>
     /// Convierte un Result{TValue} en una respuesta HTTP apropiada:
     /// - Si IsSuccess = true: retorna 200 OK con el Value
