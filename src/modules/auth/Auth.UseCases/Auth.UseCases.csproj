@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="../Auth.Data/Auth.Data.csproj" />
+    <ProjectReference Include="../Auth.Dtos/Auth.Dtos.csproj" />
+    <ProjectReference Include="../Auth.Notificator/Auth.Notificator.csproj" />
   </ItemGroup>
 
 </Project>
