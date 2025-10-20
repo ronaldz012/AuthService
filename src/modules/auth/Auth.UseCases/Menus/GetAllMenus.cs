@@ -1,6 +1,7 @@
 using System;
 using Auth.Data.Persistence;
 using Auth.Dtos.Modules;
+using Auth.UseCases.mapper;
 using Mapster;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ using Shared.Extensions;
 using Shared.Result;
 namespace Auth.UseCases.Menus;
 
-public class GetAllMenus(AuthDbContext dbContext, IMapper mapper)
+public class GetAllMenus(AuthDbContext dbContext)
 {
     public async Task<Result<PagedResultDto<MenuDto>>> Execute(MenuQueryDto query)
     {

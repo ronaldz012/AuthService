@@ -42,7 +42,7 @@ public class GetMenus
         });
         await dbContext.SaveChangesAsync();
 
-        var getAllMenus = new GetAllMenus(dbContext, mapper);
+        var getAllMenus = new GetAllMenus(dbContext);
         var queryDto = new MenuQueryDto
         {
             ModuleId = 1,
