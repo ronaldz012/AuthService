@@ -15,7 +15,11 @@ public static class UseCasesDependencyInjection
 
     public static IServiceCollection AddMenuUseCases(this IServiceCollection services)
     => services.AddScoped<MenuUseCases>()
-                .AddScoped<AddMenu>();
+                .AddScoped<AddMenu>()
+                .AddScoped<GetMenu>()
+                .AddScoped<GetAllMenus>()
+                .AddScoped<UpdateMenu>()
+                .AddScoped<DeleteMenu>();
 
     
     public static IServiceCollection AddMapper(this IServiceCollection services)
