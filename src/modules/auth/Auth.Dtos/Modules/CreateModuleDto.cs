@@ -4,8 +4,16 @@ namespace Auth.Dtos.Modules;
 
 public class CreateModuleDto
 {
-    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public IEnumerable<int> MenuIds { get; set; } = Enumerable.Empty<int>();
+
+    public IEnumerable<CreateMenuForModuleDto> Menus { get; set; } = Array.Empty<CreateMenuForModuleDto>();
+}
+
+public class CreateMenuForModuleDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Route { get; set; } = string.Empty;
+    public string Icon { get; set; } = string.Empty;
+    public int Order { get; set; }
 }

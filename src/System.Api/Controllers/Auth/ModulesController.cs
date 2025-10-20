@@ -1,3 +1,6 @@
+using System.Api.Result;
+using Auth.Dtos.Modules;
+using Auth.UseCases;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -5,7 +8,13 @@ namespace System.Api.Controllers.Auth
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ModulesController : ControllerBase
+    public class ModulesController(ModulesUseCases modulesUseCases) : ControllerBase
     {
+        [HttpPost]
+        public async Task<IActionResult> AddModule([FromBody] CreateModuleDto dto)
+        {
+            return await modulesUseCases.AddModule.Execute(dto)
+            .ToValueOrProblemDetails();
+        }
     }
 }

@@ -16,5 +16,10 @@ public class MappingConfig: IRegister
         config.NewConfig<UpdateMenuDto, Menu>()
             .IgnoreNullValues(true);
 
+        config.NewConfig<CreateModuleDto, Module>()
+            .IgnoreNullValues(true);
+        config.NewConfig<CreateMenuForModuleDto, Menu>()
+            .IgnoreNullValues(true);
+
     }
 }
