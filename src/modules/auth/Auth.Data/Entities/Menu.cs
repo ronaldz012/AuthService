@@ -19,5 +19,4 @@ public class Menu : ICreatedAt, IUpdatedAt
     // Navigation property
     public int ModuleId { get; set; }
     public Module Module { get; set; } = default!;
-    
 }

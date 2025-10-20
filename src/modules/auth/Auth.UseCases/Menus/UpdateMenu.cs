@@ -21,6 +21,7 @@ public class UpdateMenu(AuthDbContext dbContext, IMapper mapper)
             return new Error("DUPLICATE", "a menu with the same name already exists in this module");
 
         mapper.Map(dto, menu);
+        menu.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync();
         return mapper.Map<CreateMenuDto>(menu);
     }

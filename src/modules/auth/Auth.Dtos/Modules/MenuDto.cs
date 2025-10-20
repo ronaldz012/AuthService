@@ -1,4 +1,5 @@
 using System;
+using Shared.Extensions;
 
 namespace Auth.Dtos.Modules;
 
@@ -11,4 +12,9 @@ public class MenuDto
     public string Icon { get; set; } = string.Empty;
     public int Order { get; set; }
     public int ModuleId { get; set; }
+}
+public class MenuQueryDto : GenericPaginationQueryDto
+{
+    public int? ParentMenuId { get; set; }
+    public int? ModuleId { get; set; }
 }
