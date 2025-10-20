@@ -22,9 +22,7 @@ public class AddMenuTests
         return new AuthDbContext(options);
     }
 
-    // ----------------------------------------------------------------------
-    // TEST 1: Verificar que se crea un nuevo menú correctamente.
-    // ----------------------------------------------------------------------
+
     [Fact]
     public async Task Execute_ShouldCreateNewMenu_WhenMenuDoesNotExist()
     {
@@ -46,35 +44,28 @@ public class AddMenuTests
         // ACT
         var result = await addMenuUseCase.Execute(newMenuDto);
 
-        // ASSERT
-        // 1. Verifica que el resultado sea exitoso.
+
         Assert.True(result.IsSuccess);
-        // 2. Verifica que el resultado devuelva un ID (un entero positivo).
         Assert.True(result.Value > 0);
 
-        // 3. Verifica que la entidad haya sido realmente guardada en la base de datos.
         var createdMenu = await dbContext.Menus.FindAsync(result.Value);
         Assert.NotNull(createdMenu);
         Assert.Equal(newMenuDto.Name, createdMenu.Name);
         Assert.Equal(newMenuDto.ModuleId, createdMenu.ModuleId);
     }
 
-    // ----------------------------------------------------------------------
-    // TEST 2: Verificar que falle cuando ya existe un menú con el mismo nombre y módulo.
-    // ----------------------------------------------------------------------
+
     [Fact]
     public async Task Execute_ShouldReturnDuplicateError_WhenMenuAlreadyExistsInModule()
     {
-        // ARRANGE
         var dbName = Guid.NewGuid().ToString();
         var dbContext = CreateInMemoryDbContext(dbName);
         var addMenuUseCase = new AddMenu(dbContext);
         
-        // Datos a usar en ambos casos (el que ya existe y el que se intenta crear)
         var sharedMenuData = new CreateMenuDto
         {
             Name = "Settings",
-            ModuleId = 2, // Mismo módulo
+            ModuleId = 2,
             Route = "/settings",
             Order = 1
         };
