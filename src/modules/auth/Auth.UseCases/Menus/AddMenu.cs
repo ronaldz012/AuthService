@@ -1,10 +1,12 @@
+using Auth.Data.Entities;
 using Auth.Data.Persistence;
 using Auth.Dtos.Modules;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Shared.Result;
 namespace Auth.UseCases.Menus;
 
-public class AddMenu(AuthDbContext dbContext)
+public class AddMenu(AuthDbContext dbContext, IMapper mapper)
 {
     public async Task<Result<int>> Execute(CreateMenuDto dto)
     {
@@ -14,22 +16,9 @@ public class AddMenu(AuthDbContext dbContext)
             
             if (exists)
                 return new Error("DUPLICATE", "Ya existe un menú con ese nombre en el mismo modulo");
-            var menu = new Data.Entities.Menu
-            {
-                Name = dto.Name,
-                Route = dto.Route,
-                ParentMenuId = dto.ParentMenuId,
-                Icon = dto.Icon,
-                Order = dto.Order,
-                ModuleId = dto.ModuleId
-            };
-
+            var menu = mapper.Map<Menu>(dto);
             dbContext.Menus.Add(menu);
             await dbContext.SaveChangesAsync();
-            
             return menu.Id;
-  
-        
-
     }
 }

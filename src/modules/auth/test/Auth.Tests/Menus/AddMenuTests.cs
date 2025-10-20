@@ -6,6 +6,9 @@ using Auth.Data.Persistence;
 using Auth.UseCases.Menus;
 using Auth.Dtos.Modules;
 using Auth.Data.Entities;
+using MapsterMapper;
+using Mapster;
+using Auth.UseCases.mapper;
 
 namespace Auth.Tests.Menus;
 
@@ -17,9 +20,15 @@ public class AddMenuTests
         var options = new DbContextOptionsBuilder<AuthDbContext>()
             .UseInMemoryDatabase(databaseName: dbName)
             .Options;
-        
+
         // Asumiendo que AuthDbContext tiene un constructor que acepta DbContextOptions<AuthDbContext>
         return new AuthDbContext(options);
+    }
+    private IMapper CreateMapper()
+    {
+        var config = new TypeAdapterConfig();
+        config.Scan(typeof(MappingConfig).Assembly); 
+        return new Mapper(config);
     }
 
 
@@ -29,7 +38,7 @@ public class AddMenuTests
         // ARRANGE
         // Usamos un nombre de base de datos único para aislar esta prueba.
         var dbContext = CreateInMemoryDbContext(Guid.NewGuid().ToString()); 
-        var addMenuUseCase = new AddMenu(dbContext);
+        var addMenuUseCase = new AddMenu(dbContext, CreateMapper());
         
         var newMenuDto = new CreateMenuDto
         {
@@ -60,7 +69,7 @@ public class AddMenuTests
     {
         var dbName = Guid.NewGuid().ToString();
         var dbContext = CreateInMemoryDbContext(dbName);
-        var addMenuUseCase = new AddMenu(dbContext);
+        var addMenuUseCase = new AddMenu(dbContext,CreateMapper());
         
         var sharedMenuData = new CreateMenuDto
         {
@@ -91,7 +100,7 @@ public class AddMenuTests
     {
         var dbName = Guid.NewGuid().ToString();
         var dbContext = CreateInMemoryDbContext(dbName);
-        var addMenuUseCase = new AddMenu(dbContext);
+        var addMenuUseCase = new AddMenu(dbContext,CreateMapper());
 
         var existingMenu = new Menu { Name = "Reports", ModuleId = 1, Route = "/reports/mod1", Order = 1 };
         dbContext.Menus.Add(existingMenu);
