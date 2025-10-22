@@ -1,7 +1,7 @@
-using System;
 using Auth.UseCases.mapper;
 using Auth.UseCases.Menus;
 using Auth.UseCases.Modules;
+using Auth.UseCases.Roles;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +13,7 @@ public static class UseCasesDependencyInjection
     public static IServiceCollection AddUseCases(this IServiceCollection services)
         => services.AddMenuUseCases()
                     .AddModulesUseCases()
+                    .AddRolesUseCases()
                    .AddMapper();
 
     public static IServiceCollection AddMenuUseCases(this IServiceCollection services)
@@ -28,9 +29,13 @@ public static class UseCasesDependencyInjection
                 .AddScoped<AddModule>()
                 .AddScoped<GetModule>()
                 .AddScoped<GetAllModules>();
-                // .AddScoped<UpdateModule>()
-                // .AddScoped<DeleteModule>();
+    // .AddScoped<UpdateModule>()
+    // .AddScoped<DeleteModule>();
 
+    public static IServiceCollection AddRolesUseCases(this IServiceCollection services)
+    => services.AddScoped<RoleUseCases>()
+                .AddScoped<AddRole>()
+                .AddScoped<GetRole>();
     public static IServiceCollection AddMapper(this IServiceCollection services)
     {
         var config = TypeAdapterConfig.GlobalSettings;

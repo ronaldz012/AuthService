@@ -1,6 +1,7 @@
 using System;
 using Auth.Data.Entities;
 using Auth.Dtos.Modules;
+using Auth.Dtos.Roles;
 using Mapster;
 
 namespace Auth.UseCases.mapper;
@@ -22,8 +23,22 @@ public class MappingConfig: IRegister
             .IgnoreNullValues(true);
 
         config.NewConfig<Module, ModuleDto>();
-        config.NewConfig<Module, ModuleDetailsDto>();  
+        config.NewConfig<Module, ModuleDetailsDto>();
         config.NewConfig<Menu, MenuDto>();
 
+        config.NewConfig<CreateRoleDto, Role>();
+        config.NewConfig<RoleModulePermissionDto, RoleModulePermission>();
+
+        config.NewConfig<Role, RoleDetailsDto>()
+        .Map(dest => dest.ModulePermissions, 
+         src => src.RoleModulePermissions.Select(rmp => new ModulePermisionsDto
+         {
+             ModuleId = rmp.ModuleId,
+             ModuleName = rmp.Module.Name,
+             CanCreate = rmp.CanCreate,
+             CanRead = rmp.CanRead,
+             CanUpdate = rmp.CanUpdate,
+             CanDelete = rmp.CanDelete
+         }).ToList());
     }
 }
