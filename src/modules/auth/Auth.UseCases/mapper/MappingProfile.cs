@@ -22,6 +22,7 @@ public class MappingConfig: IRegister
             .IgnoreNullValues(true);
 
         config.NewConfig<Module, ModuleDto>();
+        config.NewConfig<Module, ModuleDetailsDto>();  
         config.NewConfig<Menu, MenuDto>();
 
     }

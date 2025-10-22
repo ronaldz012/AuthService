@@ -5,5 +5,6 @@ namespace Auth.UseCases;
 
 public record ModulesUseCases(
     AddModule AddModule,
-    GetModule GetModule
+    GetModule GetModule,
+    GetAllModules GetAllModules
 );

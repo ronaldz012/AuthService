@@ -23,5 +23,11 @@ namespace System.Api.Controllers.Auth
             return await modulesUseCases.GetModule.Execute(id)
             .ToValueOrProblemDetails();
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAllModules([FromQuery] ModuleQueryDto queryDto)
+        {
+            return await modulesUseCases.GetAllModules.Execute(queryDto)
+            .ToValueOrProblemDetails();
+        }
     }
 }
