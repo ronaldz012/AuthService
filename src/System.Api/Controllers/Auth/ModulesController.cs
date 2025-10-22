@@ -16,5 +16,12 @@ namespace System.Api.Controllers.Auth
             return await modulesUseCases.AddModule.Execute(dto)
             .ToValueOrProblemDetails();
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetModule(int id)
+        {
+            return await modulesUseCases.GetModule.Execute(id)
+            .ToValueOrProblemDetails();
+        }
     }
 }

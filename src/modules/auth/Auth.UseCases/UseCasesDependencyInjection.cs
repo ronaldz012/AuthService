@@ -25,8 +25,8 @@ public static class UseCasesDependencyInjection
 
     public static IServiceCollection AddModulesUseCases(this IServiceCollection services)
     => services.AddScoped<ModulesUseCases>()
-                .AddScoped<AddModule>();
-                // .AddScoped<GetModule>()
+                .AddScoped<AddModule>()
+                .AddScoped<GetModule>();
                 // .AddScoped<GetAllModules>()
                 // .AddScoped<UpdateModule>()
                 // .AddScoped<DeleteModule>();
