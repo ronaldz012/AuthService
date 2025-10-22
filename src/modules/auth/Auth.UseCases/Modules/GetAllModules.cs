@@ -10,7 +10,7 @@ using Shared.Result;
 
 namespace Auth.UseCases.Modules;
 
-public class GetAllModules(AuthDbContext dbContext, IMapper mapper)
+public class GetAllModules(AuthDbContext dbContext)
 {
     public async Task<Result<PagedResultDto<ModuleDto>>> Execute(ModuleQueryDto queryDto)
     {
