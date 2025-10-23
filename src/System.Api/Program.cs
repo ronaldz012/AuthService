@@ -2,10 +2,10 @@ using System.Api.Middlewares;
 using System.Api.Result;
 using Auth.Data;
 using Auth.Data.Persistence;
+using Auth.Infrastructure;
 using Auth.UseCases;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -28,7 +28,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.SuppressModelStateInvalidFilter = true;
 });
 builder.Services.AddAuthData()
-                .AddUseCases();
+                .AddUseCases()
+                .AddInfrastructure(builder.Configuration);
 
 
 var app = builder.Build();
