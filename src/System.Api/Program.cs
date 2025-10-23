@@ -1,11 +1,15 @@
 using System.Api.Middlewares;
 using System.Api.Result;
+using System.Text;
 using Auth.Data;
 using Auth.Data.Persistence;
 using Auth.Infrastructure;
+using Auth.Infrastructure.Authentication;
 using Auth.UseCases;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -13,6 +17,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAuthentication(options =>
+{
+    // The default scheme for authenticating API requests (JWT)
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+
+    // The default scheme for challenging unauthenticated users (JWT)
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Token:Issuer"]!,
+        ValidAudience = builder.Configuration["Token:Audience"]!,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:Key"]!))
+    };
+});
 // Add DbContext configuration
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("AuthConnection")));
@@ -30,7 +55,6 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 builder.Services.AddAuthData()
                 .AddUseCases()
                 .AddInfrastructure(builder.Configuration);
-
 
 var app = builder.Build();
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();

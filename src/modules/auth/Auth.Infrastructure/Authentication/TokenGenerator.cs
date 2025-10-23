@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
 
 namespace Auth.Infrastructure.Authentication;
 
@@ -12,11 +13,15 @@ public class TokenGenerator : ITokenGenerator
     public TokenGenerator(IOptions<TokenSettings> tokenSettings)
     {
         _tokenSettings = tokenSettings.Value;
+        if (string.IsNullOrEmpty(_tokenSettings.SecretKey))
+        {
+            throw new ArgumentException("TokenSettings.SecretKey no está configurado");
+        }
     }
     public string GenerateAccessToken(int userId)
     {
         var securityKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_tokenSettings.Key));
+            Encoding.UTF8.GetBytes(_tokenSettings.SecretKey));
         var credentials = new SigningCredentials(
             securityKey, SecurityAlgorithms.HmacSha256);        
         var token = new JwtSecurityToken(
@@ -31,7 +36,11 @@ public class TokenGenerator : ITokenGenerator
 
     public string GenerateRefreshToken()
     {
-        throw new NotImplementedException();
+        
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
     }
 
     public int GetAccessTokenExpirationMinutes() 

@@ -16,6 +16,12 @@ namespace System.Api.Controllers.Auth
             return await userUseCases.RegisterUser.Execute(dto)
                                                     .ToValueOrProblemDetails();
         }
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            return await userUseCases.Login.Execute(dto)
+                                                    .ToValueOrProblemDetails();
+        }
     }
 }
  

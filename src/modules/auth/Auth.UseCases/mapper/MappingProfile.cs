@@ -32,7 +32,7 @@ public class MappingConfig: IRegister
 
         config.NewConfig<Role, RoleDetailsDto>()
         .Map(dest => dest.ModulePermissions,
-         src => src.RoleModulePermissions.Select(rmp => new ModulePermisionsDto
+         src => src.RoleModulePermissions.Select(rmp => new ModulePermissionsDto
          {
              ModuleId = rmp.ModuleId,
              ModuleName = rmp.Module.Name,

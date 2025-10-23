@@ -7,11 +7,11 @@ public class RoleDetailsDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public IEnumerable<ModulePermisionsDto> ModulePermissions { get; set; } = Enumerable.Empty<ModulePermisionsDto>();
+    public IEnumerable<ModulePermissionsDto> ModulePermissions { get; set; } = Enumerable.Empty<ModulePermissionsDto>();
     
 }
 
-public class ModulePermisionsDto
+public class ModulePermissionsDto
 {
     public int ModuleId { get; set; }
     public string ModuleName { get; set; } = string.Empty;

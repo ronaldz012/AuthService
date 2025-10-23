@@ -5,10 +5,9 @@ using Auth.Infrastructure.Authentication;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Shared.Result;
-
 namespace Auth.UseCases.Users;
 
-public class RegisterUser(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper)
+public class RegisterUser(AuthDbContext dbContext, IMapper mapper)
 {
     public async Task<Result<bool>> Execute(RegisterUserDto dto)
     {
@@ -40,28 +39,5 @@ public class RegisterUser(AuthDbContext dbContext, ITokenGenerator tokenGenerato
 
 
 
-    private  static class ValidatePassword
-    {
-        public static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using (var hmac = new System.Security.Cryptography.HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
-        }
-
-        public static bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using (var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                for (int i = 0; i < computedHash.Length; i++)
-                {
-                    if (computedHash[i] != passwordHash[i]) return false;
-                }
-                return true;
-            }
-        }
-    }
+    
 }

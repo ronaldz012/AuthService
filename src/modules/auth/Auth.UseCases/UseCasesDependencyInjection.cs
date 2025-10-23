@@ -20,7 +20,8 @@ public static class UseCasesDependencyInjection
 
     public static IServiceCollection AddUserUseCases(this IServiceCollection services)
     => services.AddScoped<UserUseCases>()
-                .AddScoped<RegisterUser>();
+                .AddScoped<RegisterUser>()
+                .AddScoped<Login>();
     public static IServiceCollection AddMenuUseCases(this IServiceCollection services)
     => services.AddScoped<MenuUseCases>()
                 .AddScoped<AddMenu>()
