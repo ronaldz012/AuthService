@@ -2,6 +2,7 @@ using Auth.UseCases.mapper;
 using Auth.UseCases.Menus;
 using Auth.UseCases.Modules;
 using Auth.UseCases.Roles;
+using Auth.UseCases.Users;
 using Mapster;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,8 +15,12 @@ public static class UseCasesDependencyInjection
         => services.AddMenuUseCases()
                     .AddModulesUseCases()
                     .AddRolesUseCases()
+                    .AddUserUseCases()
                    .AddMapper();
 
+    public static IServiceCollection AddUserUseCases(this IServiceCollection services)
+    => services.AddScoped<UserUseCases>()
+                .AddScoped<RegisterUser>();
     public static IServiceCollection AddMenuUseCases(this IServiceCollection services)
     => services.AddScoped<MenuUseCases>()
                 .AddScoped<AddMenu>()

@@ -1,4 +1,3 @@
-using System;
 using Auth.Data.Entities;
 using Auth.Data.Persistence;
 using Auth.Dtos.Users;
