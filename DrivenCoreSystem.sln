@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Data", "src\modules\au
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Dtos", "src\modules\auth\Auth.Dtos\Auth.Dtos.csproj", "{DF6904C5-EB44-4DBF-BA28-0063E1867B97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Notificator", "src\modules\auth\Auth.Notificator\Auth.Notificator.csproj", "{A5210280-C874-4502-8965-4C6E4054554E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Infrastructure", "src\modules\auth\Auth.Notificator\Auth.Infrastructure.csproj", "{A5210280-C874-4502-8965-4C6E4054554E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.UseCases", "src\modules\auth\Auth.UseCases\Auth.UseCases.csproj", "{89D3A774-5A87-49E9-A84A-F6B0383EB54A}"
 EndProject
