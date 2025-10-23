@@ -2,6 +2,7 @@ using System;
 using Auth.Data.Entities;
 using Auth.Dtos.Modules;
 using Auth.Dtos.Roles;
+using Auth.Dtos.Users;
 using Mapster;
 
 namespace Auth.UseCases.mapper;
@@ -30,7 +31,7 @@ public class MappingConfig: IRegister
         config.NewConfig<RoleModulePermissionDto, RoleModulePermission>();
 
         config.NewConfig<Role, RoleDetailsDto>()
-        .Map(dest => dest.ModulePermissions, 
+        .Map(dest => dest.ModulePermissions,
          src => src.RoleModulePermissions.Select(rmp => new ModulePermisionsDto
          {
              ModuleId = rmp.ModuleId,
@@ -40,5 +41,12 @@ public class MappingConfig: IRegister
              CanUpdate = rmp.CanUpdate,
              CanDelete = rmp.CanDelete
          }).ToList());
+         
+         config.NewConfig<RegisterUserDto, User>()
+         .Map(dest => dest.UserRoles,
+          src => src.RoleIds.Select(roleId => new UserRole
+          {
+              RoleId = roleId
+          }).ToList());
     }
 }
