@@ -8,8 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../Shared/Shared.csproj" />
-    <ProjectReference Include="../Auth.Dtos/Auth.Dtos.csproj" />
-    <ProjectReference Include="../Auth.UseCases/Auth.UseCases.csproj" />
   </ItemGroup>
 
   <ItemGroup>

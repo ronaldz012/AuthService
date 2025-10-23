@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../modules/auth/Auth.Data/Auth.Data.csproj" />
+    <ProjectReference Include="../modules/auth/Auth.Infrastructure/Auth.Infrastructure.csproj" />
     <ProjectReference Include="../modules/auth/Auth.UseCases/Auth.UseCases.csproj" />
   </ItemGroup>
 

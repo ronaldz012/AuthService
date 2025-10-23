@@ -10,7 +10,7 @@
     <ProjectReference Include="../../../Shared/Shared.csproj" />
     <ProjectReference Include="../Auth.Data/Auth.Data.csproj" />
     <ProjectReference Include="../Auth.Dtos/Auth.Dtos.csproj" />
-    <ProjectReference Include="../Auth.Notificator/Auth.Infrastructure.csproj" />
+    <ProjectReference Include="../Auth.Infrastructure/Auth.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
