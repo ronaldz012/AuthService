@@ -3,10 +3,12 @@ using System.Security.Cryptography;
 using System.Text;
 using Auth.Data.Entities;
 using Auth.Data.Persistence;
+using Auth.Infrastructure;
 using Auth.Infrastructure.Authentication;
 using Auth.Infrastructure.Email.Emailtemplates;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Shared.Services;
 
 namespace Auth.UseCases.Email;
 
@@ -19,9 +21,12 @@ public interface IEmailVerificationService
 
 public class EmailVerificationService(AuthDbContext dbContext,
                                     IOptions<AuthenticationSettings> authenticationSettings,
+                                    IOptions<ProjectInfo> projectInfo,
+                                    IEmailService emailService,
                                     EmailTemplateRenderer emailTemplateRenderer) : IEmailVerificationService
 {
     private readonly EmailVerificationSettings _emailVerificationSettings = authenticationSettings.Value.EmailVerification;
+    private readonly AppBranding _appBranding = projectInfo.Value.AppBranding;
     public async Task SendVerificationEmailAsync(int userId, string userEmail, VerificationCodePurpose purpose)
     {
         if (userId <= 0 || string.IsNullOrWhiteSpace(userEmail))
@@ -82,7 +87,7 @@ public class EmailVerificationService(AuthDbContext dbContext,
             }
 
             // 6. Send the email using your EmailSenderService
-            await _emailSenderService.SendEmailAsync(userEmail, emailSubject, emailBody, isHtml: true);
+            await emailService.SendEmailAsync(userEmail, emailSubject, emailBody, isHtml: true);
 
     }
     public Task ResendVerificationEmailAsync(int userId, string userEmail, VerificationCodePurpose purpose)
