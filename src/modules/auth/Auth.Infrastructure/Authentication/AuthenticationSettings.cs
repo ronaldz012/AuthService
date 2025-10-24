@@ -19,11 +19,13 @@ public class EmailVerificationSettings
     /// Indica si la verificación de email está habilitada.
     /// </summary>
     public bool Required { get; set; }
-    
+
     /// <summary>
     /// Horas de validez del token de verificación.
     /// </summary>
     public int TokenExpirationHours { get; set; } = 24;
+
+    public int VerificationCodeLength { get; set; } = 6;
     
     /// <summary>
     /// Proveedores que requieren verificación de email.
