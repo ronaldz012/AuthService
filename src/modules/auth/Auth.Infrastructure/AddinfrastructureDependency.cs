@@ -11,13 +11,9 @@ public static class InfrastructureDependencyInjection
     {
         IConfigurationSection tokenSettingsSection = configuration.GetSection(TokenSettings.SectionName);
         services.Configure<TokenSettings>(tokenSettingsSection);
-        var tokenSettings = tokenSettingsSection.Get<TokenSettings>();
-        if (tokenSettings == null || string.IsNullOrEmpty(tokenSettings.SecretKey))
-        {
-            throw new ApplicationException($"{TokenSettings.SectionName} no está configurado correctamente");
-        }
 
-        services.AddScoped<ITokenGenerator, TokenGenerator>();
+        IConfigurationSection authSettingsSection = configuration.GetSection(AuthenticationSettings.SectionName);
+        services.Configure<AuthenticationSettings>(authSettingsSection);
         return services;
         
     }
