@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Email/" />
+    <ProjectReference Include="../Auth.Data/Auth.Data.csproj" />
   </ItemGroup>
 
 </Project>

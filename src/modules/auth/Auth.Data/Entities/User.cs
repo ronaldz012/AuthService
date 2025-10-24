@@ -38,6 +38,7 @@ public class User : ICreatedAt, ICreatedBy, IUpdatedAt, ISoftDelete, IUpdatedBy
 
     // Navigation property
     public ICollection<UserRole> UserRoles { get; set; } = default!;
+    public ICollection<EmailVerificationCode> EmailVerificationCodes { get; set; } = default!;
 }
 
 public enum UserStatus

@@ -16,6 +16,7 @@ public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options){  
         public DbSet<Module> Modules { get; set; }
         public DbSet<RoleModulePermission> RoleModulePermissions { get; set; }
         public DbSet<Menu> Menus { get; set; }
+        public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,6 +24,9 @@ public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options){  
 
         modelBuilder.Entity<User>(entity =>
         {
+            entity.HasMany(u => u.EmailVerificationCodes)
+                  .WithOne(evc => evc.User)
+                  .HasForeignKey(evc => evc.UserId);
         });
         modelBuilder.Entity<Role>(entity =>
         {

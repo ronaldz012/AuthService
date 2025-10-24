@@ -14,6 +14,14 @@ public static class InfrastructureDependencyInjection
 
         IConfigurationSection authSettingsSection = configuration.GetSection(AuthenticationSettings.SectionName);
         services.Configure<AuthenticationSettings>(authSettingsSection);
+
+        IConfigurationSection smtpSettingsSection = configuration.GetSection(Email.SmtpSettings.SectionName);
+        services.Configure<Email.SmtpSettings>(smtpSettingsSection);
+
+        IConfigurationSection projectInfoSection = configuration.GetSection(ProjectInfo.SectionName);
+        services.Configure<ProjectInfo>(projectInfoSection);
+
+        services.AddSingleton<ITokenGenerator, TokenGenerator>();
         return services;
         
     }
