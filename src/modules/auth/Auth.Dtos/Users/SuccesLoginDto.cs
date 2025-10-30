@@ -10,8 +10,8 @@ public class SuccesLoginDto
     public string RefreshToken { get; set; } = default!;
     public string TokenType { get; set; } = "Bearer";
     public int ExpiresIn { get; set; }
-
-    public UserDetailsDto UserDetails { get; set; } = default!;
+    public string Status { get; set; } = string.Empty;
+    public UserDetailsDto User { get; set; } = default!;
     public List<string> Roles { get; set; } = new();
     public List<ModulePermissionsDeductedDto> Modules { get; set; } = new();
 }

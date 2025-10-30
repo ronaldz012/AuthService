@@ -4,12 +4,14 @@ using Auth.Data.Persistence;
 using Auth.Dtos.Modules;
 using Auth.Dtos.Users;
 using Auth.Infrastructure.Authentication;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.TypeMapping;
 using Shared.Result;
 
 namespace Auth.UseCases.Users;
 
-public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator)
+public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper)
 {
     public async Task<Result<SuccesLoginDto>> Execute(LoginDto request)
     {
@@ -31,7 +33,14 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator)
         {
             return new Error("VALIDATION_ERROR", "Correo electrónico o contraseña incorrectos.");
         }
-
+        if(user.Status == UserStatus.PendingVerification)
+        {
+            return new SuccesLoginDto
+            {
+                Status = user.Status.ToString(),
+                User = mapper.Map<UserDetailsDto>(user)
+            };
+        }
         var accessToken = tokenGenerator.GenerateAccessToken(user.Id);
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 
@@ -45,11 +54,13 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator)
 
         var succesLoginDto = new SuccesLoginDto
         {
+            Status = user.Status.ToString(),
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             ExpiresIn = tokenGenerator.GetAccessTokenExpirationMinutes() * 60,
             Roles = roles,
-            Modules = modules
+            Modules = modules,
+            User = mapper.Map<UserDetailsDto>(user)
         };
 
         return succesLoginDto;
