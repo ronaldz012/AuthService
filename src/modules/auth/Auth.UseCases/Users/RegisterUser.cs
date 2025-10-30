@@ -2,13 +2,14 @@ using Auth.Data.Entities;
 using Auth.Data.Persistence;
 using Auth.Dtos.Users;
 using Auth.Infrastructure.Authentication;
+using Auth.UseCases.Email;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Shared.Result;
 namespace Auth.UseCases.Users;
 
-public class RegisterUser(AuthDbContext dbContext, IMapper mapper, IOptions<AuthenticationSettings> authSettings)
+public class RegisterUser(AuthDbContext dbContext, IMapper mapper,IEmailVerificationService emailVerificationService, IOptions<AuthenticationSettings> authSettings)
 {
     private readonly IOptions<AuthenticationSettings> _authSettings = authSettings;
     public async Task<Result<bool>> Execute(RegisterUserDto dto)
@@ -31,15 +32,18 @@ public class RegisterUser(AuthDbContext dbContext, IMapper mapper, IOptions<Auth
             ValidatePassword.CreatePasswordHash(dto.Password, out passwordHash, out passwordSalt);
             userToCreate.PasswordHash = passwordHash;
             userToCreate.PasswordSalt = passwordSalt;
-
-            if(emailVerificationRequired)
-            {
-                
-            }
-
-
             await dbContext.Users.AddAsync(userToCreate);
-            await dbContext.SaveChangesAsync();
+
+            if (emailVerificationRequired)
+            {
+                await dbContext.SaveChangesAsync(); // To Get the Id of the user
+                await emailVerificationService.SendVerificationEmailAsync(userToCreate, VerificationCodePurpose.AccountVerification);
+            }
+            else
+            {
+                userToCreate.Status = UserStatus.Active;
+                await dbContext.SaveChangesAsync();
+            }
             await transaction.CommitAsync();
             return true;
         }

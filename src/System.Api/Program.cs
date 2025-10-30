@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Shared;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -33,9 +34,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Token:Issuer"]!,
-        ValidAudience = builder.Configuration["Token:Audience"]!,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Token:Key"]!))
+        ValidIssuer = builder.Configuration["TokenSettings:Issuer"]!,
+        ValidAudience = builder.Configuration["TokenSettings:Audience"]!,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["TokenSettings:SecretKey"]!))
     };
 });
 // Add DbContext configuration
@@ -54,7 +55,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 });
 builder.Services.AddAuthData()
                 .AddUseCases()
-                .AddInfrastructure(builder.Configuration);
+                .AddInfrastructure(builder.Configuration)
+                .AddShared(builder.Configuration);
 
 var app = builder.Build();
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();

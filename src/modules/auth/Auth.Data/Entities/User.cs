@@ -24,7 +24,7 @@ public class User : ICreatedAt, ICreatedBy, IUpdatedAt, ISoftDelete, IUpdatedBy
     public string Ci { get; set; } = string.Empty;
     public string Nationality { get; set; } = string.Empty;
     public DateTime BirthDate { get; set; } = DateTime.MinValue;
-    public bool Status { get; set; } = true;
+    public UserStatus Status { get; set; } 
     public string GoogleId { get; set; } = string.Empty;
     public bool IsGoogleAuthenticated { get; set; } = false;
     public DateTime LastActive { get; set; }

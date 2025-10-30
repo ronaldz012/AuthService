@@ -1,5 +1,6 @@
 using System;
 using Auth.Infrastructure.Authentication;
+using Auth.Infrastructure.Email.Emailtemplates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,8 @@ public static class InfrastructureDependencyInjection
         services.Configure<ProjectInfo>(projectInfoSection);
 
         services.AddSingleton<ITokenGenerator, TokenGenerator>();
+
+        services.AddSingleton<EmailTemplateRenderer>();
         return services;
         
     }

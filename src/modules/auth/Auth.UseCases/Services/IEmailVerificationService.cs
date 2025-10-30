@@ -14,7 +14,7 @@ namespace Auth.UseCases.Email;
 
 public interface IEmailVerificationService
 {
-    Task SendVerificationEmailAsync(int userId, string userEmail, VerificationCodePurpose purpose);
+    Task SendVerificationEmailAsync(User user, VerificationCodePurpose purpose);
     Task<bool> ValidateVerificationCodeAsync(int userId, string code, VerificationCodePurpose purpose);
     Task ResendVerificationEmailAsync(int userId, string userEmail, VerificationCodePurpose purpose);
 }
@@ -27,11 +27,9 @@ public class EmailVerificationService(AuthDbContext dbContext,
 {
     private readonly EmailVerificationSettings _emailVerificationSettings = authenticationSettings.Value.EmailVerification;
     private readonly AppBranding _appBranding = projectInfo.Value.AppBranding;
-    public async Task SendVerificationEmailAsync(int userId, string userEmail, VerificationCodePurpose purpose)
+    public async Task SendVerificationEmailAsync(User user, VerificationCodePurpose purpose)
     {
-        if (userId <= 0 || string.IsNullOrWhiteSpace(userEmail))
-            throw new ArgumentException("UserId and UserEmail are required to send verification email.");
-        await InvalidateExistingCodesAsync(userId, purpose);
+        await InvalidateExistingCodesAsync(user.Id, purpose);
 
         string verificationCode = GenerateVerificationCode(_emailVerificationSettings.VerificationCodeLength);
             DateTime sentAt = DateTime.UtcNow;
@@ -39,9 +37,9 @@ public class EmailVerificationService(AuthDbContext dbContext,
         
         var newVerificationCode = new EmailVerificationCode
             {
-                UserId = userId,
+                UserId = user.Id,
                 Code = verificationCode,
-                Email = userEmail,
+                Email = user.Email,
                 SentAt = sentAt,
                 ExpiresAt = expiresAt,
                 IsUsed = false,
@@ -52,12 +50,7 @@ public class EmailVerificationService(AuthDbContext dbContext,
             await dbContext.AddAsync(newVerificationCode);
             await dbContext.SaveChangesAsync();
         
-            string userName = userEmail; 
-            var user = await dbContext.Users.Where(u => u.Id == userId).FirstOrDefaultAsync(); 
-            if (user != null && !string.IsNullOrWhiteSpace(user.Name)) 
-            {
-                userName = user.Name;
-            }
+            string userName = user.Name + user.FatherLastName; 
 
             string emailSubject;
             string emailBody;
@@ -87,7 +80,7 @@ public class EmailVerificationService(AuthDbContext dbContext,
             }
 
             // 6. Send the email using your EmailSenderService
-            await emailService.SendEmailAsync(userEmail, emailSubject, emailBody, isHtml: true);
+            await emailService.SendEmailAsync(user.Email, emailSubject, emailBody, isHtml: true);
 
     }
     public Task ResendVerificationEmailAsync(int userId, string userEmail, VerificationCodePurpose purpose)

@@ -1,3 +1,4 @@
+using Auth.UseCases.Email;
 using Auth.UseCases.mapper;
 using Auth.UseCases.Menus;
 using Auth.UseCases.Modules;
@@ -16,8 +17,10 @@ public static class UseCasesDependencyInjection
                     .AddModulesUseCases()
                     .AddRolesUseCases()
                     .AddUserUseCases()
-                   .AddMapper();
-
+                   .AddMapper()
+                   .AddServices();
+    public static IServiceCollection AddServices(this IServiceCollection services)
+    => services.AddScoped<IEmailVerificationService, EmailVerificationService>();
     public static IServiceCollection AddUserUseCases(this IServiceCollection services)
     => services.AddScoped<UserUseCases>()
                 .AddScoped<RegisterUser>()

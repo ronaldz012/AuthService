@@ -14,7 +14,7 @@ public class EmailTemplateRenderer(IOptions<ProjectInfo> projectInfo,
     private async Task<string> GetBaseHtmlContentAsync(string templateFileName)
     {
 
-        var templatePath = $"../modules/Auth.Infrastructure/Email/Emailtemplates/{templateFileName}";
+        var templatePath = Path.Combine(AppContext.BaseDirectory,"Email","EmailTemplates", templateFileName);
         if (!File.Exists(templatePath))
         {
             throw new FileNotFoundException($"Email template not found at: {templatePath}. Ensure '{templateFileName}' is copied to output directory.");

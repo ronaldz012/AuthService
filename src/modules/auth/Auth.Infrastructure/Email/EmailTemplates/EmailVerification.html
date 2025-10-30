@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>##EMAIL_SUBJECT##</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #e0e0e0;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .header img {
+            max-width: 180px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .content {
+            color: #333;
+            font-size: 16px;
+        }
+        .code-block {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            color: ##PROJECT_PRIMARY_COLOR##; /* Color dinámico aquí */
+            margin: 25px 0;
+            padding: 15px;
+            background-color: #e9f7ff; /* Fondo claro para el código */
+            border-radius: 5px;
+            border: 1px dashed #cceeff; /* Borde punteado para destacar */
+            word-break: break-all; /* Para códigos largos */
+        }
+        .button {
+            display: inline-block;
+            background-color: ##PROJECT_PRIMARY_COLOR##; /* Color dinámico aquí */
+            color: #ffffff !important; /* !important para sobrescribir estilos de cliente */
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .disclaimer {
+            font-size: 11px;
+            color: #999;
+            margin-top: 15px;
+        }
+        a {
+            color: ##PROJECT_PRIMARY_COLOR##; /* Color dinámico para enlaces generales */
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse;">
+        <tr>
+            <td align="center" style="padding: 20px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" class="container">
+                    <tr>
+                        <td class="header" style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #eee; margin-bottom: 20px;">
+                            <img src="##PROJECT_LOGO_URL##" alt="Logo de ##PROJECT_NAME##" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
+                            <h2 style="color: #333; margin-top: 15px;">##EMAIL_MAIN_HEADING##</h2>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="content" style="color: #333; font-size: 16px;">
+                            <p>Hola ##USER_NAME##,</p>
+                            <p>##EMAIL_BODY_CONTENT##</p>
+
+                            <p class="code-block">##DYNAMIC_CODE##</p>
+                            <p>Este código es válido por ##EXPIRATION_TIME## minutos. Si no lo solicitaste, por favor ignora este correo.</p>
+
+                            <p style="margin-top: 20px;">Si tienes alguna pregunta o necesitas ayuda, no dudes en contactar a nuestro equipo de soporte en <a href="mailto:##PROJECT_SUPPORT_EMAIL##" style="color: ##PROJECT_PRIMARY_COLOR##;">##PROJECT_SUPPORT_EMAIL##</a>.</p>
+                            <p>Saludos cordiales,</p>
+                            <p>El equipo de ##PROJECT_NAME##</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="footer" style="text-align: center; font-size: 12px; color: #777; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <p>&copy; ##CURRENT_YEAR## ##PROJECT_NAME##. Todos los derechos reservados.</p>
+                            <p>##PROJECT_ADDRESS##</p>
+                            <p class="disclaimer">##FOOTER_DISCLAIMER##</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
