@@ -33,6 +33,7 @@ public class AuthenticateWithGoogle(AuthDbContext dbContext,
             .ThenInclude(ur => ur.Role)
                 .ThenInclude(r => r.RoleFeaturePermissions)
                     .ThenInclude(mp => mp.Feature)
+                    .ThenInclude(f => f.Module)
             .FirstOrDefaultAsync(u => u.Email == googleUser!.Email);
 
         if (existingUser == null)
@@ -49,7 +50,7 @@ public class AuthenticateWithGoogle(AuthDbContext dbContext,
         var token = tokenGenerator.GenerateAccessToken(existingUser!.Id);
         var refreshToken = tokenGenerator.GenerateRefreshToken();
         //BUILD PERMISSIONS
-        var branchesResult = await UserMappingUtils.BuildBranchAccess(existingUser, branchService);
+        var branchesResult = await UserMappingUtils.BuildBranchAccessByModule(existingUser, branchService);
         if (!branchesResult.IsSuccess)
             return branchesResult.Error!;
 

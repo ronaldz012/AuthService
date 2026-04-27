@@ -6,7 +6,7 @@ using Shared.Result;
 
 namespace Auth.UseCases.Features;
 
-public class GetFeature(AuthDbContext dbContext, IMapper mapper)
+public class GetFeature(AuthDbContext dbContext )
 {
     public async Task<Result<FeatureDetailsDto?>> Execute(int id)
     {

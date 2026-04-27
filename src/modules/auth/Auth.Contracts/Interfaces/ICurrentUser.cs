@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Auth.Contracts.Dtos.permissions;
 using Auth.Contracts.Dtos.Users;
 using Microsoft.AspNetCore.Http;
 
@@ -12,12 +13,12 @@ public interface ICurrentUser
     bool IsAuthenticated { get; }
     IReadOnlyList<int> BranchIds { get; }
     bool HasBranch(int branchId);
-     Task<List<BranchAccessDto>> GetBranchesAsync();
+     Task<List<PermissionsDto>> GetBranchesAsync();
  }
 public class CurrentUserService : ICurrentUser
 {
     private readonly IUserPermissionsCacheService _cache;
-    private List<BranchAccessDto>? _branches;
+    private List<PermissionsDto>? _branches;
 
     public int UserId { get; }
     public string Username { get; }
@@ -54,7 +55,7 @@ public class CurrentUserService : ICurrentUser
 
     public bool HasBranch(int branchId) => BranchIds.Contains(branchId);
 
-    public async Task<List<BranchAccessDto>> GetBranchesAsync()
+    public async Task<List<PermissionsDto>> GetBranchesAsync()
     {
         _branches ??= await _cache.GetAsync(UserId);
         return _branches;

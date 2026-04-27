@@ -34,7 +34,7 @@ public class AutenticateMe(AuthDbContext context, ICurrentUser currentUser, IMap
             .Distinct()
             .ToList();
 
-        var branchResult = await UserMappingUtils.BuildBranchAccess(user, branchService);
+        var branchResult = await UserMappingUtils.BuildBranchAccessByModule(user, branchService);
         if (!branchResult.IsSuccess) return new Error("NOT_FOUND", branchResult.Error.Message);
 
         return new SuccessLoginDto

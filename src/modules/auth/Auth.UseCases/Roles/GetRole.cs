@@ -8,7 +8,7 @@ using Shared.Result;
 
 namespace Auth.UseCases.Roles;
 
-public class GetRole(AuthDbContext dbContext, IMapper mapper)
+public class GetRole(AuthDbContext dbContext )
 {
 
     public async Task<Result<RoleDetailsDto>> Execute(int roleId)

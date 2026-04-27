@@ -1,4 +1,5 @@
 using System;
+using Auth.Contracts.Dtos.permissions;
 using Auth.Contracts.Dtos.Users;
 using Auth.Contracts.Interfaces;
 using Auth.Data.Entities;
@@ -19,9 +20,9 @@ public class UserPermissionsCacheService(IMemoryCache cache, AuthDbContext conte
 
     private static string Key(int userId) => $"user_branches:{userId}";
 
-    public async Task<List<BranchAccessDto>> GetAsync(int userId)
+    public async Task<List<PermissionsDto>> GetAsync(int userId)
     {
-        if (cache.TryGetValue(Key(userId), out List<BranchAccessDto>? cached) && cached is not null)
+        if (cache.TryGetValue(Key(userId), out List<PermissionsDto>? cached) && cached is not null)
             return cached;
         var user = await context.Users
             .AsSplitQuery()
@@ -29,6 +30,7 @@ public class UserPermissionsCacheService(IMemoryCache cache, AuthDbContext conte
                 .ThenInclude(ur => ur.Role)
                 .ThenInclude(r => r.RoleFeaturePermissions)
                 .ThenInclude(rmp => rmp.Feature)
+                .ThenInclude(f => f.Module)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user is null) return [];
@@ -43,7 +45,7 @@ public class UserPermissionsCacheService(IMemoryCache cache, AuthDbContext conte
     public void Invalidate(int userId) =>
         cache.Remove(Key(userId));
 
-    public void Set(int userId, List<BranchAccessDto> branches)
+    public void Set(int userId, List<PermissionsDto> branches)
     {
         cache.Set(Key(userId), branches, Opts);
     }

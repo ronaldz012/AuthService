@@ -7,7 +7,7 @@ using Shared.Result;
 
 namespace Auth.UseCases.Roles;
 
-public class AddRole(AuthDbContext dbContext, IMapper mapper)
+public class AddRole(AuthDbContext dbContext )
 {
     public async Task<Result<int>> Execute(CreateRoleDto dto)
     {

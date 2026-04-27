@@ -1,3 +1,4 @@
+using Auth.Contracts.Dtos.permissions;
 using Auth.Contracts.Dtos.Users;
 using Auth.Contracts.Interfaces;
 using Microsoft.AspNetCore.Mvc;

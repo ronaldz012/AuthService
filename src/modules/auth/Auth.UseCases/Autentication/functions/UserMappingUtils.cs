@@ -1,3 +1,5 @@
+using Auth.Contracts.Dtos.permissions;
+using Auth.Contracts.Dtos.Roles;
 using Auth.Contracts.Dtos.Users;
 using Auth.Data.Entities;
 using Branches.Contracts;
@@ -34,7 +36,7 @@ public static class UserMappingUtils
                 CanDelete = mp.CanDelete,
             }).ToList();
     }
-    public static async Task<Result<List<BranchAccessDto>>> BuildBranchAccess(
+    public static async Task<Result<List<PermissionsDto>>> BuildBranchAccess(
         User user,
         IBranchService branchService)
     {
@@ -54,7 +56,7 @@ public static class UserMappingUtils
             .Select(g =>
             {
                 var branch = branchesById[g.Key];
-                return new BranchAccessDto
+                return new PermissionsDto
                 {
                     BranchId = branch.Id,
                     BranchName = branch.Name,
@@ -67,4 +69,72 @@ public static class UserMappingUtils
                 };
             }).ToList();
     }
+    public static async Task<Result<List<PermissionsByModuleDto>>> BuildBranchAccessByModule(
+        User user,
+        IBranchService branchService)
+    {
+        var branchIds = user.UserBranchRoles
+            .Select(ubr => ubr.BranchId)
+            .Distinct()
+            .ToList();
+
+        var branchesResult = await branchService.GetBranchesByIds(branchIds);
+        if (!branchesResult.IsSuccess)
+            return new Error("NOT_FOUND", branchesResult.Error.Message);
+
+        var branchesById = branchesResult.Value.ToDictionary(b => b.Id);
+
+        return user.UserBranchRoles
+            .GroupBy(ubr => ubr.BranchId)
+            .Select(g =>
+            {
+                var branch = branchesById[g.Key];
+                return new PermissionsByModuleDto()
+                {
+                    BranchId = branch.Id,
+                    BranchName = branch.Name,
+                    Roles = g.Select(ubr => new RoleDto
+                    {
+                        Id = ubr.Role.Id,
+                        Name = ubr.Role.Name
+                    }).ToList(),
+                    Modules = CalculateFeatureByModule(g.ToList())
+                };
+            }).ToList();
+    }
+
+    private static List<PermissiónByModuleDto> CalculateFeatureByModule(List<UserBranchRole> userBranchRoles)
+    {
+        return userBranchRoles
+            .SelectMany(ubr => ubr.Role.RoleFeaturePermissions)
+            .GroupBy(rfp => rfp.Feature.ModuleId)
+            .Select(g =>
+            {
+                var module = g.First().Feature.Module;
+                return new PermissiónByModuleDto
+                {
+                    Id          = module.Id,
+                    Name        = module.Name,
+                    Description = module.Description,
+                    Route       = module.Route,
+                    Icon        = module.Icon,
+                    Features    = g
+                        .GroupBy(rfp => rfp.FeatureId)
+                        .Select(fg => new FeaturePermissionByModuleDto
+                        {
+                            Id        = fg.First().Feature.Id,
+                            Name      = fg.First().Feature.Name,
+                            Route     = fg.First().Feature.Route,
+                            Icon      = fg.First().Feature.Icon,
+                            CanRead   = fg.Any(rfp => rfp.CanRead),
+                            CanCreate = fg.Any(rfp => rfp.CanCreate),
+                            CanUpdate = fg.Any(rfp => rfp.CanUpdate),
+                            CanDelete = fg.Any(rfp => rfp.CanDelete),
+                        }).ToList()
+                };
+            }).ToList();
+    }
+
+
+    
 }

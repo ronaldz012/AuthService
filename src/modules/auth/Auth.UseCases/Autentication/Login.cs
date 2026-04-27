@@ -21,7 +21,7 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMap
                 .ThenInclude(ur => ur.Role)
                     .ThenInclude(r => r.RoleFeaturePermissions)
                         .ThenInclude(rmp => rmp.Feature)
-                                .ThenInclude(f => f.Module)
+                            .ThenInclude(f => f.Module)
             .FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user == null)
@@ -39,34 +39,22 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMap
             };
         }
 
-        var branchIds = user.UserBranchRoles
-            .Select(ubr => ubr.BranchId)
-            .Distinct()
-            .ToList();
-
-        var branchesResult = await branchService.GetBranchesByIds(branchIds);
-        if (!branchesResult.IsSuccess)
-            return new Error("NOT_FOUND", branchesResult.Error.Message);
-
-        // Convertimos a diccionario para lookup eficiente
-        var branchResult = await UserMappingUtils.BuildBranchAccess(user, branchService);
-        if (!branchResult.IsSuccess) return new Error("NOT_FOUND", branchResult.Error.Message);
+        var branchResult = await UserMappingUtils.BuildBranchAccessByModule(user, branchService);
+        if (!branchResult.IsSuccess)
+            return new Error("NOT_FOUND", branchResult.Error.Message);
 
         var accessToken = tokenGenerator.GenerateAccessToken(user.Id);
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 
-
-        var result = new SuccessLoginDto
+        return new SuccessLoginDto
         {
-            Status = user.Status.ToString(),
+            Status       = user.Status.ToString(),
             AuthProvider = user.AuthProvider.ToString(),
-            AccessToken = accessToken,
+            AccessToken  = accessToken,
             RefreshToken = refreshToken,
-            ExpiresIn = tokenGenerator.GetAccessTokenExpirationMinutes() * 60,
-            User = mapper.Map<UserDetailsDto>(user),
-            Branches = branchResult.Value
+            ExpiresIn    = tokenGenerator.GetAccessTokenExpirationMinutes() * 60,
+            User         = mapper.Map<UserDetailsDto>(user),
+            Branches     = branchResult.Value
         };
-        return result;
     }
-
 }
