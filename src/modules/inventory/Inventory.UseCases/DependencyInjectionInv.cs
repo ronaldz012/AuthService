@@ -18,7 +18,8 @@ public  static class DependencyInjectionInv
             .AddScoped<SearchProduct>()
             .AddScoped<ValidateProducts>()
             .AddScoped<ValidateProductVariants>()
-            .AddScoped<ProductDetails>();
+            .AddScoped<ProductDetails>()
+            .AddScoped<GetProductByCode>();
         
         services.AddScoped<CategoryUseCases>()
             .AddScoped<CreateCategory>()

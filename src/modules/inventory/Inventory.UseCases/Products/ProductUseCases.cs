@@ -4,4 +4,5 @@ public record ProductUseCases(CreateProduct CreateProduct, ListProducts ListProd
     ValidateProducts ValidateProducts, 
     ValidateProductVariants ValidateProductVariants,
     SearchProduct SearchProducts,
+    GetProductByCode  GetProductByCode,
     ProductDetails ProductDetails);

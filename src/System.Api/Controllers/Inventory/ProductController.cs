@@ -43,5 +43,12 @@ namespace System.Api.Controllers.Inventory
         {
             return await productUseCases.ProductDetails.Execute(id).ToValueOrProblemDetails();
         }
+
+        [HttpGet("productVariant")]
+        [Authorize]
+        public async Task<IActionResult> GetVariantProductByCode([FromQuery] string request)
+        {
+            return await productUseCases.GetProductByCode.Execute(request).ToValueOrProblemDetails();
+        }
     }
 }
