@@ -12,13 +12,15 @@ public interface ICurrentUser
     string? Token { get; }
     bool IsAuthenticated { get; }
     IReadOnlyList<int> BranchIds { get; }
+    Task<Dictionary<int, string>> GetBranchNamesAsync();
     bool HasBranch(int branchId);
-     Task<List<PermissionsDto>> GetBranchesAsync();
+    Task<List<PermissionsDto>> GetBranchesAsync();
  }
 public class CurrentUserService : ICurrentUser
 {
     private readonly IUserPermissionsCacheService _cache;
     private List<PermissionsDto>? _branches;
+    private Dictionary<int, string>? _branchNames;
 
     public int UserId { get; }
     public string Username { get; }
@@ -59,5 +61,14 @@ public class CurrentUserService : ICurrentUser
     {
         _branches ??= await _cache.GetAsync(UserId);
         return _branches;
+    }
+
+    public async Task<Dictionary<int, string>> GetBranchNamesAsync()
+    {
+        if (_branchNames is not null) return _branchNames;
+
+        var branches = await GetBranchesAsync(); // reutiliza el cache
+        _branchNames = branches.ToDictionary(p => p.BranchId, p => p.BranchName);
+        return _branchNames;
     }
 }

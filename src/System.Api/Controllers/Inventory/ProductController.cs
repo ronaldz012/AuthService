@@ -28,13 +28,20 @@ namespace System.Api.Controllers.Inventory
         [RequireBranch]
         public async Task<IActionResult> GetProducts([FromQuery] ProductQueryDto request)
         {
-            return await productUseCases.GetProducts.Execute(request).ToValueOrProblemDetails();
+            return await productUseCases.ListProducts.Execute(request).ToValueOrProblemDetails();
         }
 
         [HttpGet("Search")]
         public async Task<IActionResult> SearchProduct([FromQuery] string request)
         {
             return await productUseCases.SearchProducts.Execute(request).ToValueOrProblemDetails();
+        }
+
+        [HttpGet("{id:int}")]
+        [Authorize]
+        public async Task<IActionResult> GetProduct([FromRoute] int id)
+        {
+            return await productUseCases.ProductDetails.Execute(id).ToValueOrProblemDetails();
         }
     }
 }

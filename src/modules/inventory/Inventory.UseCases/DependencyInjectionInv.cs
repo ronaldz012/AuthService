@@ -14,10 +14,11 @@ public  static class DependencyInjectionInv
     {
         services.AddScoped<ProductUseCases>()
             .AddScoped<CreateProduct>()
-            .AddScoped<GetProducts>()
+            .AddScoped<ListProducts>()
             .AddScoped<SearchProduct>()
             .AddScoped<ValidateProducts>()
-            .AddScoped<ValidateProductVariants>();
+            .AddScoped<ValidateProductVariants>()
+            .AddScoped<ProductDetails>();
         
         services.AddScoped<CategoryUseCases>()
             .AddScoped<CreateCategory>()

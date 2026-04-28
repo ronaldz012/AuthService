@@ -9,7 +9,7 @@ using Shared.Services;
 
 namespace Inventory.UseCases.Products;
 
-public class GetProducts(InvDbContext context, ICurrentUser currentUser)
+public class ListProducts(InvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<PagedResultDto<ListProductDto>>> Execute(ProductQueryDto queryDto)
     {
