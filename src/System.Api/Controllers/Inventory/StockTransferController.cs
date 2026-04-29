@@ -34,6 +34,12 @@ namespace System.Api.Controllers.Inventory
         {
             return await useCases.StockTransferDetails.Execute(transferId).ToValueOrProblemDetails();
         }
+
+        [HttpPatch("{transferId:int}")]
+        public async Task<IActionResult>  CancelStockTransfer([FromRoute] int transferId)
+        {
+            return await useCases.CancelStockTransfer.Execute(transferId).ToValueOrProblemDetails();
+        }
         
     }
 }
