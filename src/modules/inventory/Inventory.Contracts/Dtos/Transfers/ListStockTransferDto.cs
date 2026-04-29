@@ -1,0 +1,26 @@
+using Inventory.Data.Entities.Transfers;
+using Shared.Extensions;
+
+namespace Inventory.Contracts.Dtos.Transfers;
+
+public class ListStockTransferDto
+{
+    public int Id { get; set; }
+    public TransferDirection Direction { get; set; }
+    public string CounterpartBranchName { get; set; } = string.Empty;
+    public string RequesterName { get; set; } = string.Empty;
+    public TransferStatus Status { get; set; }
+    public int TotalItems { get; set; }      // count de items distintos
+    public int TotalQuantity { get; set; }   // suma de QuantityRequested
+
+    public DateTime CreatedAt { get; set; }
+    public DateTime? ResolvedAt { get; set; }
+}
+public enum TransferDirection {Inbound, Outbound}
+
+public class StockTransferQueryDto : GenericPaginationQueryDto
+{
+    public List<TransferStatus>? Status { get; set; } = [];
+    public TransferDirection?  Direction { get; set; }
+    
+}

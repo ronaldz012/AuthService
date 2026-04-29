@@ -3,4 +3,5 @@ namespace Inventory.UseCases.Transfers;
 public record StockTransferUseCases(CreateStockTransfer CreateStockTransfer, 
     ResolveStockTransfer ResolveStockTransfer, 
     StockTransferDetails StockTransferDetails,
-    CancelStockTransfer CancelStockTransfer);
+    CancelStockTransfer CancelStockTransfer,
+    ListStockTransfers ListStockTransfers);

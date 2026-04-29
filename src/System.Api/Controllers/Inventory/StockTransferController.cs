@@ -12,7 +12,12 @@ namespace System.Api.Controllers.Inventory
     [Authorize]
     public class StockTransferController(StockTransferUseCases useCases) : ControllerBase
     {
-
+        [HttpGet]
+        public async Task<IActionResult> LisStockTransfers([FromQuery] StockTransferQueryDto queryDto)
+        {
+            return await useCases.ListStockTransfers.Execute(queryDto).ToValueOrProblemDetails();
+        }
+        
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> CreateStockTransfer([FromBody ]CreateStockTransferDto createStockTransferDto)
@@ -30,12 +35,12 @@ namespace System.Api.Controllers.Inventory
         }
         [HttpGet("{transferId:int}")]
         [Authorize]
-        public async Task<IActionResult> GetStockTrasnferDeatails([FromRoute] int transferId)
+        public async Task<IActionResult> GetStockTransferDetails([FromRoute] int transferId)
         {
             return await useCases.StockTransferDetails.Execute(transferId).ToValueOrProblemDetails();
         }
 
-        [HttpPatch("{transferId:int}")]
+        [HttpPatch("Cancel/{transferId:int}")]
         public async Task<IActionResult>  CancelStockTransfer([FromRoute] int transferId)
         {
             return await useCases.CancelStockTransfer.Execute(transferId).ToValueOrProblemDetails();
