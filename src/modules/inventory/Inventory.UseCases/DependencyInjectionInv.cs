@@ -38,7 +38,8 @@ public  static class DependencyInjectionInv
             .AddScoped<CreateStockTransfer>()
             .AddScoped<ResolveStockTransfer>()
             .AddScoped<StockTransferDetails>()
-            .AddScoped<CancelStockTransfer>();
+            .AddScoped<CancelStockTransfer>()
+            .AddScoped<ListStockTransfers>();
         return services;
     }
 }
