@@ -8,7 +8,7 @@ public class StockTransfer : Params
     public int FromBranchId { get; set; }
     public int ToBranchId { get; set; }
     public int RequestedByUserId { get; set; }  
-    public int? AcceptedByUserId { get; set; }
+    public int? ResolvedByUserId { get; set; }
     public TransferStatus Status { get; set; } = TransferStatus.Pending;
     public string? Notes { get; set; }
     public DateTime? ResolvedAt { get; set; }
@@ -20,7 +20,7 @@ public class StockTransfer : Params
             throw new InvalidOperationException("Only pending transfers can be accepted");
 
         Status = TransferStatus.Completed;
-        AcceptedByUserId = userId;
+        ResolvedByUserId = userId;
         ResolvedAt = DateTime.UtcNow;
         if (notes != null) Notes = notes;
     }
@@ -31,7 +31,7 @@ public class StockTransfer : Params
             throw new InvalidOperationException("Only pending transfers can be rejected");
 
         Status = TransferStatus.Rejected;
-        AcceptedByUserId = userId;
+        ResolvedByUserId = userId;
         ResolvedAt = DateTime.UtcNow;
         if (notes != null) Notes = notes;
     }

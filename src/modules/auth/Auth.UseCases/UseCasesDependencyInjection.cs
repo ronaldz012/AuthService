@@ -25,7 +25,8 @@ public static class UseCasesDependencyInjection
                     .AddUsersUseCases()
                     .AddMapper()
                     .AddServices()
-                    .AddScoped<ICurrentUser, CurrentUserService>();
+                    .AddScoped<ICurrentUser, CurrentUserService>()
+                    .AddScoped<IUserIntegrationService, UserIntegrationService>();
     static IServiceCollection AddServices(this IServiceCollection services)
     => services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 

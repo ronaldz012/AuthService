@@ -14,19 +14,26 @@ namespace System.Api.Controllers.Inventory
     {
 
         [HttpPost]
-        [RequireBranch]
+        [Authorize]
         public async Task<IActionResult> CreateStockTransfer([FromBody ]CreateStockTransferDto createStockTransferDto)
         {
             return await  useCases.CreateStockTransfer.Execute(createStockTransferDto).ToValueOrProblemDetails();
         }
 
         [HttpPost("{transferId:int}")] 
-        [RequireBranch]
+        [Authorize]
         public async Task<IActionResult> ResolveStockTransfer([FromRoute] int transferId, [FromBody] ResolveStockTransferDto resolveStockTransferDto)
         {
             return await useCases.ResolveStockTransfer
                 .Execute(transferId, resolveStockTransferDto)
                 .ToValueOrProblemDetails();
         }
+        [HttpGet("{transferId:int}")]
+        [Authorize]
+        public async Task<IActionResult> GetStockTrasnferDeatails([FromRoute] int transferId)
+        {
+            return await useCases.StockTransferDetails.Execute(transferId).ToValueOrProblemDetails();
+        }
+        
     }
 }

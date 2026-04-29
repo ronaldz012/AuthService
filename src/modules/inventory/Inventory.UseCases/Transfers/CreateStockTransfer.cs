@@ -8,9 +8,9 @@ using Shared.Services;
 
 namespace Inventory.UseCases.Transfers;
 
-public class CreateStockTransfer(InvDbContext context,ICurrentUser currentUser)
+public class CreateStockTransfer(InvDbContext context, ICurrentUser currentUser)
 {
-     public async Task<Result<StockTransferDetailDto>> Execute(CreateStockTransferDto dto)
+    public async Task<Result<bool>> Execute(CreateStockTransferDto dto)
     {
         var fromBranchId = currentUser.BranchIds[0];
 
@@ -54,28 +54,7 @@ public class CreateStockTransfer(InvDbContext context,ICurrentUser currentUser)
 
         context.StockTransfers.Add(transfer);
         await context.SaveChangesAsync();
-
-        return await context.StockTransfers
-            .Where(t => t.Id == transfer.Id)
-            .Select(t => new StockTransferDetailDto
-            {
-                Id = t.Id,
-                FromBranchId = t.FromBranchId,
-                ToBranchId = t.ToBranchId,
-                RequestedByUserId = t.RequestedByUserId,
-                Status = t.Status,
-                Notes = t.Notes,
-                CreatedAt = t.CreatedAt,
-                Items = t.Items.Select(i => new StockTransferItemDetailDto
-                {
-                    ProductVariantId = i.ProductVariantId,
-                    ProductName = i.ProductVariant.Product.Name,
-                    VariantDescription = i.ProductVariant.Description,
-                    Size = i.ProductVariant.Size,
-                    Color = i.ProductVariant.Color,
-                    QuantityRequested = i.QuantityRequested
-                }).ToList()
-            })
-            .FirstAsync();
+        return true;
+        
     }
 }
