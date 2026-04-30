@@ -16,11 +16,10 @@ public class ListStockTransferDto
     public DateTime CreatedAt { get; set; }
     public DateTime? ResolvedAt { get; set; }
 }
-public enum TransferDirection {Inbound, Outbound}
 
 public class StockTransferQueryDto : GenericPaginationQueryDto
 {
     public List<TransferStatus>? Status { get; set; } = [];
-    public TransferDirection?  Direction { get; set; }
-    
+    public TransferDirection? Direction { get; set; }
+
 }
