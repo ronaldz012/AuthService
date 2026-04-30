@@ -9,7 +9,7 @@ using Shared.Services;
 
 namespace Inventory.UseCases.Transfers;
 
-public class ResolveStockTransfer(InvDbContext context, ICurrentUser  currentUser)
+public class ResolveStockTransfer(InvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<bool>> Execute(int transferId, ResolveStockTransferDto dto)
     {
@@ -29,7 +29,7 @@ public class ResolveStockTransfer(InvDbContext context, ICurrentUser  currentUse
         if (transfer.Status != TransferStatus.Pending)
             return new Error("INVALID_OPERATION", $"Transfer is already {transfer.Status}");
 
-        if (!dto.Accepted)
+        if (!dto.Complete)
         {
             transfer.Reject(currentUser.UserId, dto.Notes);
             await context.SaveChangesAsync();
@@ -72,8 +72,8 @@ public class ResolveStockTransfer(InvDbContext context, ICurrentUser  currentUse
                     currentUser.UserId,
                     item.QuantityRequested
                 );
-                context.StockMovements.Add(movOut);
-                context.StockMovements.Add(movIn);
+                transfer.StockMovements.Add(movIn);
+                transfer.StockMovements.Add(movOut);
             }
 
             await context.SaveChangesAsync();
@@ -87,6 +87,6 @@ public class ResolveStockTransfer(InvDbContext context, ICurrentUser  currentUse
 
         return true;
     }
-    
+
 
 }

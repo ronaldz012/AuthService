@@ -17,13 +17,13 @@ namespace System.Api.Controllers.Inventory
         {
             return await useCases.ListStockTransfers.Execute(queryDto).ToValueOrProblemDetails();
         }
-        
+
         [HttpPost]
-        public async Task<IActionResult> CreateStockTransfer([FromBody ]CreateStockTransferDto createStockTransferDto)
+        public async Task<IActionResult> CreateStockTransfer([FromBody] CreateStockTransferDto createStockTransferDto)
         {
-            return await  useCases.CreateStockTransfer.Execute(createStockTransferDto).ToValueOrProblemDetails();
+            return await useCases.CreateStockTransfer.Execute(createStockTransferDto).ToValueOrProblemDetails();
         }
-        [HttpPost("{transferId:int}")] 
+        [HttpPost("Resolve/{transferId:int}")]
         public async Task<IActionResult> ResolveStockTransfer([FromRoute] int transferId, [FromBody] ResolveStockTransferDto resolveStockTransferDto)
         {
             return await useCases.ResolveStockTransfer
@@ -37,10 +37,10 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpPatch("Cancel/{transferId:int}")]
-        public async Task<IActionResult>  CancelStockTransfer([FromRoute] int transferId)
+        public async Task<IActionResult> CancelStockTransfer([FromRoute] int transferId)
         {
             return await useCases.CancelStockTransfer.Execute(transferId).ToValueOrProblemDetails();
         }
-        
+
     }
 }

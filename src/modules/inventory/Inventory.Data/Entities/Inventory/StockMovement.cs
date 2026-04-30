@@ -1,5 +1,6 @@
 ﻿using Inventory.Data.Entities.Products;
 using Inventory.Data.Entities.Shared.Base;
+using Inventory.Data.Entities.Transfers;
 
 namespace Inventory.Data.Entities.Inventory;
 
@@ -13,10 +14,13 @@ public class StockMovement : Params
     public string Notes { get; set; } = string.Empty;
     public MovementType MovementType { get; set; }
     public int? TransferToBranchId { get; set; }
-    public int? RelatedMovementId { get; set; }
+    public int? stockTransferId { get; set; }
+
+    public StockTransfer? StockTransfer { get; set; }
+    //public int? RelatedMovementId { get; set; }
 
     public ProductVariant ProductVariant { get; set; } = null!;
-    public StockMovement? RelatedMovement { get; set; }
+    //public StockMovement? RelatedMovement { get; set; }
 
     // Ingreso por recepción
     public static StockMovement CreateReception(int branchId, int productVariantId, int userId, decimal quantity, string? notes = null)
@@ -103,12 +107,8 @@ public class StockMovement : Params
             UserId = userId,
             Quantity = quantity,
             MovementType = MovementType.TransferIn,
-            RelatedMovement = transferOut, // EF resuelve el Id
             Notes = notes ?? string.Empty
         };
-
-        transferOut.RelatedMovement = transferIn;
-
         return (transferOut, transferIn);
     }
 }

@@ -9,20 +9,20 @@ namespace Inventory.Data.Persistence;
 
 public class InvDbContext(DbContextOptions<InvDbContext> options) : DbContext(options)
 {
-    public DbSet<Product>  Products { get; set; }
+    public DbSet<Product> Products { get; set; }
     public DbSet<ProductVariant> ProductVariants { get; set; }
     public DbSet<BranchInventory> BranchInventories { get; set; }
-    
-    public DbSet<Category>  Categories { get; set; }
-    public DbSet<Provider>  Providers { get; set; }
-    public DbSet<Brand>  Brands { get; set; }
-    public DbSet<StockReception>  StockReceptions { get; set; }
-    public DbSet<StockReceptionItem>  StockReceptionItems { get; set; }
-    
-    public DbSet<StockMovement>  StockMovements { get; set; }
-    
+
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Provider> Providers { get; set; }
+    public DbSet<Brand> Brands { get; set; }
+    public DbSet<StockReception> StockReceptions { get; set; }
+    public DbSet<StockReceptionItem> StockReceptionItems { get; set; }
+
+    public DbSet<StockMovement> StockMovements { get; set; }
+
     public DbSet<StockTransfer> StockTransfers { get; set; }
-    public DbSet<StockTransferItem>  StockTransferItems { get; set; }
+    public DbSet<StockTransferItem> StockTransferItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,7 +50,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options) : DbContext(op
                 entity.HasOne(p => p.Category)
                     .WithMany(c => c.Products)
                     .HasForeignKey(p => p.CategoryId);
-                
+
                 entity.Property(p => p.CategoryId)
                     .IsRequired()
                     .HasDefaultValue(1);
@@ -58,7 +58,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options) : DbContext(op
                 entity.HasOne(p => p.Brand)
                     .WithMany(b => b.Products)
                     .HasForeignKey(p => p.BrandId);
-                
+
                 entity.Property(p => p.BrandId)
                     .IsRequired()
                     .HasDefaultValue(1);
@@ -69,7 +69,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options) : DbContext(op
             entity.HasMany(pv => pv.BranchInventories)
                 .WithOne(inv => inv.ProductVariant)
                 .HasForeignKey(inv => inv.ProductVariantId);
-            
+
             entity.HasMany(pv => pv.StockMovements)
                 .WithOne(inv => inv.ProductVariant)
                 .HasForeignKey(inv => inv.ProductVariantId);
@@ -77,14 +77,14 @@ public class InvDbContext(DbContextOptions<InvDbContext> options) : DbContext(op
                 .WithOne(ti => ti.ProductVariant)
                 .HasForeignKey(ti => ti.ProductVariantId);
         });
-        
+
         //RECEPTIONS
         modelBuilder.Entity<StockReception>(entity =>
             {
-                    entity.HasMany(r => r.Items)
-                        .WithOne(i => i.StockReception)
-                        .HasForeignKey(i => i.StockReceptionId);
-                    
+                entity.HasMany(r => r.Items)
+                    .WithOne(i => i.StockReception)
+                    .HasForeignKey(i => i.StockReceptionId);
+
             }
         );
 
@@ -96,9 +96,9 @@ public class InvDbContext(DbContextOptions<InvDbContext> options) : DbContext(op
         });
         modelBuilder.Entity<StockMovement>(entity =>
         {
-            entity.HasOne(sm => sm.RelatedMovement)
-                .WithOne()
-                .HasForeignKey<StockMovement>(sm => sm.RelatedMovementId)
+            entity.HasOne(sm => sm.StockTransfer)
+                .WithMany(st => st.StockMovements)
+                .HasForeignKey(sm => sm.stockTransferId)
                 .IsRequired(false);
         });
 
