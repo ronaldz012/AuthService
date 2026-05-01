@@ -19,7 +19,6 @@ public class GetReception(InvDbContext context, ICurrentUser currentUser)
                 Id = r.Id,
                 BranchId = r.BranchId,
                 ReceivedAt = r.ReceivedAt,
-                CanRollBack = r.ReceivedAt > DateTime.UtcNow.AddDays(-1),
                 Notes = r.Notes,
                 Status = r.Status,
                 TotalCost = r.Items.Sum(i => i.UnitCost * i.QuantityReceived),
@@ -61,13 +60,26 @@ public class GetReception(InvDbContext context, ICurrentUser currentUser)
             itemsActualStock.TryGetValue(item.ProductVariantId, out var currentStock);
             if (currentStock < item.QuantityReceived)
             {
+                reception.ReasonCannotRollback = "NOT_ENOUGH_STOCK";
                 hasEnoughStock = false;
                 break;
             }
         }
 
-        reception.CanRollBack = reception.CanRollBack && hasEnoughStock;
-
+        if (reception.ReceivedAt < DateTime.Now.AddDays(-1))
+        {
+            reception.CanRollBack = false;
+            reception.ReasonCannotRollback = "OUTDATED";
+        }
+        else if (!hasEnoughStock)
+        {
+            reception.CanRollBack = false;
+            reception.ReasonCannotRollback = "NOT_ENOUGH_STOCK";
+        }
+        else
+        {
+            reception.CanRollBack = true;
+        }
         return reception;
         
 
