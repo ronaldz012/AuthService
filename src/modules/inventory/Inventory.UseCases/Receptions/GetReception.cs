@@ -16,6 +16,7 @@ public class GetReception(InvDbContext context)
                 Id = r.Id,
                 BranchId = r.BranchId,
                 ReceivedAt = r.ReceivedAt,
+                CanRollBack = r.ReceivedAt > DateTime.UtcNow.AddDays(-1),
                 Notes = r.Notes,
                 Status = r.Status,
                 TotalCost = r.Items.Sum(i => i.UnitCost * i.QuantityReceived),

@@ -40,7 +40,7 @@ public class CreateReceptionUc(InvDbContext context, ProductUseCases productUseC
         var newProductsReceptionDto = dto.Items.Where(x => !x.ProductId.HasValue).ToList();
         // INIT ATOMIC OPERATION - notes: transaction is useless ok?
         await using var transaction = await context.Database.BeginTransactionAsync();
-        var newReception = new StockReception() { BranchId = dto.BranchId, Notes = dto.Notes };
+        var newReception = new StockReception() { BranchId = dto.BranchId, Notes = dto.Notes, ReceivedAt = DateTime.UtcNow };
         var stockMovements = new List<StockMovement>();
         try
         {

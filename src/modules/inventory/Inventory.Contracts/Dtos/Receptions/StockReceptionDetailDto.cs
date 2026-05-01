@@ -8,6 +8,7 @@ public class StockReceptionDetailDto
 {
     public int Id { get; set; }
     public int BranchId { get; set; }
+    public bool CanRollBack { get; set; }
     public DateTime ReceivedAt { get; set; }
     public string? Notes { get; set; }
     public ReceptionStatus Status { get; set; }
