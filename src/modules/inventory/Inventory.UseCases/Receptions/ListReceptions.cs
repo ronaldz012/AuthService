@@ -25,7 +25,6 @@ public class ListReceptions(InvDbContext context, ICurrentUser currentUser)
                 Id = r.Id,
                 BranchId = r.BranchId,
                 ReceivedAt = r.ReceivedAt,
-                CanRollback = r.ReceivedAt > DateTime.UtcNow.AddDays(-1),
                 Status = r.Status,
                 TotalItems = r.Items.Sum(x => x.QuantityReceived),
                 ProductVariantsCount = r.Items.Count,
