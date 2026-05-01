@@ -1,3 +1,4 @@
+using Auth.Contracts.Interfaces;
 using Inventory.Contracts.Dtos.Receptions;
 using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -5,12 +6,14 @@ using Shared.Result;
 
 namespace Inventory.UseCases.Receptions;
 
-public class GetReception(InvDbContext context)
+public class GetReception(InvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<StockReceptionDetailDto>> Execute(int id)
     {
+        var currentBranch = currentUser.BranchIds[0];
+       
         var reception =  await context.StockReceptions
-            .Where(r => r.Id == id)
+            .Where(r => r.Id == id &&  r.BranchId == currentBranch)
             .Select(r => new StockReceptionDetailDto
             {
                 Id = r.Id,
@@ -36,7 +39,38 @@ public class GetReception(InvDbContext context)
             .FirstOrDefaultAsync();
         if(reception == null)
             return new Error("NOT_FOUND", "Reception not found");
+        
+        var variantIds = reception.Items.Select(i => i.ProductVariantId).ToList();
+
+        var itemsActualStock = await context.ProductVariants
+            .Where(pv => variantIds.Contains(pv.Id))
+            .Select(pv => new
+            {
+                VariantId = pv.Id,
+                StockInBranch = pv.BranchInventories
+                    .Where(bi => bi.BranchId == currentBranch)
+                    .Select(bi => bi.Stock)
+                    .FirstOrDefault() // Si no existe registro, devuelve 0 automáticamente
+            })
+            .ToDictionaryAsync(x => x.VariantId, x => x.StockInBranch);
+
+        bool hasEnoughStock = true;
+
+        foreach (var item in reception.Items)
+        {
+            itemsActualStock.TryGetValue(item.ProductVariantId, out var currentStock);
+            if (currentStock < item.QuantityReceived)
+            {
+                hasEnoughStock = false;
+                break;
+            }
+        }
+
+        reception.CanRollBack = reception.CanRollBack && hasEnoughStock;
+
         return reception;
+        
+
     }
     
 }
