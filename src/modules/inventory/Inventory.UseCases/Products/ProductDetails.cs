@@ -10,6 +10,7 @@ public class ProductDetails(InvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<ProductDetailDto>> Execute(int productId)
     {
+        var currentBranch = currentUser.BranchIds[0];
         var branchNames = await currentUser.GetBranchNamesAsync();
 
         var result = await context.Products.Select(p => new ProductDetailDto
@@ -30,23 +31,17 @@ public class ProductDetails(InvDbContext context, ICurrentUser currentUser)
                 Size = pv.Size,
                 Color = pv.Color,
                 Price = pv.Price,
-                Stock = pv.BranchInventories.Where(x => currentUser.BranchIds.Contains(x.BranchId)).Select(x => new StockDto
-                {
-                    BranchId = x.BranchId,
-                    BranchName = branchNames[x.BranchId] ?? string.Empty,
-                    Stock = x.Stock
-                }).ToList()
+                Stock = pv.BranchInventories
+                    .Where(x => x.BranchId == currentBranch)
+                    .Select(x => (int?)x.Stock) // Casteo preventivo a nullable
+                    .FirstOrDefault() ?? 0,
             }).ToList()
         }).FirstOrDefaultAsync(x => x.Id == productId);
-
-        if (result is null) return new Error("NOT_FOUND", "Productos no encontrado");
-
-        foreach (var variant in result.Variants)
-        {
-            variant.StockOfVariantInBranches = variant.Stock.Sum(s => s.Stock);
-        }
-
-        result.TotalStockInBranches = result.Variants.Sum(v => v.StockOfVariantInBranches);
+        
+        
+        if(result is null) return new Error("NOT_FOUND", "Product not found");
+        
+        result.TotalStock = result.Variants.Sum(x => x.Stock);
         return result;
     }
 }

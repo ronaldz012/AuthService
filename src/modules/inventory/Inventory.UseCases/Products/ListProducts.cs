@@ -28,10 +28,13 @@ public class ListProducts(InvDbContext context, ICurrentUser currentUser)
         {
             Id = p.Id,
             Name = p.Name,
+            BrandName = p.Brand.Name,
+            CategoryName = p.Category.Name,
             BasePrice = p.BasePrice,
-            Description = p.Description,
             InternalCode = p.InternalCode,
-            Stock = p.ProductVariants
+
+            VariantsCount = p.ProductVariants.Count,
+            TotalStock = p.ProductVariants
                 .SelectMany(pv => pv.BranchInventories)
                 .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
                 .Sum(bi => bi.Stock),
