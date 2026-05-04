@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Inventory.Data.Entities.Products;
 using Shared.Extensions;
 
 namespace Inventory.Contracts.Dtos.Products;
@@ -19,4 +20,8 @@ public class ListProductDto
 public class ProductQueryDto : GenericPaginationQueryDto
 {
     public int? CategoryId { get; set; }
+    public int? BrandId { get; set; }
+    public Gender? Gender { get; set; }
+    public bool? LowStock { get; set; }
+
 }

@@ -9,7 +9,7 @@ using Shared.Result;
 
 namespace Inventory.UseCases.Transfers;
 
-public class ListStockTransfers(InvDbContext context ,IUserIntegrationService userIntegrationService, ICurrentUser currentUser, IBranchService branchService)
+public class ListStockTransfers(InvDbContext context, IUserIntegrationService userIntegrationService, ICurrentUser currentUser, IBranchService branchService)
 {
     public async Task<Result<PagedResultDto<ListStockTransferDto>>> Execute(StockTransferQueryDto queryDto)
     {
@@ -17,8 +17,14 @@ public class ListStockTransfers(InvDbContext context ,IUserIntegrationService us
 
         IQueryable<StockTransfer> query = context.StockTransfers.AsQueryable();
 
-        if (queryDto.Status is { Count: > 0 })
+        if (queryDto.Status.Count >0)
             query = query.Where(st => queryDto.Status.Contains(st.Status));
+        
+        if(queryDto.DateFrom.HasValue)
+            query = query.Where(st => st.CreatedAt >= queryDto.DateFrom);
+        
+        if(queryDto.DateTo.HasValue)
+            query = query.Where(st => st.CreatedAt <= queryDto.DateTo);
 
         query = queryDto.Direction switch
         {
@@ -55,7 +61,7 @@ public class ListStockTransfers(InvDbContext context ,IUserIntegrationService us
                 PageSize = queryDto.GetPageSizeValue()
             };
 
-        // Llamadas externas con IDs reales
+        // Llamadas externas con Ids reales
         var branchIds = rawTransfers
             .SelectMany(t => new[] { t.FromBranchId, t.ToBranchId })
             .Distinct()
@@ -96,9 +102,10 @@ public class ListStockTransfers(InvDbContext context ,IUserIntegrationService us
             };
         }).ToList();
 
-        return new PagedResultDto<ListStockTransferDto>{
+        return new PagedResultDto<ListStockTransferDto>
+        {
             TotalCount = totalCount,
-            Items =  dtos,
+            Items = dtos,
             Page = queryDto.GetPageValue(),
             PageSize = queryDto.GetPageSizeValue()
         };

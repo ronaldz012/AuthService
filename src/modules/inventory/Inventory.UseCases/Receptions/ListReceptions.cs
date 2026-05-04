@@ -16,6 +16,20 @@ public class ListReceptions(InvDbContext context, ICurrentUser currentUser)
         IQueryable<StockReception> query = context.StockReceptions;
         var branches = currentUser.BranchIds;
 
+        if (queryDto.DateFrom.HasValue)
+            query = query.Where(x => x.ReceivedAt >= queryDto.DateFrom.Value);
+
+        if (queryDto.DateTo.HasValue)
+            query = query.Where(x => x.ReceivedAt <= queryDto.DateTo.Value);
+
+
+        if (queryDto.Status != null)
+            query = query.Where(x => x.Status == queryDto.Status);
+
+        if (queryDto.BrandId != null)
+            query = query.Where(x =>
+                x.Items.Any(i => i.ProductVariant.Product.BrandId == queryDto.BrandId));
+
         var (queryFiltered, totalCount) = query.ApplyFilters(queryDto);
 
 

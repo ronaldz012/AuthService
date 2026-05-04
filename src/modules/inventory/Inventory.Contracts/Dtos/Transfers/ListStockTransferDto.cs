@@ -19,7 +19,9 @@ public class ListStockTransferDto
 
 public class StockTransferQueryDto : GenericPaginationQueryDto
 {
-    public List<TransferStatus>? Status { get; set; } = [];
+    public List<TransferStatus> Status { get; set; } = [];
     public TransferDirection? Direction { get; set; }
+    public DateTime? DateFrom { get; set; }
+    public DateTime? DateTo { get; set; }
 
 }

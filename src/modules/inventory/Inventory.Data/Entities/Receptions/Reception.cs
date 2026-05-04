@@ -37,8 +37,9 @@ public class StockReceptionItem : Params
 
 public enum ReceptionStatus
 {
-    Draft=0,
-    Confirmed=1,
-    Rejected=2
+    Draft = 0,
+    Confirmed = 1,
+    Rejected = 2,
+    Reverted = 3,
 }
 

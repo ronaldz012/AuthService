@@ -10,7 +10,7 @@ public class BranchInventory : Params
     public int ProductVariantId { get; set; }
     public int Stock { get; set; }
     public int MinStock { get; set; }
-    
+
     public ProductVariant ProductVariant { get; set; } = null!;
 
 }

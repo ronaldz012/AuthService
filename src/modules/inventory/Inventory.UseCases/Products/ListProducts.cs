@@ -23,6 +23,15 @@ public class ListProducts(InvDbContext context, ICurrentUser currentUser)
         {
             query = query.Where(x => x.CategoryId == queryDto.CategoryId);
         }
+        if(queryDto.BrandId.HasValue)
+            query = query.Where(x => x.BrandId == queryDto.BrandId);
+
+        if (queryDto.Gender.HasValue)
+        {
+            query = query.Where(x => x.Gender == queryDto.Gender);
+        }
+        //if(queryDto.LowStock.HasValue) PARA IMPLEMENTAR::::
+        
         var (filteredQuery, totalCount) = query.ApplyFilters(queryDto);
         var items = await filteredQuery.Select(p => new ListProductDto()
         {
