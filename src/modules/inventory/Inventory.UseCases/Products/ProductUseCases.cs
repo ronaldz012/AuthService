@@ -5,4 +5,6 @@ public record ProductUseCases(CreateProduct CreateProduct, ListProducts ListProd
     ValidateProductVariants ValidateProductVariants,
     SearchProduct SearchProducts,
     GetProductByCode  GetProductByCode,
-    ProductDetails ProductDetails);
+    ProductDetails ProductDetails,
+    UpdateProduct UpdateProduct,
+    DeleteProduct DeleteProduct);

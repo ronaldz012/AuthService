@@ -1,12 +1,9 @@
 using System.Api.Attributes;
 using System.Api.Filters;
 using System.Api.Result;
-using Inventory.Contracts.Dtos;
 using Inventory.Contracts.Dtos.Products;
-using Inventory.UseCases;
 using Inventory.UseCases.Products;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace System.Api.Controllers.Inventory
@@ -49,6 +46,18 @@ namespace System.Api.Controllers.Inventory
         public async Task<IActionResult> GetVariantProductByCode([FromQuery] string request)
         {
             return await productUseCases.GetProductByCode.Execute(request).ToValueOrProblemDetails();
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto request, [FromRoute] int id)
+        {
+            return await productUseCases.UpdateProduct.Execute(request, id).ToValueOrProblemDetails();
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteProduct([FromRoute] int id)
+        {
+            return await productUseCases.DeleteProduct.Execute(id).ToValueOrProblemDetails();
         }
     }
 }
