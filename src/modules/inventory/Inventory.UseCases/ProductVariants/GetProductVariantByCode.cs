@@ -4,9 +4,9 @@ using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Shared.Result;
 
-namespace Inventory.UseCases.Products;
+namespace Inventory.UseCases.ProductVariants;
 
-public class GetProductByCode(InvDbContext context, ICurrentUser currentUser)
+public class GetProductVariantByCode(InvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<ProductVariantBySkuDto>> Execute(string skuRequested)
     {

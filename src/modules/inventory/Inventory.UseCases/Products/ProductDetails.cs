@@ -20,8 +20,10 @@ public class ProductDetails(InvDbContext context, ICurrentUser currentUser)
             InternalCode = p.InternalCode,
             Description = p.Description,
             BasePrice = p.BasePrice,
-            Gender = p.Gender.ToString(),
+            Gender = p.Gender,
+            CategoryId = p.CategoryId,
             CategoryName = p.Category.Name,
+            BrandId = p.BrandId,
             BrandName = p.Brand.Name,
             Variants = p.ProductVariants.Select(pv => new ProductVariantDetailDto
             {
@@ -37,10 +39,10 @@ public class ProductDetails(InvDbContext context, ICurrentUser currentUser)
                     .FirstOrDefault() ?? 0,
             }).ToList()
         }).FirstOrDefaultAsync(x => x.Id == productId);
-        
-        
-        if(result is null) return new Error("NOT_FOUND", "Product not found");
-        
+
+
+        if (result is null) return new Error("NOT_FOUND", "Product not found");
+
         result.TotalStock = result.Variants.Sum(x => x.Stock);
         return result;
     }

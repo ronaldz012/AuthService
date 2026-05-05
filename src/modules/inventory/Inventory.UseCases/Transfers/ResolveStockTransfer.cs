@@ -61,8 +61,8 @@ public class ResolveStockTransfer(InvDbContext context, ICurrentUser currentUser
             {
                 var productVariant = productVariants.First(pv => pv.Id == item.ProductVariantId);
 
-                productVariant.UpdateQuantity(-item.QuantityRequested, transfer.FromBranchId);
-                productVariant.UpdateQuantity(item.QuantityRequested, transfer.ToBranchId);
+                productVariant.AddQuantity(-item.QuantityRequested, transfer.FromBranchId);
+                productVariant.AddQuantity(item.QuantityRequested, transfer.ToBranchId);
 
                 // StockMovements
                 var (movOut, movIn) = StockMovement.CreateTransfer(

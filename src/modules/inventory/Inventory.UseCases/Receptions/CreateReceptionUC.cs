@@ -60,7 +60,7 @@ public class CreateReceptionUc(InvDbContext context, ProductUseCases productUseC
 
                     newReception.AddExistingVariant(productVariant!.Id, variantDto.QuantityReceived,
                         variantDto.UnitCost);
-                    productVariant!.UpdateQuantity(variantDto.QuantityReceived, dto.BranchId);
+                    productVariant!.AddQuantity(variantDto.QuantityReceived, dto.BranchId);
                     stockMovements.Add(stockMovement);
                 }
 
@@ -80,7 +80,7 @@ public class CreateReceptionUc(InvDbContext context, ProductUseCases productUseC
                         variantDto.QuantityReceived, null);
 
                     stockMovements.Add(stockMovement);
-                    newPv.UpdateQuantity(variantDto.QuantityReceived, dto.BranchId);
+                    newPv.AddQuantity(variantDto.QuantityReceived, dto.BranchId);
                     newReception.Items.Add(new StockReceptionItem
                     {
                         ProductVariant = newPv,
@@ -118,7 +118,7 @@ public class CreateReceptionUc(InvDbContext context, ProductUseCases productUseC
                     var stockMovement = StockMovement.CreateReceptionForNewVariant(dto.BranchId, newVariant, userId,
                         variantDto.QuantityReceived);
                     stockMovements.Add(stockMovement);
-                    newVariant.UpdateQuantity(variantDto.QuantityReceived, dto.BranchId);
+                    newVariant.AddQuantity(variantDto.QuantityReceived, dto.BranchId);
                     newProduct.ProductVariants.Add(newVariant);
 
                     newReception.Items.Add(new StockReceptionItem

@@ -22,7 +22,6 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet]
-        [RequireBranch]
         public async Task<IActionResult> GetProducts([FromQuery] ProductQueryDto request)
         {
             return await productUseCases.ListProducts.Execute(request).ToValueOrProblemDetails();
@@ -35,18 +34,11 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet("{id:int}")]
-        [Authorize]
         public async Task<IActionResult> GetProduct([FromRoute] int id)
         {
             return await productUseCases.ProductDetails.Execute(id).ToValueOrProblemDetails();
         }
-
-        [HttpGet("productVariant")]
-        [Authorize]
-        public async Task<IActionResult> GetVariantProductByCode([FromQuery] string request)
-        {
-            return await productUseCases.GetProductByCode.Execute(request).ToValueOrProblemDetails();
-        }
+        
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto request, [FromRoute] int id)

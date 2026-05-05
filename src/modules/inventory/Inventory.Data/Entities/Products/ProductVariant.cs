@@ -22,7 +22,7 @@ public class ProductVariant: Params
     public ICollection<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
 
     public ICollection<StockTransferItem> TransferItems { get; set; } = new List<StockTransferItem>();
-    public void UpdateQuantity(int quantity, int branchId)
+    public void AddQuantity(int quantity, int branchId)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
         if (branchInventory == null)
@@ -36,5 +36,21 @@ public class ProductVariant: Params
             BranchInventories.Add(branchInventory);
         }
         branchInventory.Stock += quantity;
+    }
+
+    public void CorrectQuantity(int quantity, int branchId)
+    {
+        var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
+        if (branchInventory == null)
+        {
+            branchInventory = new BranchInventory
+            {
+                BranchId = branchId,
+                ProductVariantId = Id,
+                Stock = quantity,
+            };
+            BranchInventories.Add(branchInventory);
+        }
+        branchInventory.Stock = quantity;
     }
 }

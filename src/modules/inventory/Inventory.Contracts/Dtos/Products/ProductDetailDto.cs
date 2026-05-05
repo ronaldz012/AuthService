@@ -1,3 +1,5 @@
+using Inventory.Data.Entities.Products;
+
 namespace Inventory.Contracts.Dtos.Products;
 
 public class ProductDetailDto
@@ -7,8 +9,10 @@ public class ProductDetailDto
     public string InternalCode { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal BasePrice { get; set; }
-    public string Gender { get; set; } = string.Empty;
+    public Gender Gender { get; set; }
+    public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
+    public int BrandId { get; set; }
     public string BrandName { get; set; } = string.Empty;
     public int TotalStock { get; set; }
 

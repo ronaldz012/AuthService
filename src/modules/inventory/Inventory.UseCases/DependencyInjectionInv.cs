@@ -2,6 +2,7 @@ using Inventory.Data.Entities.Transfers;
 using Inventory.UseCases.Brands;
 using Inventory.UseCases.Categories;
 using Inventory.UseCases.Products;
+using Inventory.UseCases.ProductVariants;
 using Inventory.UseCases.Receptions;
 using Inventory.UseCases.Transfers;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,9 +20,13 @@ public  static class DependencyInjectionInv
             .AddScoped<ValidateProducts>()
             .AddScoped<ValidateProductVariants>()
             .AddScoped<ProductDetails>()
-            .AddScoped<GetProductByCode>()
+            .AddScoped<GetProductVariantByCode>()
             .AddScoped<UpdateProduct>()
             .AddScoped<DeleteProduct>();
+
+        services.AddScoped<ProductVariantUseCases>()
+            .AddScoped<UpdateProductVariant>()
+            .AddScoped<CorrectProductVariantStock>();
         
         services.AddScoped<CategoryUseCases>()
             .AddScoped<CreateCategory>()
