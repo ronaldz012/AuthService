@@ -1,0 +1,116 @@
+using Inventory.Data.Entities.Inventory;
+using Inventory.Data.Entities.Organization;
+using Inventory.Data.Entities.Products;
+using Inventory.Data.Entities.Receptions;
+using Inventory.Data.Entities.Transfers;
+using Microsoft.EntityFrameworkCore;
+using Shared.Data;
+
+namespace Inventory.Data.Persistence;
+
+public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext tenantContext ) : DbContext(options)
+{
+    public DbSet<Product> Products { get; set; }
+    public DbSet<ProductVariant> ProductVariants { get; set; }
+    public DbSet<BranchInventory> BranchInventories { get; set; }
+
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Provider> Providers { get; set; }
+    public DbSet<Brand> Brands { get; set; }
+    public DbSet<StockReception> StockReceptions { get; set; }
+    public DbSet<StockReceptionItem> StockReceptionItems { get; set; }
+
+    public DbSet<StockMovement> StockMovements { get; set; }
+
+    public DbSet<StockTransfer> StockTransfers { get; set; }
+    public DbSet<StockTransferItem> StockTransferItems { get; set; }
+    
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        if (!string.IsNullOrEmpty(tenantContext.Schema))
+        {
+            modelBuilder.HasDefaultSchema(tenantContext.Schema);
+        }
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.HasDefaultSchema(tenantContext.Schema);
+        //SEEDER
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasData(
+                new Category { Id = 1, Name = "Sin categoria" }
+            );
+        });
+
+        modelBuilder.Entity<Brand>(entity =>
+        {
+            entity.HasData(
+                new Brand { Id = 1, Name = "Sin Marca" });
+        });
+        //
+        modelBuilder.Entity<Product>(entity =>
+            {
+                entity.HasMany(product => product.ProductVariants)
+                    .WithOne(variant => variant.Product)
+                    .HasForeignKey(variant => variant.ProductId);
+
+                entity.HasOne(p => p.Category)
+                    .WithMany(c => c.Products)
+                    .HasForeignKey(p => p.CategoryId);
+
+                entity.Property(p => p.CategoryId)
+                    .IsRequired()
+                    .HasDefaultValue(1);
+
+                entity.HasOne(p => p.Brand)
+                    .WithMany(b => b.Products)
+                    .HasForeignKey(p => p.BrandId);
+
+                entity.Property(p => p.BrandId)
+                    .IsRequired()
+                    .HasDefaultValue(1);
+            }
+        );
+        modelBuilder.Entity<ProductVariant>(entity =>
+        {
+            entity.HasMany(pv => pv.BranchInventories)
+                .WithOne(inv => inv.ProductVariant)
+                .HasForeignKey(inv => inv.ProductVariantId);
+
+            entity.HasMany(pv => pv.StockMovements)
+                .WithOne(inv => inv.ProductVariant)
+                .HasForeignKey(inv => inv.ProductVariantId);
+            entity.HasMany(pv => pv.TransferItems)
+                .WithOne(ti => ti.ProductVariant)
+                .HasForeignKey(ti => ti.ProductVariantId);
+        });
+
+        //RECEPTIONS
+        modelBuilder.Entity<StockReception>(entity =>
+            {
+                entity.HasMany(r => r.Items)
+                    .WithOne(i => i.StockReception)
+                    .HasForeignKey(i => i.StockReceptionId);
+
+            }
+        );
+
+        modelBuilder.Entity<StockReceptionItem>(entity =>
+        {
+            entity.HasOne(ri => ri.ProductVariant)
+                .WithMany(pv => pv.StockReceptionItems)
+                .HasForeignKey(pv => pv.ProductVariantId);
+        });
+        modelBuilder.Entity<StockMovement>(entity =>
+        {
+            entity.HasOne(sm => sm.StockTransfer)
+                .WithMany(st => st.StockMovements)
+                .HasForeignKey(sm => sm.stockTransferId)
+                .IsRequired(false);
+        });
+
+
+
+    }
+}
