@@ -27,7 +27,7 @@ public class CurrentUserService : ICurrentUser
     public string? Token { get; }
     public bool IsAuthenticated { get; }
     public IReadOnlyList<int> BranchIds { get; }
-
+    
     public CurrentUserService(
         IHttpContextAccessor httpContextAccessor,
         IUserPermissionsCacheService cache)
@@ -53,15 +53,18 @@ public class CurrentUserService : ICurrentUser
                 .Where(id => id > 0)
                 .ToList()
                 .AsReadOnly();
+        
     }
 
     public bool HasBranch(int branchId) => BranchIds.Contains(branchId);
+    
 
     public async Task<List<PermissionsDto>> GetBranchesAsync()
     {
         _branches ??= await _cache.GetAsync(UserId);
         return _branches;
     }
+
 
     public async Task<Dictionary<int, string>> GetBranchNamesAsync()
     {

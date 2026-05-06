@@ -12,5 +12,8 @@ public class BranchInventory : Params
     public int MinStock { get; set; }
 
     public ProductVariant ProductVariant { get; set; } = null!;
-
+    public bool ValidateQuantity(int quantity)
+    {
+        return Stock >= quantity;
+    }
 }

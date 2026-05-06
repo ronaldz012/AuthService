@@ -1,10 +1,12 @@
 using System;
 using Auth.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using Shared.Data;
+
 
 namespace Auth.Data.Persistence;
 
-public class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(options)
+public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantContext tenantContext) : DbContext(options)
 {
     // DbSets
         public DbSet<User> Users { get; set; }
@@ -19,7 +21,11 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
        
-        modelBuilder.HasDefaultSchema("client1"); // primero esto
+        if (!string.IsNullOrEmpty(tenantContext.Schema))
+        {
+            modelBuilder.HasDefaultSchema(tenantContext.Schema);
+        }
+        
         base.OnModelCreating(modelBuilder);       // luego el base
         
         modelBuilder.Entity<User>(entity =>

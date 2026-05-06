@@ -9,9 +9,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\Shared\Shared.csproj" />
-      <ProjectReference Include="..\..\auth\Auth.Contracts\Auth.Contracts.csproj" />
-      <ProjectReference Include="..\..\inventory\Inventory.Contracts\Inventory.Contracts.csproj" />
-      <ProjectReference Include="..\sales.use\sales.use.csproj" />
     </ItemGroup>
 
     <ItemGroup>

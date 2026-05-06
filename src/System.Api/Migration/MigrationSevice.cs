@@ -1,27 +1,77 @@
-using Microsoft.Extensions.DependencyInjection;
+using Auth.Data.Persistence;
+using Branches.module.Data;
+using Inventory.Data.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using sales.Module.Data;
 using Shared.Data;
 
-namespace Shared.Services;
+namespace System.Api.Migration;
 
-public interface IMigrationService
+public class MigrationService(
+    IServiceScopeFactory scopeFactory, 
+    IConfiguration configuration)
 {
-    Task MigrateTenantAsync(string schema);
-}
-
-public class MigrationService(IServiceScopeFactory scopeFactory) : IMigrationService
-{
-    public async Task MigrateTenantAsync(string schema)
+    public async Task MigrateAuthTenantAsync(string schema)
     {
-        using var scope = scopeFactory.CreateScope();
-        
-        // 1. Forzamos el esquema en el TenantContext del scope actual
-        var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
-        tenantContext.Schema = schema;
+        var tenantConnection = GetTenantConnection(schema);
+        var options = new DbContextOptionsBuilder<AuthDbContext>()
+            .UseNpgsql(tenantConnection, x =>
+                x.MigrationsHistoryTable("__EFMigrationsHistory_auth", schema)).Options;
 
-        // 2. Obtenemos el DbContext (que leerá el esquema que acabamos de setear)
-        var dbContext = scope.ServiceProvider.GetRequiredService<SalesDbContext>();
-
-        // 3. Ejecutamos la migración
+        await using var dbContext = new AuthDbContext(options, new DesignTimeTenantContext());
         await dbContext.Database.MigrateAsync();
+    }
+
+    public async Task MigrateBranchTenantAsync(string schema)
+    {
+        var tenantConnection = GetTenantConnection(schema);
+        var options = new DbContextOptionsBuilder<BranchDbContext>()
+            .UseNpgsql(tenantConnection, x =>
+                x.MigrationsHistoryTable("__EFMigrationsHistory_branches", schema)).Options;
+
+        await using var dbContext = new BranchDbContext(options, new DesignTimeTenantContext());
+        await dbContext.Database.MigrateAsync();
+    }
+
+    public async Task MigrateInvTenantAsync(string schema)
+    {
+        var tenantConnection = GetTenantConnection(schema);
+        var options = new DbContextOptionsBuilder<InvDbContext>()
+            .UseNpgsql(tenantConnection, x =>
+                x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", schema)).Options;
+
+        await using var dbContext = new InvDbContext(options, new DesignTimeTenantContext());
+        await dbContext.Database.MigrateAsync();
+    }
+
+    public async Task MigrateSalesTenantAsync(string schema)
+    {
+        var tenantConnection = GetTenantConnection(schema);
+        var options = new DbContextOptionsBuilder<SalesDbContext>()
+            .UseNpgsql(tenantConnection, x =>
+                x.MigrationsHistoryTable("__EFMigrationsHistory_sales", schema)).Options;
+
+        await using var dbContext = new SalesDbContext(options, new DesignTimeTenantContext());
+        await dbContext.Database.MigrateAsync();
+    }
+
+    private string GetTenantConnection(string schema)
+    {
+        var baseConnection = configuration.GetConnectionString("DefaultConnection")!;
+        
+        // Crear el schema si no existe
+        using (var conn = new NpgsqlConnection(baseConnection))
+        {
+            conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = $"CREATE SCHEMA IF NOT EXISTS \"{schema}\"";
+            cmd.ExecuteNonQuery();
+        }
+
+        return new NpgsqlConnectionStringBuilder(baseConnection)
+        {
+            SearchPath = schema
+        }.ConnectionString;
     }
 }

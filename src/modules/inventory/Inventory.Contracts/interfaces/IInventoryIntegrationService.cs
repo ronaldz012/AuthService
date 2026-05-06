@@ -2,7 +2,7 @@ using Shared.Result;
 
 namespace Inventory.Contracts.interfaces;
 
-public interface IInventoryServiceIntegration
+public interface IInventoryIntegrationService
 {
     Task<Result<List<ProductVariantStockDto>>> GetVariantsWithStock(
         List<int> variantIds, int branchId);

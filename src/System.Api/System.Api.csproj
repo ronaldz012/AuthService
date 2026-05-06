@@ -30,6 +30,9 @@
     <ProjectReference Include="..\modules\inventory\Inventory.Data\Inventory.Data.csproj" />
     <ProjectReference Include="..\modules\inventory\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />
     <ProjectReference Include="..\modules\inventory\Inventory.UseCases\Inventory.UseCases.csproj" />
+    <ProjectReference Include="..\modules\sales\sales.Contracts\sales.Contracts.csproj" />
+    <ProjectReference Include="..\modules\sales\sales.Data\sales.Data.csproj" />
+    <ProjectReference Include="..\modules\sales\sales.UseCases\sales.UseCases.csproj" />
   </ItemGroup>
 
 </Project>

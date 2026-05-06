@@ -1,5 +1,7 @@
+using System.Api.Data;
 using System.Api.Filters;
 using System.Api.Middlewares;
+using System.Api.Migration;
 using System.Api.Result;
 using System.Text;
 using Auth.Data;
@@ -16,9 +18,16 @@ using Inventory.UseCases;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using sales.Module.Data;
+using sales.UseCases;
 using Shared;
+using Shared.Data;
+using Shared.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -49,6 +58,13 @@ builder.Services.AddSwaggerGen(c =>
     Name = "X-Branch-Id",
     Description = "IDs de sucursal separados por coma. Ejemplo: `1,2,3`"
   });
+  c.AddSecurityDefinition("Tenant", new OpenApiSecurityScheme  // "Tenant"
+  {
+    Type = SecuritySchemeType.ApiKey,
+    In = ParameterLocation.Header,
+    Name = "X-Tenant",
+    Description = "Schema del tenant. Ejemplo: `client1`"
+  });
 
   // ── Ambos requeridos globalmente ─────────────────────────────
   c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -74,7 +90,19 @@ builder.Services.AddSwaggerGen(c =>
                 }
             },
             Array.Empty<string>()
+        },
+        {
+          new OpenApiSecurityScheme
+          {
+            Reference = new OpenApiReference
+            {
+              Type = ReferenceType.SecurityScheme,
+              Id = "Tenant"  // mismo nombre
+            }
+          },
+          Array.Empty<string>()
         }
+        
     });
 
   // ── Bearer estándar (para el candado verde) ──────────────────
@@ -123,14 +151,44 @@ builder.Services.AddAuthentication(options =>
   };
 });
 
-// Add DbContext configuration
-builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("AuthConnection")));
 
-builder.Services.AddDbContext<BranchDbContext>(options =>
-  options.UseNpgsql(builder.Configuration.GetConnectionString("BranchConnection")));
-builder.Services.AddDbContext<InvDbContext>(options =>
-  options.UseNpgsql(builder.Configuration.GetConnectionString("InventoryConnection")));
+var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
+
+builder.Services.AddScoped<ITenantContext, TenantContext>();
+builder.Services.AddDbContext<AuthDbContext>((sp, options) =>
+{
+  options.UseNpgsql(defaultConnection,
+    x => x.MigrationsHistoryTable("__EFMigrationsHistory_auth", null));
+});
+
+builder.Services.AddDbContext<BranchDbContext>((sp, options) =>
+{
+  options.UseNpgsql(defaultConnection,
+    x => x.MigrationsHistoryTable("__EFMigrationsHistory_branches", null));
+});
+
+builder.Services.AddDbContext<InvDbContext>((sp, options) =>
+{
+  options.UseNpgsql(defaultConnection,
+    x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", null));
+});
+
+builder.Services.AddScoped<ITenantContext, TenantContext>();
+
+builder.Services.AddDbContext<SalesDbContext>((sp, options) =>
+{
+
+  var tenantContext = sp.GetRequiredService<ITenantContext>();
+
+  options.UseNpgsql(defaultConnection, x =>
+    x.MigrationsHistoryTable("__EFMigrationsHistory_sales", tenantContext.Schema));
+
+});
+
+builder.Services.Configure<TenantOptions>(
+  builder.Configuration.GetSection(TenantOptions.Section));
+
+
 
 builder.Services.AddControllers(options =>
 {
@@ -147,10 +205,13 @@ builder.Services.AddAuthData()
                 .AddInfrastructure(builder.Configuration)
                 .AddShared(builder.Configuration)
                 .AddBranch(builder.Configuration)
-                .AddInventory();
+                .AddInventory()
+                .AddSales();
 //EXTRAER en un DI
 builder.Services.AddSignalR();
 builder.Services.AddScoped<InventorySignalRStockNotifier>();   // tu notifier
+builder.Services.AddScoped<MigrationService>();
+builder.Services.AddScoped<TenantMigrationOrchestrator>();
 //
 builder.Services.AddCors(options =>
 {
@@ -177,6 +238,7 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<TenantMiddleware>();
 app.UseMiddleware<BranchMiddleware>();
 app.MapControllers();
 app.Run();

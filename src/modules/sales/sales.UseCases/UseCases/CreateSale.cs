@@ -1,71 +1,80 @@
 using Auth.Contracts.Interfaces;
-using Inventory.Contracts.Dtos.Sales;
-using Inventory.Data.Entities.Inventory;
-using Inventory.Data.Entities.sales;
-using Inventory.Data.Persistence;
-using Inventory.Data.Persistence.Migrations;
-using Microsoft.EntityFrameworkCore;
+using Inventory.Contracts.interfaces;
+using sales.Contracts.dtos;
+using sales.Module.Data;
+using sales.use.Entities;
 using Shared.Result;
 
-public class CreateSale(InvDbContext context, ICurrentUser currentUser)
+namespace sales.UseCases.UseCases;
+
+public class CreateSale(SalesDbContext context, ICurrentUser currentUser, IInventoryIntegrationService inventoryService)
 {
-    public async Task<Result<bool>> Execute(CreateSaleDto createSaleDto)
+    public async Task<Result<bool>> Execute(CreateSaleDto dto)
     {
-        var currentBranch = currentUser.BranchIds[0];
-        var productIds = createSaleDto.Items.Select(i => i.ProductVariantId).ToList();
+        var branchId = currentUser.BranchIds[0];
+        var variantIds = dto.Items.Select(i => i.ProductVariantId).Distinct().ToList();
 
+        var stockResult = await inventoryService.GetVariantsWithStock(variantIds, branchId);
+        if (!stockResult.IsSuccess) return stockResult.Error;
 
-        var productVariants = await context.ProductVariants
-            .Include(pv => pv.BranchInventories.FirstOrDefault(bi => bi.BranchId == currentBranch))
-            .Where(pv => productIds.Contains(pv.Id))
-            .ToListAsync();
-
-        // 2. Validaciones iniciales
-        if (productVariants.Count != productIds.Distinct().Count())
+        var variants = stockResult.Value;
+        if (variants.Count != variantIds.Count)
             return new Error("NOT_FOUND", "Uno o más productos no existen");
 
-        var sale = new Sale
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        try
         {
-            BranchId = currentBranch,
-            SoldById = currentUser.UserId,
-            PaymentMethod = createSaleDto.PaymentMethod,
-            TransactionCode = createSaleDto.TransactionCode,
-            Status = SaleStatus.Completed,
-            CreatedAt = DateTime.UtcNow
-        };
-        var movements = new List<StockMovement>();
-        try 
-        {
-            foreach (var itemDto in createSaleDto.Items)
-            {
-                var pv = productVariants.First(p => p.Id == itemDto.ProductVariantId);
-                pv.RemoveQuantity(itemDto.Quantity, currentBranch);
+            // 1. Descontar stock + crear movements (sin SaveChanges aún)
+            var deductions = dto.Items
+                .Select(i => new StockDeductionDto(i.ProductVariantId, i.Quantity))
+                .ToList();
 
-                // Cálculo de precios
-                var subTotal = (pv.Price - itemDto.DiscountAmount) * itemDto.Quantity;
-                
+            var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId);
+            if (!deductResult.IsSuccess) return deductResult.Error;
+
+            // 2. Construir y guardar Sale
+            var sale = new Sale
+            {
+                BranchId = branchId,
+                SoldById = currentUser.UserId,
+                PaymentMethod = dto.PaymentMethod,
+                TransactionCode = dto.TransactionCode,
+                Status = SaleStatus.Completed,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            foreach (var itemDto in dto.Items)
+            {
+                var variant = variants.First(v => v.Id == itemDto.ProductVariantId);
+                var subtotal = (variant.Price - itemDto.DiscountAmount) * itemDto.Quantity;
+
                 sale.SaleItems.Add(new SaleItem
                 {
-                    ProductVariantId = pv.Id,
+                    ProductVariantId = variant.Id,
                     Quantity = itemDto.Quantity,
-                    UnitPrice = pv.Price,
+                    UnitPrice = variant.Price,
                     DiscountAmount = itemDto.DiscountAmount,
-                    FinalPrice = subTotal
+                    FinalPrice = subtotal
                 });
-                movements.Add(StockMovement.CreateSale(currentBranch,pv.Id,currentUser.UserId,itemDto.Quantity));
-                
 
-                sale.TotalAmount += subTotal;
+                sale.TotalAmount += subtotal;
             }
+
+            context.Sales.Add(sale);
+            await context.SaveChangesAsync(); // persiste todo junto
+
+            await transaction.CommitAsync();
+            return true;
         }
         catch (InvalidOperationException ex)
         {
+            await transaction.RollbackAsync();
             return new Error("VALIDATION_ERROR", ex.Message);
         }
-
-        // 3. Persistencia
-        context.StockMovements.AddRange(movements);
-        context.Sales.Add(sale);
-        return await context.SaveChangesAsync() > 0;
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

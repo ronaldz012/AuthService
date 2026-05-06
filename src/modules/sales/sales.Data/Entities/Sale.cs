@@ -5,6 +5,7 @@ public class Sale
     public int Id { get; set; }
     public int BranchId { get; set; }
     public int SoldById { get; set; }
+    public string Xd { get; set; } = "xd";
     public PaymentMethod PaymentMethod { get; set; }
     public string? TransactionCode { get; set; }
     //public decimal AmountPaid { get; set; }
@@ -15,6 +16,7 @@ public class Sale
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
+    
     
 }
 

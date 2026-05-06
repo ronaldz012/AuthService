@@ -1,6 +1,6 @@
-using Inventory.Data.Entities.sales;
+using sales.use.Entities;
 
-namespace Inventory.Contracts.Dtos.Sales;
+namespace sales.Contracts.dtos;
 
 
 

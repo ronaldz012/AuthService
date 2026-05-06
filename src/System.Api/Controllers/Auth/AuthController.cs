@@ -3,14 +3,20 @@ using Auth.Contracts.Dtos.Users;
 using Auth.UseCases.Autentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Options;
+using Microsoft.Extensions.Options;
+using Shared.Services;
 
 namespace System.Api.Controllers.Auth
 {
     [Route("api/[controller]")]
     [ApiController]
     [Tags("Authentication | Authorization")]
-    public class AuthController(AutenticationUseCases autenticationUseCases) : ControllerBase
+    public class AuthController(AutenticationUseCases autenticationUseCases, IOptions<TenantOptions> options) : ControllerBase
     {
+        private readonly List<string> tentants = options.Value.Schemas;
+        
+        
         [HttpPost("Register/User")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
@@ -20,6 +26,9 @@ namespace System.Api.Controllers.Auth
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
+          
+    
+            
             return await autenticationUseCases.Login.Execute(dto)
                                                     .ToValueOrProblemDetails();
         }

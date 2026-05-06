@@ -1,8 +1,9 @@
 using Auth.Contracts.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using sales.Contracts.dtos;
 using sales.Module.Data;
 
-namespace Inventory.UseCases.Sales;
+namespace sales.UseCases.UseCases;
 
 public class GetListSales(SalesDbContext context,ICurrentUser currentUser )
 {

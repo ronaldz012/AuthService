@@ -1,6 +1,7 @@
 namespace Shared.Services;
 
-public class TennantOptions
+public class TenantOptions
 {
-    
+    public const string Section = "Tenants";
+    public List<string> Schemas { get; set; } = [];
 }

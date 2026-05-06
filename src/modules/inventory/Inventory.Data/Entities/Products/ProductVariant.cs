@@ -53,4 +53,19 @@ public class ProductVariant: Params
         }
         branchInventory.Stock = quantity;
     }
+    public void RemoveQuantity(int quantity, int branchId)
+    {
+        var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
+        
+        if (branchInventory == null)
+            throw new InvalidOperationException($"No existe registro de inventario para la sucursal {branchId}");
+
+        if (branchInventory.Stock < quantity)
+            throw new InvalidOperationException($"Stock insuficiente para {Sku}. Disponible: {branchInventory.Stock}, Solicitado: {quantity}");
+
+        branchInventory.Stock -= quantity;
+    }
+    public int GetStockByBranch(int branchId) 
+        => BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId)?.Stock ?? 0;
+
 }

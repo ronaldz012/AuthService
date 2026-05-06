@@ -12,4 +12,12 @@
       </Reference>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Shared\Shared.csproj" />
+      <ProjectReference Include="..\..\auth\Auth.Contracts\Auth.Contracts.csproj" />
+      <ProjectReference Include="..\..\inventory\Inventory.Contracts\Inventory.Contracts.csproj" />
+      <ProjectReference Include="..\sales.Contracts\sales.Contracts.csproj" />
+      <ProjectReference Include="..\sales.Data\sales.Data.csproj" />
+    </ItemGroup>
+
 </Project>

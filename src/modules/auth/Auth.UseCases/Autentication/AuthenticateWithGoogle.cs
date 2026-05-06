@@ -7,6 +7,7 @@ using Branches.Contracts;
 using Branches.module.Services;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Shared.Data;
 using Shared.Result;
 
 namespace Auth.UseCases.Autentication;
@@ -15,7 +16,8 @@ public class AuthenticateWithGoogle(AuthDbContext dbContext,
     RegisterUser registerUser, 
     IMapper mapper, IGoogleTokenValidator googleTokenValidator,
     ITokenGenerator tokenGenerator,
-    IBranchService branchService)
+    IBranchService branchService,
+    ITenantContext tenantContext)
 {
     public async Task<Result<SuccessLoginDto>> Execute(string idToken)
     {
@@ -47,7 +49,7 @@ public class AuthenticateWithGoogle(AuthDbContext dbContext,
         }// else? maybe
 
         // Generar JWT token
-        var token = tokenGenerator.GenerateAccessToken(existingUser!.Id);
+        var token = tokenGenerator.GenerateAccessToken(existingUser!.Id, tenantContext.Schema?? "");
         var refreshToken = tokenGenerator.GenerateRefreshToken();
         //BUILD PERMISSIONS
         var branchesResult = await UserMappingUtils.BuildBranchAccessByModule(existingUser, branchService);

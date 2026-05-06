@@ -1,3 +1,4 @@
+using Inventory.Contracts.interfaces;
 using Inventory.Data.Entities.Transfers;
 using Inventory.UseCases.Brands;
 using Inventory.UseCases.Categories;
@@ -47,6 +48,10 @@ public  static class DependencyInjectionInv
             .AddScoped<StockTransferDetails>()
             .AddScoped<CancelStockTransfer>()
             .AddScoped<ListStockTransfers>();
+
+        services.AddScoped<IInventoryIntegrationService, InventoryIntegrationService>();
+        
+
         return services;
     }
 }

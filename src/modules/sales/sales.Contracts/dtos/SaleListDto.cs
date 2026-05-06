@@ -1,7 +1,7 @@
-using Inventory.Data.Entities.sales;
+using sales.use.Entities;
 using Shared.Extensions;
 
-namespace Inventory.Contracts.Dtos.Sales;
+namespace sales.Contracts.dtos;
 
 public class SaleListDto
 {

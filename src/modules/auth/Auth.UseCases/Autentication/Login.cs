@@ -7,11 +7,12 @@ using Branches.Contracts;
 using Branches.Contracts.Dtos;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using Shared.Data;
 using Shared.Result;
 
 namespace Auth.UseCases.Autentication;
 
-public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper, IBranchService branchService)
+public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper, IBranchService branchService,ITenantContext tenantContext)
 {
     public async Task<Result<SuccessLoginDto>> Execute(LoginDto request)
     {
@@ -43,7 +44,7 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMap
         if (!branchResult.IsSuccess)
             return new Error("NOT_FOUND", branchResult.Error.Message);
 
-        var accessToken = tokenGenerator.GenerateAccessToken(user.Id);
+        var accessToken = tokenGenerator.GenerateAccessToken(user.Id,tenantContext.Schema ?? "");
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 
         return new SuccessLoginDto
