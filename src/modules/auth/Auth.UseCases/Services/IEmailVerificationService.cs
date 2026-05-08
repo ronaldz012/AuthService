@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using Auth.Data;
 using Auth.Data.Entities;
-using Auth.Data.Persistence;
 using Auth.Infrastructure;
 using Auth.Infrastructure.Authentication;
 using Auth.Infrastructure.Email.EmailTemplates;

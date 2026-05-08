@@ -28,6 +28,6 @@ public interface IUpdatedBy
 }
 public interface IMustHaveTenant
 {
-    string TenantId { get; set; }
+    Guid TenantId { get; set; }
 }
 

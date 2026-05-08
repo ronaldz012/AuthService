@@ -3,12 +3,13 @@ using Branches.module.Entities;
 using Common.Domain;
 
 namespace Auth.Data.Entities;
-public class UserBranchRole : ICreatedBy, ICreatedAt, ISoftDelete
+public class UserBranchRole : ICreatedBy, ICreatedAt, ISoftDelete , IMustHaveTenant
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public Guid RoleId { get; set; }
     public Guid BranchId { get; set; }  // in other module
+    public Guid TenantId { get; set; }
 
     //Audit fields
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

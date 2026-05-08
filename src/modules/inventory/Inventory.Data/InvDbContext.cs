@@ -1,4 +1,5 @@
 using Common.Data;
+using Common.Domain;
 using Inventory.Data.Entities.Inventory;
 using Inventory.Data.Entities.Organization;
 using Inventory.Data.Entities.Products;
@@ -29,6 +30,8 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        
+        
         if (!string.IsNullOrEmpty(tenantContext.Schema))
         {
             modelBuilder.HasDefaultSchema(tenantContext.Schema);
@@ -38,6 +41,8 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
   
         modelBuilder.Entity<Product>(entity =>
             {
+                entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+
                 entity.HasMany(product => product.ProductVariants)
                     .WithOne(variant => variant.Product)
                     .HasForeignKey(variant => variant.ProductId);
@@ -46,21 +51,15 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
                     .WithMany(c => c.Products)
                     .HasForeignKey(p => p.CategoryId);
 
-                entity.Property(p => p.CategoryId)
-                    .IsRequired()
-                    .HasDefaultValue(1);
-
                 entity.HasOne(p => p.Brand)
                     .WithMany(b => b.Products)
                     .HasForeignKey(p => p.BrandId);
-
-                entity.Property(p => p.BrandId)
-                    .IsRequired()
-                    .HasDefaultValue(1);
             }
         );
         modelBuilder.Entity<ProductVariant>(entity =>
         {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+
             entity.HasMany(pv => pv.BranchInventories)
                 .WithOne(inv => inv.ProductVariant)
                 .HasForeignKey(inv => inv.ProductVariantId);
@@ -72,10 +71,28 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
                 .WithOne(ti => ti.ProductVariant)
                 .HasForeignKey(ti => ti.ProductVariantId);
         });
+        modelBuilder.Entity<BranchInventory>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+        });
 
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+        });
+        modelBuilder.Entity<Provider>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+        });
+        modelBuilder.Entity<Brand>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+        });
         //RECEPTIONS
         modelBuilder.Entity<StockReception>(entity =>
             {
+                entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+
                 entity.HasMany(r => r.Items)
                     .WithOne(i => i.StockReception)
                     .HasForeignKey(i => i.StockReceptionId);
@@ -85,19 +102,60 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
 
         modelBuilder.Entity<StockReceptionItem>(entity =>
         {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+
             entity.HasOne(ri => ri.ProductVariant)
                 .WithMany(pv => pv.StockReceptionItems)
                 .HasForeignKey(pv => pv.ProductVariantId);
         });
         modelBuilder.Entity<StockMovement>(entity =>
         {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+
             entity.HasOne(sm => sm.StockTransfer)
                 .WithMany(st => st.StockMovements)
                 .HasForeignKey(sm => sm.stockTransferId)
                 .IsRequired(false);
         });
 
+        modelBuilder.Entity<StockTransfer>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+        });
+        modelBuilder.Entity<StockTransferItem>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+        });
 
+    }
+    
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        // Obtenemos el TenantId actual desde el servicio de contexto
+        var currentTenantId = tenantContext.TenantId ?? throw new InvalidOperationException("Tenant is not set") ;
 
+        // Buscamos todas las entidades que:
+        // 1. Están siendo agregadas (Added) o modificadas (Modified)
+        // 2. Implementan la interfaz ITenantEntity
+        var entries = ChangeTracker.Entries<IMustHaveTenant>()
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+        foreach (var entry in entries)
+        {
+            if (entry.State == EntityState.Added)
+            {
+                // Asignamos el TenantId automáticamente al crear
+                entry.Entity.TenantId = currentTenantId;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                // Opcional: Evitar que se cambie el TenantId en ediciones
+                entry.Property(x => x.TenantId).IsModified = false;
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
     }
 }

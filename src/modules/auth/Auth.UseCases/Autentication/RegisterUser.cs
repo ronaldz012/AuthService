@@ -1,5 +1,5 @@
+using Auth.Data;
 using Auth.Data.Entities;
-using Auth.Data.Persistence;
 using Auth.Infrastructure.Authentication;
 using Auth.UseCases.Autentication.functions;
 using Auth.UseCases.Services;

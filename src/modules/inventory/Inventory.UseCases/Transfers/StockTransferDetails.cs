@@ -10,7 +10,7 @@ namespace Inventory.UseCases.Transfers;
 
 public class StockTransferDetails(InvDbContext context, IBranchService branchService, IUserIntegrationService userService, ICurrentUser currentUser)
 {
-    public async Task<Result<StockTransferDetailDto>> Execute(int stockTransferId)
+    public async Task<Result<StockTransferDetailDto>> Execute(Guid stockTransferId)
     {
         var currentBranchIds = currentUser.BranchIds[0];
         var transfer = await context.StockTransfers

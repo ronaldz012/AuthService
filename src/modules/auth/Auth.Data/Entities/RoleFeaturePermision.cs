@@ -3,15 +3,16 @@ using Common.Domain;
 
 namespace Auth.Data.Entities;
 
-public class RoleFeaturePermission : ICreatedAt, IUpdatedAt, IUpdatedBy
+public class RoleFeaturePermission : ICreatedAt, IUpdatedAt, IUpdatedBy, IMustHaveTenant
 {
-    public int Id { get; set; }
-    public int RoleId { get; set; }
+    public Guid Id { get; set; }
+    public Guid RoleId { get; set; }
     public int FeatureId { get; set; }
     public bool CanCreate { get; set; } = false;
     public bool CanRead { get; set; } = false;
     public bool CanUpdate { get; set; } = false;
     public bool CanDelete { get; set; } = false;
+    public Guid TenantId { get; set; }
 
     //Audit fields
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

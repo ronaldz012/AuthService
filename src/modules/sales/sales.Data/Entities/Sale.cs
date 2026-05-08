@@ -3,6 +3,7 @@ namespace sales.use.Entities;
 public class Sale
 {
     public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
     public Guid BranchId { get; set; }
     public Guid SoldById { get; set; }
     public string Xd { get; set; } = "xd";

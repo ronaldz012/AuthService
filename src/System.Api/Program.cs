@@ -5,7 +5,6 @@ using System.Api.Migration;
 using System.Api.Result;
 using System.Text;
 using Auth.Data;
-using Auth.Data.Persistence;
 using Auth.Infrastructure;
 using Auth.Infrastructure.Authentication;
 using Auth.UseCases;
@@ -27,6 +26,7 @@ using Common;
 using Common.Data;
 using Common.Services;
 using Inventory.Data;
+using shared.Module.Data;
 using shared.Module.UseCases;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,7 +63,7 @@ builder.Services.AddSwaggerGen(c =>
   {
     Type = SecuritySchemeType.ApiKey,
     In = ParameterLocation.Header,
-    Name = "X-Tenant",
+    Name = "X-Forwarded-Host",
     Description = "Schema del tenant. Ejemplo: `client1`"
   });
 
@@ -150,6 +150,13 @@ builder.Services.AddAuthentication(options =>
     ValidAudience = builder.Configuration["TokenSettings:Audience"]!,
     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["TokenSettings:SecretKey"]!))
   };
+});
+
+builder.Services.AddDbContext<SharedDbContext>((sp, options) =>
+{
+  var connection = builder.Configuration.GetConnectionString("SharedConnection");
+  options.UseNpgsql(connection,
+    x => x.MigrationsHistoryTable("__EFMigrationsHistory_shared", null));
 });
 
 

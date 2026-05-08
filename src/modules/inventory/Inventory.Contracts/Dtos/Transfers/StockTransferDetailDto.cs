@@ -4,7 +4,7 @@ namespace Inventory.Contracts.Dtos.Transfers;
 
 public class StockTransferDetailDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public TransferDirection Direction { get; set; }
     public string FromBranchName { get; set; } = string.Empty;
     public string ToBranchName { get; set; } = string.Empty;

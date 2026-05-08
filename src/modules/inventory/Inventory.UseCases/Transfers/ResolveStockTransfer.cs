@@ -11,7 +11,7 @@ namespace Inventory.UseCases.Transfers;
 
 public class ResolveStockTransfer(InvDbContext context, ICurrentUser currentUser)
 {
-    public async Task<Result<bool>> Execute(int transferId, ResolveStockTransferDto dto)
+    public async Task<Result<bool>> Execute(Guid transferId, ResolveStockTransferDto dto)
     {
         var toBranchId = currentUser.BranchIds[0];
 

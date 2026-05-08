@@ -10,9 +10,9 @@ public class ProductDetailDto
     public string Description { get; set; } = string.Empty;
     public decimal BasePrice { get; set; }
     public Gender Gender { get; set; }
-    public int CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
-    public int BrandId { get; set; }
+    public Guid BrandId { get; set; }
     public string BrandName { get; set; } = string.Empty;
     public int TotalStock { get; set; }
 

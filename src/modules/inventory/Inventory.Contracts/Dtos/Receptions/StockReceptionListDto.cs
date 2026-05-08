@@ -22,5 +22,5 @@ public class ReceptionQueryDto : GenericPaginationQueryDto
     public DateTime? DateFrom { get; set; }
     public DateTime? DateTo { get; set; }
     public ReceptionStatus? Status { get; set; }
-    public int? BrandId { get; set; }
+    public Guid? BrandId { get; set; }
 }

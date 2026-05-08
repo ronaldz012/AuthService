@@ -1,6 +1,6 @@
 using System;
 using Auth.Contracts.Dtos.Roles;
-using Auth.Data.Persistence;
+using Auth.Data;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;

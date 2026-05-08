@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using sales.use.Entities;
 using Common.Data;
+using Common.Domain;
 using Common.Services;
 
 namespace sales.Module.Data;
@@ -16,7 +17,6 @@ public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantCon
     {
         if (!string.IsNullOrEmpty(tenantContext.Schema))
         {
-            Console.Write("desde el tenant estamos cambiendo el schem: "+tenantContext.Schema);
             modelBuilder.HasDefaultSchema(tenantContext.Schema);
         }
 
@@ -25,24 +25,43 @@ public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantCon
 
         modelBuilder.Entity<Sale>(entity =>
         {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
             entity.HasMany(s => s.SaleItems)
                 .WithOne(i => i.Sale)
                 .HasForeignKey(i => i.SaleId);
         });
+        modelBuilder.Entity<SaleItem>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+        });
     }
 
-    public override int SaveChanges()
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Detectar si estamos en modo de diseño (migraciones)
-        bool isMigration = EF.IsDesignTime; 
+        // Obtenemos el TenantId actual desde el servicio de contexto
+        var currentTenantId = tenantContext.TenantId ?? throw new InvalidOperationException("Tenant is not set") ;
 
-        if (isMigration)
+        // Buscamos todas las entidades que:
+        // 1. Están siendo agregadas (Added) o modificadas (Modified)
+        // 2. Implementan la interfaz ITenantEntity
+        var entries = ChangeTracker.Entries<IMustHaveTenant>()
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
+
+        foreach (var entry in entries)
         {
-            // Comportamiento especial: por ejemplo, saltar una validación
-            return base.SaveChanges();
+            if (entry.State == EntityState.Added)
+            {
+                // Asignamos el TenantId automáticamente al crear
+                entry.Entity.TenantId = currentTenantId;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                // Opcional: Evitar que se cambie el TenantId en ediciones
+                entry.Property(x => x.TenantId).IsModified = false;
+            }
         }
 
-        return base.SaveChanges();
+        return base.SaveChangesAsync(cancellationToken);
     }
 }
 

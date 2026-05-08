@@ -1,11 +1,12 @@
-﻿using Inventory.Data.Entities.Inventory;
+﻿using Common.Domain;
+using Inventory.Data.Entities.Inventory;
 using Inventory.Data.Entities.Receptions;
 using Inventory.Data.Entities.Shared.Base;
 using Inventory.Data.Entities.Transfers;
 
 namespace Inventory.Data.Entities.Products;
 
-public class ProductVariant: Params
+public class ProductVariant: Params, IMustHaveTenant
 {
     public Guid Id { get; set; }
     public Guid ProductId { get; set; }
@@ -14,7 +15,7 @@ public class ProductVariant: Params
     public string Size { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty;
     public decimal Price { get; set; }
-
+    public Guid TenantId { get; set; }
     
     public Product Product { get; set; } = default!;
     public ICollection<BranchInventory> BranchInventories { get; set; } = new List<BranchInventory>();

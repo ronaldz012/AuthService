@@ -16,16 +16,16 @@ namespace Inventory.Data.Migrations
                 name: "Brands",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -36,17 +36,16 @@ namespace Inventory.Data.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    ParentId = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -64,12 +63,13 @@ namespace Inventory.Data.Migrations
                     Email = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -80,18 +80,18 @@ namespace Inventory.Data.Migrations
                 name: "StockReceptions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    BranchId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BranchId = table.Column<Guid>(type: "uuid", nullable: false),
                     ReceivedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -102,21 +102,21 @@ namespace Inventory.Data.Migrations
                 name: "StockTransfers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FromBranchId = table.Column<int>(type: "integer", nullable: false),
-                    ToBranchId = table.Column<int>(type: "integer", nullable: false),
-                    RequestedByUserId = table.Column<int>(type: "integer", nullable: false),
-                    ResolvedByUserId = table.Column<int>(type: "integer", nullable: true),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FromBranchId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ToBranchId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RequestedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ResolvedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true),
                     ResolvedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -127,13 +127,13 @@ namespace Inventory.Data.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     InternalCode = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
-                    BrandId = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BrandId = table.Column<Guid>(type: "uuid", nullable: false),
                     Gender = table.Column<int>(type: "integer", nullable: false),
                     BasePrice = table.Column<decimal>(type: "numeric", nullable: false),
                     UnitMeasurementSin = table.Column<int>(type: "integer", nullable: false),
@@ -142,9 +142,9 @@ namespace Inventory.Data.Migrations
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -167,20 +167,20 @@ namespace Inventory.Data.Migrations
                 name: "ProductVariants",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
                     Sku = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Size = table.Column<string>(type: "text", nullable: false),
                     Color = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -197,18 +197,18 @@ namespace Inventory.Data.Migrations
                 name: "BranchInventories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    BranchId = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BranchId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
                     Stock = table.Column<int>(type: "integer", nullable: false),
                     MinStock = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -225,22 +225,22 @@ namespace Inventory.Data.Migrations
                 name: "StockMovements",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    BranchId = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BranchId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Quantity = table.Column<decimal>(type: "numeric", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: false),
                     MovementType = table.Column<int>(type: "integer", nullable: false),
-                    TransferToBranchId = table.Column<int>(type: "integer", nullable: true),
-                    stockTransferId = table.Column<int>(type: "integer", nullable: true),
+                    TransferToBranchId = table.Column<Guid>(type: "uuid", nullable: true),
+                    stockTransferId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -262,18 +262,18 @@ namespace Inventory.Data.Migrations
                 name: "StockReceptionItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StockReceptionId = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StockReceptionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
                     QuantityReceived = table.Column<int>(type: "integer", nullable: false),
                     UnitCost = table.Column<decimal>(type: "numeric", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<int>(type: "integer", nullable: true),
-                    UpdatedById = table.Column<int>(type: "integer", nullable: true),
-                    DeletedById = table.Column<int>(type: "integer", nullable: true)
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -296,12 +296,12 @@ namespace Inventory.Data.Migrations
                 name: "StockTransferItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TransferId = table.Column<int>(type: "integer", nullable: false),
-                    ProductVariantId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TransferId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
                     QuantityRequested = table.Column<int>(type: "integer", nullable: false),
-                    StockTransferId = table.Column<int>(type: "integer", nullable: false)
+                    StockTransferId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -319,16 +319,6 @@ namespace Inventory.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.InsertData(
-                table: "Brands",
-                columns: new[] { "Id", "CreatedAt", "CreatedById", "DeletedAt", "DeletedById", "Description", "Name", "UpdatedAt", "UpdatedById" },
-                values: new object[] { 1, new DateTime(2026, 5, 6, 3, 15, 31, 577, DateTimeKind.Utc).AddTicks(6499), null, null, null, "", "Sin Marca", null, null });
-
-            migrationBuilder.InsertData(
-                table: "Categories",
-                columns: new[] { "Id", "CreatedAt", "CreatedById", "DeletedAt", "DeletedById", "Description", "Name", "ParentId", "UpdatedAt", "UpdatedById" },
-                values: new object[] { 1, new DateTime(2026, 5, 6, 3, 15, 31, 577, DateTimeKind.Utc).AddTicks(6384), null, null, null, "", "Sin categoria", 0, null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_BranchInventories_ProductVariantId",

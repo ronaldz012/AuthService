@@ -1,6 +1,8 @@
+using Common.Domain;
+
 namespace Branches.module.Entities;
 
-public class Branch
+public class Branch: IMustHaveTenant
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -8,4 +10,6 @@ public class Branch
     public string PhoneNumber { get; set; } = string.Empty;
     public bool Status { get; set; } = true;
     public string BranchCode { get; set; } = string.Empty;
+    
+    public Guid TenantId { get; set; }
 }

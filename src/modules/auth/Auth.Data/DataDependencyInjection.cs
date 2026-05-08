@@ -1,4 +1,3 @@
-using Auth.Data.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 namespace Auth.Data;
 

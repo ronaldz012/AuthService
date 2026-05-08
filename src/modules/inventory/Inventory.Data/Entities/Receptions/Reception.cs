@@ -1,11 +1,13 @@
+using Common.Domain;
 using Inventory.Data.Entities.Products;
 using Inventory.Data.Entities.Shared.Base;
 
 namespace Inventory.Data.Entities.Receptions;
 
-public class StockReception : Params
+public class StockReception : Params, IMustHaveTenant
 {
     public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
     public Guid BranchId { get; set; } // External ID
     public DateTime ReceivedAt { get; set; }
     public ReceptionStatus Status { get; set; } = ReceptionStatus.Confirmed;
@@ -23,10 +25,11 @@ public class StockReception : Params
     }
 }
 
-public class StockReceptionItem : Params
+public class StockReceptionItem : Params, IMustHaveTenant
 {
     public Guid Id { get; set; }
-    public int StockReceptionId { get; set; }
+    public Guid TenantId { get; set; }
+    public Guid StockReceptionId { get; set; }
     public Guid ProductVariantId { get; set; }
     public int QuantityReceived { get; set; }
     public decimal UnitCost { get; set; }

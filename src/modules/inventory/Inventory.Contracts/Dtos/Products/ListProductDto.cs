@@ -19,8 +19,8 @@ public class ListProductDto
 }
 public class ProductQueryDto : GenericPaginationQueryDto
 {
-    public int? CategoryId { get; set; }
-    public int? BrandId { get; set; }
+    public Guid? CategoryId { get; set; }
+    public Guid? BrandId { get; set; }
     public Gender? Gender { get; set; }
     public bool? LowStock { get; set; }
 

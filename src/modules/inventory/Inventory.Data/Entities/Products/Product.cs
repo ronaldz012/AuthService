@@ -1,15 +1,17 @@
-﻿using Inventory.Data.Entities.Shared.Base;
+﻿using Common.Domain;
+using Inventory.Data.Entities.Shared.Base;
 
 namespace Inventory.Data.Entities.Products; 
 
-public class Product:Params
+public class Product:Params, IMustHaveTenant
 {
     public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string InternalCode { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public int CategoryId { get; set; }
-    public int BrandId { get; set; }
+    public Guid CategoryId { get; set; }
+    public Guid BrandId { get; set; }
     public Gender Gender { get; set; }
     public decimal BasePrice { get; set; }
 

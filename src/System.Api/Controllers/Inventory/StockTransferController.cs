@@ -23,15 +23,15 @@ namespace System.Api.Controllers.Inventory
         {
             return await useCases.CreateStockTransfer.Execute(createStockTransferDto).ToValueOrProblemDetails();
         }
-        [HttpPost("Resolve/{transferId:int}")]
-        public async Task<IActionResult> ResolveStockTransfer([FromRoute] int transferId, [FromBody] ResolveStockTransferDto resolveStockTransferDto)
+        [HttpPost("Resolve/{transferId:guid}")]
+        public async Task<IActionResult> ResolveStockTransfer([FromRoute] Guid transferId, [FromBody] ResolveStockTransferDto resolveStockTransferDto)
         {
             return await useCases.ResolveStockTransfer
                 .Execute(transferId, resolveStockTransferDto)
                 .ToValueOrProblemDetails();
         }
-        [HttpGet("{transferId:int}")]
-        public async Task<IActionResult> GetStockTransferDetails([FromRoute] int transferId)
+        [HttpGet("{transferId:guid}")]
+        public async Task<IActionResult> GetStockTransferDetails([FromRoute] Guid transferId)
         {
             return await useCases.StockTransferDetails.Execute(transferId).ToValueOrProblemDetails();
         }

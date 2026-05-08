@@ -15,10 +15,10 @@ public class UpdateProductDto
     public decimal? BasePrice { get; set; }
 
     [Range(1, int.MaxValue)]
-    public int? CategoryId { get; set; }
+    public Guid? CategoryId { get; set; }
 
     [Range(1, int.MaxValue)]
-    public int? BrandId { get; set; }
+    public Guid? BrandId { get; set; }
 
     [EnumDataType(typeof(Gender), ErrorMessage = "Género no válido")]
     public Gender? Gender { get; set; }

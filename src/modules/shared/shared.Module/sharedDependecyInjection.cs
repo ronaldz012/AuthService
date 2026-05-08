@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using shared.Contracts.interfaces;
+using shared.Module.Data;
 using shared.Module.UseCases.Features;
 using shared.Module.UseCases.Modules;
 
@@ -20,6 +21,8 @@ public static class SharedDependencyInjection
              .AddScoped<CreateModuleUseCase>().AddScoped<ListModules>();
          
          services.AddScoped<IFeatureService, FeatureService>();
+         services.AddScoped<SharedDbContext>();
+         services.AddScoped<TenantService>();
          return services;
     }
     

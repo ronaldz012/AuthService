@@ -1,4 +1,4 @@
-using Auth.Data.Persistence;
+using Auth.Data;
 using Branches.module.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;

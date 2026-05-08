@@ -1,7 +1,7 @@
 using System.Api.Migration;
 using Microsoft.AspNetCore.Mvc;
 
-namespace System.Api.Controllers.Migrations;
+namespace System.Api.Controllers.System;
 
 [ApiController]
 [Route("api/system/migrations")]

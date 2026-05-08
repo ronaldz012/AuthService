@@ -1,5 +1,5 @@
+using Auth.Data;
 using Auth.Data.Entities;
-using Auth.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Common.Result;
 

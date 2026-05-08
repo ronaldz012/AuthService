@@ -1,12 +1,14 @@
 using System.Collections;
+using Common.Domain;
 using Inventory.Data.Entities.Inventory;
 using Inventory.Data.Entities.Shared.Base;
 
 namespace Inventory.Data.Entities.Transfers;
 
-public class StockTransfer : Params
+public class StockTransfer : Params, IMustHaveTenant
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
     public Guid FromBranchId { get; set; }
     public Guid ToBranchId { get; set; }
     public Guid RequestedByUserId { get; set; }

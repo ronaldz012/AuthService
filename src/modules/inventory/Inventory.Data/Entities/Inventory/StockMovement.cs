@@ -1,12 +1,14 @@
-﻿using Inventory.Data.Entities.Products;
+﻿using Common.Domain;
+using Inventory.Data.Entities.Products;
 using Inventory.Data.Entities.Shared.Base;
 using Inventory.Data.Entities.Transfers;
 
 namespace Inventory.Data.Entities.Inventory;
 
-public class StockMovement : Params
+public class StockMovement : Params, IMustHaveTenant
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
+    public Guid TenantId { get; set; }
     public Guid BranchId { get; set; }
     public Guid ProductVariantId { get; set; }
     public Guid UserId { get; set; }
@@ -14,7 +16,7 @@ public class StockMovement : Params
     public string Notes { get; set; } = string.Empty;
     public MovementType MovementType { get; set; }
     public Guid? TransferToBranchId { get; set; }
-    public int? stockTransferId { get; set; }
+    public Guid? stockTransferId { get; set; }
 
     public StockTransfer? StockTransfer { get; set; }
     //public int? RelatedMovementId { get; set; }

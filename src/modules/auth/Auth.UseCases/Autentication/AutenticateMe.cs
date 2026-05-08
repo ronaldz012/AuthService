@@ -1,6 +1,6 @@
 using Auth.Contracts.Dtos.Users;
 using Auth.Contracts.Interfaces;
-using Auth.Data.Persistence;
+using Auth.Data;
 using Auth.UseCases.Autentication.functions;
 using Branches.Contracts;
 using Branches.module.Services;

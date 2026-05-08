@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Common.Domain;
 namespace Auth.Data.Entities;
 
-public class User : ICreatedAt, ICreatedBy, IUpdatedAt, ISoftDelete, IUpdatedBy
+public class User : ICreatedAt, ICreatedBy, IUpdatedAt, ISoftDelete, IUpdatedBy, IMustHaveTenant
 {
     [Key]
     public Guid Id { get; set; }
@@ -29,6 +29,8 @@ public class User : ICreatedAt, ICreatedBy, IUpdatedAt, ISoftDelete, IUpdatedBy
     public int? UpdatedBy { get; set; }
     public int? DeletedBy { get; set; }
     public int CreatedBy { get; set; }
+    
+    public Guid TenantId { get; set; }
 
     public AuthProvider AuthProvider { get; set; }
     public string? ExternalAuthId { get; set; } 
