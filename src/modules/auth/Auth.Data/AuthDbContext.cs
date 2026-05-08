@@ -1,7 +1,7 @@
 using System;
 using Auth.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using Shared.Data;
+using Common.Data;
 
 
 namespace Auth.Data.Persistence;
@@ -12,10 +12,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserBranchRole> UserBranchRoles { get; set; }
-        public DbSet<Feature> Features { get; set; }
-        public DbSet<Module> Modules { get; set; }
         public DbSet<RoleFeaturePermission> RoleFeaturePermissions { get; set; }
-
         public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -49,21 +46,12 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
             
             
         });
-        modelBuilder.Entity<Feature>(entity =>
-        {
-            entity.HasOne(x => x.Module)
-                .WithMany(m => m.Features)
-                .HasForeignKey(x => x.ModuleId);
-        });
+
         modelBuilder.Entity<RoleFeaturePermission>(entity =>
         {
             entity.HasOne(rmp => rmp.Role)
                   .WithMany(r => r.RoleFeaturePermissions)
                   .HasForeignKey(rmp => rmp.RoleId);
-
-            entity.HasOne(rmp => rmp.Feature)
-                  .WithMany(m => m.RoleFeaturePermissions)
-                  .HasForeignKey(rmp => rmp.FeatureId);
         });
         
     }

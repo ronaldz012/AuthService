@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.Extensions.Options;
-using Shared.Services;
+using Common.Services;
 
 namespace System.Api.Controllers.Auth
 {

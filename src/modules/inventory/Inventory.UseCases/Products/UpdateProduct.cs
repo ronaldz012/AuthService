@@ -1,13 +1,13 @@
 using Inventory.Contracts.Dtos.Products;
 using Inventory.Data.Entities.Products;
-using Inventory.Data.Persistence;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Products;
 
 public class UpdateProduct(InvDbContext context)
 {
-    public async Task<Result<bool>> Execute(UpdateProductDto dto, int id)
+    public async Task<Result<bool>> Execute(UpdateProductDto dto, Guid id)
     {
         var product = await context.Products.FindAsync(id);
         if(product == null) return 

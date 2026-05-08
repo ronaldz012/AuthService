@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.Extensions.Options;
-using Shared.Data;
-using Shared.Services;
+using Common.Data;
+using Common.Services;
 
 namespace System.Api.Middlewares;
 

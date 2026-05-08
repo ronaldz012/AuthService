@@ -7,16 +7,16 @@ namespace Inventory.Data.Entities.Transfers;
 public class StockTransfer : Params
 {
     public int Id { get; set; }
-    public int FromBranchId { get; set; }
-    public int ToBranchId { get; set; }
-    public int RequestedByUserId { get; set; }
-    public int? ResolvedByUserId { get; set; }
+    public Guid FromBranchId { get; set; }
+    public Guid ToBranchId { get; set; }
+    public Guid RequestedByUserId { get; set; }
+    public Guid? ResolvedByUserId { get; set; }
     public TransferStatus Status { get; set; } = TransferStatus.Pending;
     public string? Notes { get; set; }
     public DateTime? ResolvedAt { get; set; }
     public ICollection<StockMovement> StockMovements { get; set; } = [];
     public ICollection<StockTransferItem> Items { get; set; } = [];
-    public void Accept(int userId, string? notes)
+    public void Accept(Guid userId, string? notes)
     {
         if (Status != TransferStatus.Pending)
             throw new InvalidOperationException("Only pending transfers can be accepted");
@@ -27,7 +27,7 @@ public class StockTransfer : Params
         if (notes != null) Notes = notes;
     }
 
-    public void Reject(int userId, string? notes)
+    public void Reject(Guid userId, string? notes)
     {
         if (Status != TransferStatus.Pending)
             throw new InvalidOperationException("Only pending transfers can be rejected");

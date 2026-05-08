@@ -1,7 +1,7 @@
 using Inventory.Contracts.Dtos.Products;
 using Inventory.Contracts.Dtos.ProductVariants;
-using Inventory.Data.Persistence;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.ProductVariants;
 

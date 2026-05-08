@@ -1,5 +1,5 @@
 using Inventory.Data.Entities.Transfers;
-using Shared.Extensions;
+using Common.Extensions;
 
 namespace Inventory.Contracts.Dtos.Transfers;
 

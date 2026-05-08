@@ -1,7 +1,7 @@
 using Auth.Contracts.Interfaces;
 using Inventory.Data.Entities.Transfers;
-using Inventory.Data.Persistence;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Transfers;
 

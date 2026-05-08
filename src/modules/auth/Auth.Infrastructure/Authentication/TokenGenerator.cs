@@ -19,7 +19,7 @@ public class TokenGenerator : ITokenGenerator
             throw new ArgumentException("TokenSettings.SecretKey no está configurado");
         }
     }
-    public string GenerateAccessToken(int userId, string tenant)
+    public string GenerateAccessToken(Guid userId, string tenant)
     {
         var securityKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_tokenSettings.SecretKey));

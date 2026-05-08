@@ -21,17 +21,21 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet]
-        [Authorize]
-        [RequireBranch]
         public async Task<IActionResult> ListReceptions([FromQuery] ReceptionQueryDto dto)
         {
             return await service.ListReceptions.Execute(dto).ToValueOrProblemDetails();
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetReception([FromRoute] int id)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetReception([FromRoute] Guid id)
         {
             return await service.GetReception.Execute(id).ToValueOrProblemDetails();
+        }
+
+        [HttpGet("{id:guid}/labels")]
+        public async Task<IActionResult> GetLabels([FromRoute] Guid id)
+        {
+            return await service.ReceptionLabels.Execute(id).ToValueOrProblemDetails();
         }
     }
 }

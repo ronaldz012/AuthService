@@ -4,7 +4,7 @@ namespace Auth.Contracts.Dtos.permissions;
 
 public class PermissionsDto
 {
-    public int BranchId { get; set; }
+    public Guid BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public List<RoleDto> Roles { get; set; } = [];
     public List<FeaturePermissionsDeductedDto> Features { get; set; } = [];

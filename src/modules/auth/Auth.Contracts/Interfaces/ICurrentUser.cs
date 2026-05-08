@@ -7,26 +7,26 @@ namespace Auth.Contracts.Interfaces;
 
 public interface ICurrentUser
 {
-    int UserId { get; }
+    Guid UserId { get; }
     string Username { get; }
     string? Token { get; }
     bool IsAuthenticated { get; }
-    IReadOnlyList<int> BranchIds { get; }
-    Task<Dictionary<int, string>> GetBranchNamesAsync();
-    bool HasBranch(int branchId);
+    IReadOnlyList<Guid> BranchIds { get; }
+    Task<Dictionary<Guid, string>> GetBranchNamesAsync();
+    bool HasBranch(Guid branchId);
     Task<List<PermissionsDto>> GetBranchesAsync();
  }
 public class CurrentUserService : ICurrentUser
 {
     private readonly IUserPermissionsCacheService _cache;
     private List<PermissionsDto>? _branches;
-    private Dictionary<int, string>? _branchNames;
+    private Dictionary<Guid, string>? _branchNames;
 
-    public int UserId { get; }
+    public Guid UserId { get; }
     public string Username { get; }
     public string? Token { get; }
     public bool IsAuthenticated { get; }
-    public IReadOnlyList<int> BranchIds { get; }
+    public IReadOnlyList<Guid> BranchIds { get; }
     
     public CurrentUserService(
         IHttpContextAccessor httpContextAccessor,
@@ -39,9 +39,10 @@ public class CurrentUserService : ICurrentUser
 
         IsAuthenticated = user?.Identity?.IsAuthenticated ?? false;
         UserId = IsAuthenticated
-            ? int.Parse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0")
-            : 0;
-        Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? "Anonymous";
+            ? Guid.TryParse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var guid)
+                ? guid
+                : Guid.Empty
+            : Guid.Empty;        Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? "Anonymous";
         Token = context?.Request.Headers["Authorization"]
             .FirstOrDefault()?.Split(" ").Last();
 
@@ -49,14 +50,14 @@ public class CurrentUserService : ICurrentUser
         BranchIds = string.IsNullOrWhiteSpace(headerValues)
             ? []
             : headerValues.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => int.TryParse(s.Trim(), out var id) ? id : 0)
-                .Where(id => id > 0)
+                .Select(s => Guid.TryParse(s.Trim(), out var id) ? id : (Guid?)null)
+                .Where(id => id.HasValue && id.Value != Guid.Empty)
+                .Select(id => id!.Value)
                 .ToList()
                 .AsReadOnly();
-        
     }
 
-    public bool HasBranch(int branchId) => BranchIds.Contains(branchId);
+    public bool HasBranch(Guid branchId) => BranchIds.Contains(branchId);
     
 
     public async Task<List<PermissionsDto>> GetBranchesAsync()
@@ -66,7 +67,7 @@ public class CurrentUserService : ICurrentUser
     }
 
 
-    public async Task<Dictionary<int, string>> GetBranchNamesAsync()
+    public async Task<Dictionary<Guid, string>> GetBranchNamesAsync()
     {
         if (_branchNames is not null) return _branchNames;
 

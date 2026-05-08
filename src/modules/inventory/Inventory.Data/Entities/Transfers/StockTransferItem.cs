@@ -4,9 +4,9 @@ namespace Inventory.Data.Entities.Transfers;
 
 public class StockTransferItem
 {
-    public int Id { get; set; }
-    public int TransferId { get; set; }
-    public int ProductVariantId { get; set; }
+    public Guid Id { get; set; }
+    public Guid TransferId { get; set; }
+    public Guid ProductVariantId { get; set; }
     public int QuantityRequested { get; set; }
 
     public StockTransfer StockTransfer { get; set; } = null!;

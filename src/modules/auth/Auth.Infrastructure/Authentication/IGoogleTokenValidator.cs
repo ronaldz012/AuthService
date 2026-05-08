@@ -2,7 +2,7 @@ using System;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Shared.Result;
+using Common.Result;
 
 namespace Auth.Infrastructure.Authentication;
 

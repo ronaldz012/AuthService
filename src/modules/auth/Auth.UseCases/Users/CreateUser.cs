@@ -6,7 +6,7 @@ using Auth.UseCases.Autentication.functions;
 using Branches.Contracts;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
 
 namespace Auth.UseCases.Users;
 
@@ -46,7 +46,7 @@ public class CreateUser(AuthDbContext context, IBranchService branchService, IMa
         return true;
     }
 
-    private async Task<Result<bool>> ValidateRoles(List<int> roleIds)
+    private async Task<Result<bool>> ValidateRoles(List<Guid> roleIds)
     {
         var foundRoles = await context.Roles.Where(r => roleIds.Contains(r.Id)).ToListAsync();
         

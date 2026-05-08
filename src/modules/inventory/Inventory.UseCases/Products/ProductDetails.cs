@@ -1,14 +1,14 @@
 using Auth.Contracts.Interfaces;
 using Inventory.Contracts.Dtos.Products;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Products;
 
 public class ProductDetails(InvDbContext context, ICurrentUser currentUser)
 {
-    public async Task<Result<ProductDetailDto>> Execute(int productId)
+    public async Task<Result<ProductDetailDto>> Execute(Guid productId)
     {
         var currentBranch = currentUser.BranchIds[0];
         var branchNames = await currentUser.GetBranchNamesAsync();

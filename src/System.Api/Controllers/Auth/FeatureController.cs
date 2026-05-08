@@ -1,11 +1,10 @@
 using System.Api.Result;
-using Auth.Contracts.Dtos.Features;
-using Auth.UseCases;
-using Auth.UseCases.Features;
-using Auth.UseCases.Modules;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
+using shared.Contracts.dtos.Features;
+using shared.Module.UseCases.Features;
 
 namespace System.Api.Controllers.Auth
 {

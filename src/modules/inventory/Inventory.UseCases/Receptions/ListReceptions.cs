@@ -1,11 +1,11 @@
 using Auth.Contracts.Interfaces;
 using Inventory.Contracts.Dtos.Receptions;
 using Inventory.Data.Entities.Receptions;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Extensions;
-using Shared.Result;
-using Shared.Services;
+using Common.Extensions;
+using Common.Result;
+using Common.Services;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Receptions;
 

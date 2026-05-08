@@ -3,42 +3,86 @@ using Auth.Contracts.Dtos.Roles;
 using Auth.Contracts.Dtos.Users;
 using Auth.Data.Entities;
 using Branches.Contracts;
-using Shared.Result;
+using Common.Result;
+using shared.Contracts.dtos;
 
 namespace Auth.UseCases.Autentication.functions;
 
-// La clase debe ser 'public static' para que puedas acceder a ella sin instanciarla
 public static class UserMappingUtils
 {
-    public static List<FeaturePermissionsDeductedDto> CalculateFeaturePermissions(List<UserBranchRole> branchRoles)
+    // ─── Helpers privados ────────────────────────────────────────────────────
+
+    private static List<FeaturePermissionsDeductedDto> CalculateFeaturePermissions(
+        List<UserBranchRole> branchRoles,
+        Dictionary<int, FeatureWithModuleDto> featureMap)
     {
         return branchRoles
             .SelectMany(ubr => ubr.Role.RoleFeaturePermissions)
             .GroupBy(rmp => rmp.FeatureId)
-            .Select(g => new
+            .Where(g => featureMap.ContainsKey(g.Key))
+            .Select(g =>
             {
-                Feature = g.First().Feature,
-                CanRead = g.Any(rmp => rmp.CanRead),
-                CanCreate = g.Any(rmp => rmp.CanCreate),
-                CanUpdate = g.Any(rmp => rmp.CanUpdate),
-                CanDelete = g.Any(rmp => rmp.CanDelete)
-            })
-            .Select(mp => new FeaturePermissionsDeductedDto
-            {
-                Id = mp.Feature.Id,
-                Name = mp.Feature.Name,
-                Route = mp.Feature.Route,
-                ModuleId =  mp.Feature.ModuleId,
-                ModuleName = mp.Feature.Module.Name,
-                CanRead = mp.CanRead,
-                CanCreate = mp.CanCreate,
-                CanUpdate = mp.CanUpdate,
-                CanDelete = mp.CanDelete,
+                var feature = featureMap[g.Key];
+                return new FeaturePermissionsDeductedDto
+                {
+                    Id        = feature.Id,
+                    Name      = feature.Name,
+                    Route     = feature.Route,
+                    ModuleId  = feature.ModuleId,
+                    ModuleName = feature.ModuleName,
+                    CanRead   = g.Any(rmp => rmp.CanRead),
+                    CanCreate = g.Any(rmp => rmp.CanCreate),
+                    CanUpdate = g.Any(rmp => rmp.CanUpdate),
+                    CanDelete = g.Any(rmp => rmp.CanDelete),
+                };
             }).ToList();
     }
+
+    private static List<PermissiónByModuleDto> CalculateFeatureByModule(
+        List<UserBranchRole> userBranchRoles,
+        Dictionary<int, FeatureWithModuleDto> featureMap)
+    {
+        return userBranchRoles
+            .SelectMany(ubr => ubr.Role.RoleFeaturePermissions)
+            .Where(rfp => featureMap.ContainsKey(rfp.FeatureId))
+            .GroupBy(rfp => featureMap[rfp.FeatureId].ModuleId)
+            .Select(g =>
+            {
+                var module = featureMap[g.First().FeatureId];
+                return new PermissiónByModuleDto
+                {
+                    Id          = module.ModuleId,
+                    Name        = module.ModuleName,
+                    Description = module.ModuleDescription,
+                    Route       = module.ModuleRoute,
+                    Icon        = module.ModuleIcon,
+                    Features    = g
+                        .GroupBy(rfp => rfp.FeatureId)
+                        .Select(fg =>
+                        {
+                            var feature = featureMap[fg.Key];
+                            return new FeaturePermissionByModuleDto
+                            {
+                                Id        = feature.Id,
+                                Name      = feature.Name,
+                                Route     = feature.Route,
+                                Icon      = feature.Icon,
+                                CanRead   = fg.Any(rfp => rfp.CanRead),
+                                CanCreate = fg.Any(rfp => rfp.CanCreate),
+                                CanUpdate = fg.Any(rfp => rfp.CanUpdate),
+                                CanDelete = fg.Any(rfp => rfp.CanDelete),
+                            };
+                        }).ToList()
+                };
+            }).ToList();
+    }
+
+    // ─── Métodos públicos ─────────────────────────────────────────────────────
+
     public static async Task<Result<List<PermissionsDto>>> BuildBranchAccess(
         User user,
-        IBranchService branchService)
+        IBranchService branchService,
+        Dictionary<int, FeatureWithModuleDto> featureMap)
     {
         var branchIds = user.UserBranchRoles
             .Select(ubr => ubr.BranchId)
@@ -58,20 +102,22 @@ public static class UserMappingUtils
                 var branch = branchesById[g.Key];
                 return new PermissionsDto
                 {
-                    BranchId = branch.Id,
+                    BranchId   = branch.Id,
                     BranchName = branch.Name,
-                    Roles = g.Select(ubr => new RoleDto
+                    Roles      = g.Select(ubr => new RoleDto
                     {
-                        Id = ubr.Role.Id,
+                        Id   = ubr.Role.Id,
                         Name = ubr.Role.Name
                     }).ToList(),
-                    Features = CalculateFeaturePermissions(g.ToList())
+                    Features = CalculateFeaturePermissions(g.ToList(), featureMap)
                 };
             }).ToList();
     }
+
     public static async Task<Result<List<PermissionsByModuleDto>>> BuildBranchAccessByModule(
         User user,
-        IBranchService branchService)
+        IBranchService branchService,
+        Dictionary<int, FeatureWithModuleDto> featureMap)
     {
         var branchIds = user.UserBranchRoles
             .Select(ubr => ubr.BranchId)
@@ -89,52 +135,17 @@ public static class UserMappingUtils
             .Select(g =>
             {
                 var branch = branchesById[g.Key];
-                return new PermissionsByModuleDto()
+                return new PermissionsByModuleDto
                 {
-                    BranchId = branch.Id,
+                    BranchId   = branch.Id,
                     BranchName = branch.Name,
-                    Roles = g.Select(ubr => new RoleDto
+                    Roles      = g.Select(ubr => new RoleDto
                     {
-                        Id = ubr.Role.Id,
+                        Id   = ubr.Role.Id,
                         Name = ubr.Role.Name
                     }).ToList(),
-                    Modules = CalculateFeatureByModule(g.ToList())
+                    Modules = CalculateFeatureByModule(g.ToList(), featureMap)
                 };
             }).ToList();
     }
-
-    private static List<PermissiónByModuleDto> CalculateFeatureByModule(List<UserBranchRole> userBranchRoles)
-    {
-        return userBranchRoles
-            .SelectMany(ubr => ubr.Role.RoleFeaturePermissions)
-            .GroupBy(rfp => rfp.Feature.ModuleId)
-            .Select(g =>
-            {
-                var module = g.First().Feature.Module;
-                return new PermissiónByModuleDto
-                {
-                    Id          = module.Id,
-                    Name        = module.Name,
-                    Description = module.Description,
-                    Route       = module.Route,
-                    Icon        = module.Icon,
-                    Features    = g
-                        .GroupBy(rfp => rfp.FeatureId)
-                        .Select(fg => new FeaturePermissionByModuleDto
-                        {
-                            Id        = fg.First().Feature.Id,
-                            Name      = fg.First().Feature.Name,
-                            Route     = fg.First().Feature.Route,
-                            Icon      = fg.First().Feature.Icon,
-                            CanRead   = fg.Any(rfp => rfp.CanRead),
-                            CanCreate = fg.Any(rfp => rfp.CanCreate),
-                            CanUpdate = fg.Any(rfp => rfp.CanUpdate),
-                            CanDelete = fg.Any(rfp => rfp.CanDelete),
-                        }).ToList()
-                };
-            }).ToList();
-    }
-
-
-    
 }

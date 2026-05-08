@@ -7,8 +7,8 @@ namespace Inventory.Data.Entities.Products;
 
 public class ProductVariant: Params
 {
-    public int Id { get; set; }
-    public int ProductId { get; set; }
+    public Guid Id { get; set; }
+    public Guid ProductId { get; set; }
     public string Sku { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty; 
     public string Size { get; set; } = string.Empty;
@@ -22,7 +22,7 @@ public class ProductVariant: Params
     public ICollection<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
 
     public ICollection<StockTransferItem> TransferItems { get; set; } = new List<StockTransferItem>();
-    public void AddQuantity(int quantity, int branchId)
+    public void AddQuantity(int quantity, Guid branchId)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
         if (branchInventory == null)
@@ -38,7 +38,7 @@ public class ProductVariant: Params
         branchInventory.Stock += quantity;
     }
 
-    public void CorrectQuantity(int quantity, int branchId)
+    public void CorrectQuantity(int quantity, Guid branchId)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
         if (branchInventory == null)
@@ -53,7 +53,7 @@ public class ProductVariant: Params
         }
         branchInventory.Stock = quantity;
     }
-    public void RemoveQuantity(int quantity, int branchId)
+    public void RemoveQuantity(int quantity, Guid branchId)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
         
@@ -65,7 +65,7 @@ public class ProductVariant: Params
 
         branchInventory.Stock -= quantity;
     }
-    public int GetStockByBranch(int branchId) 
+    public int GetStockByBranch(Guid branchId) 
         => BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId)?.Stock ?? 0;
 
 }

@@ -3,13 +3,13 @@ using Auth.Contracts.Dtos.Roles;
 using Auth.Data.Entities;
 using Auth.Data.Persistence;
 using MapsterMapper;
-using Shared.Result;
+using Common.Result;
 
 namespace Auth.UseCases.Roles;
 
 public class AddRole(AuthDbContext dbContext )
 {
-    public async Task<Result<int>> Execute(CreateRoleDto dto)
+    public async Task<Result<Guid>> Execute(CreateRoleDto dto)
     {
         var role = new Role()
         {

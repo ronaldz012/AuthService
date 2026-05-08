@@ -1,10 +1,10 @@
 using Auth.Contracts.Interfaces;
 using Inventory.Contracts.Dtos.Transfers;
 using Inventory.Data.Entities.Transfers;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
-using Shared.Services;
+using Common.Result;
+using Common.Services;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Transfers;
 

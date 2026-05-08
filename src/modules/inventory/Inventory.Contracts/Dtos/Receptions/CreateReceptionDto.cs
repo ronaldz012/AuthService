@@ -5,7 +5,7 @@ namespace Inventory.Contracts.Dtos.Receptions;
 
 public class CreateStockReceptionDto : IValidatableObject
 {
-    public int BranchId { get; set; }
+    public Guid BranchId { get; set; }
     public string? Notes { get; set; }
     public List<CreateStockReceptionItemDto> Items { get; set; } = new();
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -38,7 +38,7 @@ public class CreateStockReceptionDto : IValidatableObject
 public class CreateStockReceptionItemDto
 {
     // Si el producto ya existe
-    public int? ProductId { get; set; }
+    public Guid? ProductId { get; set; }
 
     // Si es producto nuevo
     public NewProductDto? NewProduct { get; set; }
@@ -50,7 +50,7 @@ public class CreateStockReceptionItemDto
 public class NewStockReceptionVariantDto
 {
     // Si la variante ya existe
-    public int? ProductVariantId { get; set; }
+    public Guid? ProductVariantId { get; set; }
 
     // Si es variante nueva
     public NewProductVariantDto? NewVariant { get; set; }

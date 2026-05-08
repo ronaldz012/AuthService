@@ -12,14 +12,14 @@ namespace System.Api.Controllers.Inventory
     [Authorize]
     public class ProductVariantController(ProductVariantUseCases useCases) : ControllerBase
     {
-        [HttpPut("{id:int}")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateProductVariant([FromRoute] int id,[FromBody]UpdateProductVariantDto dto)
         {
             return await useCases.UpdateProductVariant.Execute(dto, id).ToValueOrProblemDetails();
         }
 
-        [HttpPatch("{id:int}")]
-        public async Task<IActionResult> UpdateStock([FromRoute] int id, [FromBody] UpdateProductVariantStockDto dto)
+        [HttpPatch("{id:guid}")]
+        public async Task<IActionResult> UpdateStock([FromRoute] Guid id, [FromBody] UpdateProductVariantStockDto dto)
         {
             return await useCases.CorrectProductVariantStock.Execute(dto, id).ToValueOrProblemDetails();
         }

@@ -33,21 +33,21 @@ namespace System.Api.Controllers.Inventory
             return await productUseCases.SearchProducts.Execute(request).ToValueOrProblemDetails();
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetProduct([FromRoute] int id)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetProduct([FromRoute] Guid id)
         {
             return await productUseCases.ProductDetails.Execute(id).ToValueOrProblemDetails();
         }
         
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto request, [FromRoute] int id)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto request, [FromRoute] Guid id)
         {
             return await productUseCases.UpdateProduct.Execute(request, id).ToValueOrProblemDetails();
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteProduct([FromRoute] int id)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteProduct([FromRoute] Guid id)
         {
             return await productUseCases.DeleteProduct.Execute(id).ToValueOrProblemDetails();
         }

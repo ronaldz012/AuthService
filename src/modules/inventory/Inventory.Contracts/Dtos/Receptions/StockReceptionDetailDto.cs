@@ -1,13 +1,12 @@
 using Inventory.Contracts.Dtos.Products;
 using Inventory.Data.Entities.Receptions;
-using Inventory.Data.Persistence;
 
 namespace Inventory.Contracts.Dtos.Receptions;
 
 public class StockReceptionDetailDto
 {
-    public int Id { get; set; }
-    public int BranchId { get; set; }
+    public Guid Id { get; set; }
+    public Guid BranchId { get; set; }
     public bool CanRollBack { get; set; }
     public string ReasonCannotRollback  { get; set; } = string.Empty;
     public DateTime ReceivedAt { get; set; }
@@ -19,8 +18,8 @@ public class StockReceptionDetailDto
 
 public class StockReceptionItemDetailDto
 {
-    public int Id { get; set; }
-    public int ProductVariantId { get; set; }
+    public Guid Id { get; set; }
+    public Guid ProductVariantId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public string VariantDescription { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;

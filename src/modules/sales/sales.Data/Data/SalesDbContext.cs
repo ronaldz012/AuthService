@@ -1,8 +1,8 @@
 
 using Microsoft.EntityFrameworkCore;
 using sales.use.Entities;
-using Shared.Data;
-using Shared.Services;
+using Common.Data;
+using Common.Services;
 
 namespace sales.Module.Data;
 

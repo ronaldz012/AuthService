@@ -40,7 +40,8 @@ public  static class DependencyInjectionInv
         services.AddScoped<ReceptionUseCases>()
             .AddScoped<CreateReceptionUc>()
             .AddScoped<ListReceptions>()
-            .AddScoped<GetReception>();
+            .AddScoped<GetReception>()
+            .AddScoped<ReceptionLabels>();
 
         services.AddScoped<StockTransferUseCases>()
             .AddScoped<CreateStockTransfer>()

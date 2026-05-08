@@ -6,7 +6,7 @@ using Auth.UseCases.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using Shared.Result;
+using Common.Result;
 
 namespace Auth.UseCases.Autentication;
 
@@ -55,7 +55,7 @@ public class RegisterUser(AuthDbContext dbContext,IEmailVerificationService emai
         }
     }
 
-    public async Task<Result<int>> GetDefaultUserRole()
+    public async Task<Result<Guid>> GetDefaultUserRole()
     {
         var roleName = config["Roles:DefaultUserRole"] ?? "User";
         var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleName);

@@ -1,13 +1,13 @@
 using Inventory.Data.Entities.Products;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Products;
 
 public class ValidateProductVariants(InvDbContext context)
 {
-    public async Task<Result<List<ProductVariant>>> Execute(List<int> variantIds)
+    public async Task<Result<List<ProductVariant>>> Execute(List<Guid> variantIds)
     {
         var productVariants = await context.ProductVariants.Where(x => variantIds.Contains(x.Id)).ToListAsync();
 

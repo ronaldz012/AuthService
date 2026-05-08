@@ -5,7 +5,7 @@ namespace System.Api.Result;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Shared.Result;
+using Common.Result;
 
 /// <summary>
 /// Extensiones para convertir Result{T} en respuestas HTTP de ASP.NET Core

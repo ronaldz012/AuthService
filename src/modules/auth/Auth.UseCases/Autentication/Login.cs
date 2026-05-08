@@ -7,22 +7,22 @@ using Branches.Contracts;
 using Branches.Contracts.Dtos;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.Data;
-using Shared.Result;
+using Common.Data;
+using Common.Result;
+using shared.Contracts.interfaces;
 
 namespace Auth.UseCases.Autentication;
 
-public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper, IBranchService branchService,ITenantContext tenantContext)
+public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper, IBranchService branchService,ITenantContext tenantContext, IFeatureService featureService)
 {
-    public async Task<Result<SuccessLoginDto>> Execute(LoginDto request)
+  public async Task<Result<SuccessLoginDto>> Execute(LoginDto request)
     {
+        // 1. Query en AuthDbContext — ya sin Include hacia Feature/Module
         var user = await dbContext.Users
             .AsSplitQuery()
             .Include(u => u.UserBranchRoles.Where(ur => ur.DeletedAt == null))
                 .ThenInclude(ur => ur.Role)
                     .ThenInclude(r => r.RoleFeaturePermissions)
-                        .ThenInclude(rmp => rmp.Feature)
-                            .ThenInclude(f => f.Module)
             .FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user == null)
@@ -36,15 +36,24 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMap
             return new SuccessLoginDto
             {
                 Status = user.Status.ToString(),
-                User = mapper.Map<UserDetailsDto>(user)
+                User   = mapper.Map<UserDetailsDto>(user)
             };
         }
 
-        var branchResult = await UserMappingUtils.BuildBranchAccessByModule(user, branchService);
+        // 2. Recolectar todos los featureIds del usuario
+        var featureIds = user.UserBranchRoles
+            .SelectMany(ur => ur.Role.RoleFeaturePermissions)
+            .Select(rmp => rmp.FeatureId)
+            .Distinct();
+
+        // 3. Query en SharedDbContext
+        var features = await featureService.GetFeaturesByIdsAsync(featureIds);
+        var featureMap = features.ToDictionary(f => f.Id);  // ← se pasa a los métodos
+        var branchResult = await UserMappingUtils.BuildBranchAccessByModule(user, branchService, featureMap);
         if (!branchResult.IsSuccess)
             return new Error("NOT_FOUND", branchResult.Error.Message);
 
-        var accessToken = tokenGenerator.GenerateAccessToken(user.Id,tenantContext.Schema ?? "");
+        var accessToken = tokenGenerator.GenerateAccessToken(user.Id, tenantContext.Schema ?? "");
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 
         return new SuccessLoginDto

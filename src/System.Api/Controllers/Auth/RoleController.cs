@@ -19,8 +19,8 @@ namespace System.Api.Controllers.Auth
             return await roleUseCases.AddRole.Execute(dto)
                                             .ToValueOrProblemDetails();
         }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> Get(Guid id)
         {
             return await roleUseCases.GetRole.Execute(id)
                                         .ToValueOrProblemDetails();

@@ -1,5 +1,5 @@
 using System;
-using Shared.Domain;
+using Common.Domain;
 
 namespace Auth.Data.Entities;
 
@@ -19,5 +19,5 @@ public class RoleFeaturePermission : ICreatedAt, IUpdatedAt, IUpdatedBy
     public int? UpdatedBy { get; set; }
     // Navigation property
     public Role Role { get; set; } = default!;
-    public Feature Feature { get; set; } = default!;
+
 }

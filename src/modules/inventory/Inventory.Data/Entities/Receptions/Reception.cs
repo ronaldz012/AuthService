@@ -5,14 +5,14 @@ namespace Inventory.Data.Entities.Receptions;
 
 public class StockReception : Params
 {
-    public int Id { get; set; }
-    public int BranchId { get; set; } // External ID
+    public Guid Id { get; set; }
+    public Guid BranchId { get; set; } // External ID
     public DateTime ReceivedAt { get; set; }
     public ReceptionStatus Status { get; set; } = ReceptionStatus.Confirmed;
     public string? Notes { get; set; }
 
     public ICollection<StockReceptionItem> Items { get; set; } = new List<StockReceptionItem>();
-    public void AddExistingVariant(int variantId, int quantity, decimal unitCost)
+    public void AddExistingVariant(Guid variantId, int quantity, decimal unitCost)
     {
         Items.Add(new StockReceptionItem
         {
@@ -25,9 +25,9 @@ public class StockReception : Params
 
 public class StockReceptionItem : Params
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public int StockReceptionId { get; set; }
-    public int ProductVariantId { get; set; }
+    public Guid ProductVariantId { get; set; }
     public int QuantityReceived { get; set; }
     public decimal UnitCost { get; set; }
 

@@ -23,7 +23,7 @@
     <ProjectReference Include="../modules/auth/Auth.Data/Auth.Data.csproj" />
     <ProjectReference Include="../modules/auth/Auth.Infrastructure/Auth.Infrastructure.csproj" />
     <ProjectReference Include="../modules/auth/Auth.UseCases/Auth.UseCases.csproj" />
-    <ProjectReference Include="../Shared/Shared.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\modules\branches\Branches.Contracts\Branches.Contracts.csproj" />
     <ProjectReference Include="..\modules\branches\Branches.module\Branches.module.csproj" />
     <ProjectReference Include="..\modules\inventory\Inventory.Contracts\Inventory.Contracts.csproj" />
@@ -33,6 +33,7 @@
     <ProjectReference Include="..\modules\sales\sales.Contracts\sales.Contracts.csproj" />
     <ProjectReference Include="..\modules\sales\sales.Data\sales.Data.csproj" />
     <ProjectReference Include="..\modules\sales\sales.UseCases\sales.UseCases.csproj" />
+    <ProjectReference Include="..\modules\shared\shared.Module\shared.Module.csproj" />
   </ItemGroup>
 
 </Project>

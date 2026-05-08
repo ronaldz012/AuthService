@@ -1,6 +1,6 @@
 using System;
 using Auth.Contracts.Dtos.Users;
-using Shared.Result;
+using Common.Result;
 
 namespace Auth.Contracts.Interfaces;
 

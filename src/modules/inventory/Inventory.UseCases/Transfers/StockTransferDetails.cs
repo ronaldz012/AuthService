@@ -1,10 +1,10 @@
 using Auth.Contracts.Interfaces;
 using Branches.Contracts;
 using Inventory.Contracts.Dtos.Transfers;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Transfers;
 
@@ -22,8 +22,8 @@ public class StockTransferDetails(InvDbContext context, IBranchService branchSer
         if (transfer == null)
             return new Error("NOT_FOUND", "StockTransfer not found");
 
-        List<int> branchIds = [transfer.FromBranchId, transfer.ToBranchId];
-        List<int> userIds = transfer.ResolvedByUserId.HasValue
+        List<Guid> branchIds = [transfer.FromBranchId, transfer.ToBranchId];
+        List<Guid> userIds = transfer.ResolvedByUserId.HasValue
             ? [transfer.RequestedByUserId, transfer.ResolvedByUserId.Value]
             : [transfer.RequestedByUserId];
 
@@ -47,7 +47,7 @@ public class StockTransferDetails(InvDbContext context, IBranchService branchSer
             FromBranchName = branches.GetValueOrDefault(transfer.FromBranchId) ?? "Unknown",
             ToBranchName = branches.GetValueOrDefault(transfer.ToBranchId) ?? "Unknown",
             RequesterName = users.GetValueOrDefault(transfer.RequestedByUserId) ?? "Unknown",
-            ResolverName = users.GetValueOrDefault(transfer.ResolvedByUserId ?? 0) ?? "Unknown",
+            ResolverName = users.GetValueOrDefault(transfer.ResolvedByUserId ?? Guid.Empty) ?? "Unknown",
             Status = transfer.Status,
             Notes = transfer.Notes,
             CreatedAt = transfer.CreatedAt,

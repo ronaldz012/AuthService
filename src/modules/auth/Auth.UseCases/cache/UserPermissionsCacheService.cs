@@ -10,17 +10,18 @@ using Branches.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using shared.Contracts.interfaces;
 
 namespace Auth.UseCases.cache;
 
-public class UserPermissionsCacheService(IMemoryCache cache, AuthDbContext context, IBranchService branchService) : IUserPermissionsCacheService
+public class UserPermissionsCacheService(IMemoryCache cache, AuthDbContext context, IBranchService branchService, IFeatureService featureService) : IUserPermissionsCacheService
 {
     private static readonly MemoryCacheEntryOptions Opts =
         new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
 
-    private static string Key(int userId) => $"user_branches:{userId}";
+    private static string Key(Guid userId) => $"user_branches:{userId}";
 
-    public async Task<List<PermissionsDto>> GetAsync(int userId)
+    public async Task<List<PermissionsDto>> GetAsync(Guid userId)
     {
         if (cache.TryGetValue(Key(userId), out List<PermissionsDto>? cached) && cached is not null)
             return cached;
@@ -29,23 +30,27 @@ public class UserPermissionsCacheService(IMemoryCache cache, AuthDbContext conte
             .Include(u => u.UserBranchRoles.Where(ur => ur.DeletedAt == null))
                 .ThenInclude(ur => ur.Role)
                 .ThenInclude(r => r.RoleFeaturePermissions)
-                .ThenInclude(rmp => rmp.Feature)
-                .ThenInclude(f => f.Module)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+                    .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user is null) return [];
+        var featureIds = user.UserBranchRoles
+            .SelectMany(ubr => ubr.Role.RoleFeaturePermissions)
+            .Select(rmp => rmp.FeatureId)
+            .Distinct();
 
-        var branchResult = await UserMappingUtils.BuildBranchAccess(user, branchService);
+        var features = await featureService.GetFeaturesByIdsAsync(featureIds);
+        var featureMap = features.ToDictionary(f => f.Id);
+        var branchResult = await UserMappingUtils.BuildBranchAccess(user, branchService,featureMap);
         if (!branchResult.IsSuccess) return [];
 
         cache.Set(Key(userId), branchResult.Value, Opts);
         return branchResult.Value;
     }
 
-    public void Invalidate(int userId) =>
+    public void Invalidate(Guid userId) =>
         cache.Remove(Key(userId));
 
-    public void Set(int userId, List<PermissionsDto> branches)
+    public void Set(Guid userId, List<PermissionsDto> branches)
     {
         cache.Set(Key(userId), branches, Opts);
     }

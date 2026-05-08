@@ -3,8 +3,8 @@ using Auth.Contracts.Interfaces;
 using Auth.Data.Entities;
 using Auth.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
-using Shared.Services;
+using Common.Result;
+using Common.Services;
 
 namespace Auth.UseCases.Autentication;
 
@@ -27,7 +27,7 @@ public class CompletePublicRegister(AuthDbContext dbContext, ICurrentUser curren
                 .Select(r => r.Id)
                 .FirstOrDefaultAsync();
 
-        if (roleId <= 0)
+        if (roleId == Guid.Empty)
             return new Error("NOT_FOUND", "role not found");
 
         user.UserBranchRoles.Clear();

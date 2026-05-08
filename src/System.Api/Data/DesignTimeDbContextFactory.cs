@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Shared.Data;
+using Common.Data;
 
 namespace System.Api.Data;
 

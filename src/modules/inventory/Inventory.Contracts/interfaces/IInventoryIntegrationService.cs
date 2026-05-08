@@ -1,22 +1,22 @@
-using Shared.Result;
+using Common.Result;
 
 namespace Inventory.Contracts.interfaces;
 
 public interface IInventoryIntegrationService
 {
     Task<Result<List<ProductVariantStockDto>>> GetVariantsWithStock(
-        List<int> variantIds, int branchId);
+        List<Guid> variantIds, Guid branchId);
 
     Task<Result<bool>> DeductStock(
-        List<StockDeductionDto> deductions, int branchId, int userId);
+        List<StockDeductionDto> deductions, Guid branchId, Guid userId);
 }
 
 public record ProductVariantStockDto(
-    int Id,
+    Guid Id,
     string Sku,
     decimal Price,
     int Stock);
 
 public record StockDeductionDto(
-    int ProductVariantId,
+    Guid ProductVariantId,
     int Quantity);

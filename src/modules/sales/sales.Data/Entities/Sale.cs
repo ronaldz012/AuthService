@@ -2,13 +2,12 @@ namespace sales.use.Entities;
 
 public class Sale
 {
-    public int Id { get; set; }
-    public int BranchId { get; set; }
-    public int SoldById { get; set; }
+    public Guid Id { get; set; }
+    public Guid BranchId { get; set; }
+    public Guid SoldById { get; set; }
     public string Xd { get; set; } = "xd";
     public PaymentMethod PaymentMethod { get; set; }
     public string? TransactionCode { get; set; }
-    //public decimal AmountPaid { get; set; }
     public decimal TotalAmount { get; set; }
     public int? InvoiceNumber { get; set; }
     public SaleStatus Status { get; set; }

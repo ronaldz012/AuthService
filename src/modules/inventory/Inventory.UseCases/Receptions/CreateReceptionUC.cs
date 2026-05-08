@@ -4,12 +4,12 @@ using Inventory.Contracts.Dtos.Receptions;
 using Inventory.Data.Entities.Inventory;
 using Inventory.Data.Entities.Products;
 using Inventory.Data.Entities.Receptions;
-using Inventory.Data.Persistence;
 using Inventory.Infrastructure.CodeGenerator;
 using Inventory.UseCases.Products;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
-using Shared.Services;
+using Common.Result;
+using Common.Services;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Receptions;
 

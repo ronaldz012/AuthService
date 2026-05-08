@@ -1,7 +1,7 @@
 using Auth.Contracts.Dtos.Users;
 using Auth.Data.Entities;
 using MapsterMapper;
-using Shared.Result;
+using Common.Result;
 
 namespace Auth.UseCases.Autentication;
 
@@ -16,7 +16,7 @@ public class RegisterDefaultUser(IMapper mapper, RegisterUser registerUser)
         user.Status = UserStatus.PendingVerification; //this should be based on the settings or always be this way? not sure
         user.UserBranchRoles = new List<UserBranchRole>
         {
-            new UserBranchRole { RoleId = roleResult.Value }
+            new UserBranchRole { RoleId = Guid.Empty }
         };
 
         return await registerUser.Execute(user, dto.Password);

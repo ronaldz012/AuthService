@@ -1,9 +1,9 @@
 using Auth.Data.Persistence;
 using Branches.module.Data;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
 using sales.Module.Data;
-using Shared.Data;
+using Common.Data;
+using Inventory.Data;
 
 namespace System.Api.Data;
 

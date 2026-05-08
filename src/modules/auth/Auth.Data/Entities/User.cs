@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using Shared.Domain;
+using Common.Domain;
 namespace Auth.Data.Entities;
 
 public class User : ICreatedAt, ICreatedBy, IUpdatedAt, ISoftDelete, IUpdatedBy
 {
     [Key]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     [StringLength(100)]
     public string Username { get; set; } = string.Empty;
 

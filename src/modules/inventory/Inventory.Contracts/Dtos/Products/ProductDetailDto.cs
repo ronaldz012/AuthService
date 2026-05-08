@@ -4,7 +4,7 @@ namespace Inventory.Contracts.Dtos.Products;
 
 public class ProductDetailDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string InternalCode { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -22,7 +22,7 @@ public class ProductDetailDto
 
 public class ProductVariantDetailDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Sku { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;

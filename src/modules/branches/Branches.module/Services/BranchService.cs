@@ -2,14 +2,15 @@ using Branches.Contracts;
 using Branches.Contracts.Dtos;
 using Branches.module.Data;
 using Branches.module.Entities;
+using Common.Result;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+
 
 namespace Branches.module.Services;
 
 public class BranchService(BranchDbContext context) : IBranchService
 {
-    public async Task<Result<List<BranchDto>>> GetBranchesByIds(List<int> ids)
+    public async Task<Result<List<BranchDto>>> GetBranchesByIds(List<Guid> ids)
     {
         var branches = await context.Branches
             .Where(b => ids.Contains(b.Id) && b.Status)

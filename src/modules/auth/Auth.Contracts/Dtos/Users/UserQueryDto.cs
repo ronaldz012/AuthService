@@ -1,4 +1,4 @@
-using Shared.Extensions;
+using Common.Extensions;
 
 namespace Auth.Contracts.Dtos.Users;
 

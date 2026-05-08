@@ -1,11 +1,11 @@
 using Branches.Contracts.Dtos;
-using Shared.Result;
+using Common.Result;
 
 namespace Branches.Contracts;
 
 public interface IBranchService
 {
-    Task<Result<List<BranchDto>>> GetBranchesByIds(List<int> ids);
+    Task<Result<List<BranchDto>>> GetBranchesByIds(List<Guid> ids);
     Task<Result<List<BranchDto>>> GetBranches();
     Task<Result<bool>>  CreateBranch(CreateBranchDto request);
 }

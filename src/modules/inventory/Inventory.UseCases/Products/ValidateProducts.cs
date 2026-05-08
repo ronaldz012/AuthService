@@ -1,12 +1,12 @@
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Products;
 
 public class ValidateProducts(InvDbContext context)
 {
-    public async Task<Result<bool>> Execute(List<int> productIds)
+    public async Task<Result<bool>> Execute(List<Guid> productIds)
     {
         var idsFounded = await context.Products.Where(x => productIds.Contains(x.Id)).Select(x => x.Id).ToListAsync();
 

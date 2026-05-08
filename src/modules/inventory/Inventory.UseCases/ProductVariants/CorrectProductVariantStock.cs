@@ -2,15 +2,15 @@ using Auth.Contracts.Interfaces;
 using Inventory.Contracts.Dtos.ProductVariants;
 using Inventory.Data.Entities.Inventory;
 using Inventory.Data.Entities.Products;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.ProductVariants;
 
 public class CorrectProductVariantStock(InvDbContext context, ICurrentUser currentUser)
 {
-    public async Task<Result<bool>> Execute(UpdateProductVariantStockDto request, int id)
+    public async Task<Result<bool>> Execute(UpdateProductVariantStockDto request, Guid id)
     {
         var currentBranch = currentUser.BranchIds.FirstOrDefault();
         

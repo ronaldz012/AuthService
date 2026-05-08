@@ -7,90 +7,89 @@ using Branches.Contracts;
 using Branches.module.Services;
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
-using Shared.Data;
-using Shared.Result;
+using Common.Data;
+using Common.Result;
+using shared.Contracts.interfaces;
 
 namespace Auth.UseCases.Autentication;
-
-public class AuthenticateWithGoogle(AuthDbContext dbContext,
-    RegisterUser registerUser, 
-    IMapper mapper, IGoogleTokenValidator googleTokenValidator,
+public class AuthenticateWithGoogle(
+    AuthDbContext dbContext,
+    RegisterUser registerUser,
+    IMapper mapper,
+    IGoogleTokenValidator googleTokenValidator,
     ITokenGenerator tokenGenerator,
     IBranchService branchService,
+    IFeatureService featureService,
     ITenantContext tenantContext)
 {
     public async Task<Result<SuccessLoginDto>> Execute(string idToken)
     {
-        // Validar token de Google
         var googleUserResult = await googleTokenValidator.ValidateTokenAsync(idToken);
         if (!googleUserResult.IsSuccess)
-            return googleUserResult.Error!; // fix after mvp
+            return googleUserResult.Error!;
 
         var googleUser = googleUserResult.Value;
 
-        // Buscar si el usuario ya existe
         var existingUser = await dbContext.Users
-        .AsSplitQuery()
+            .AsSplitQuery()
             .Include(u => u.UserBranchRoles)
-            .ThenInclude(ur => ur.Role)
-                .ThenInclude(r => r.RoleFeaturePermissions)
-                    .ThenInclude(mp => mp.Feature)
-                    .ThenInclude(f => f.Module)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RoleFeaturePermissions)
             .FirstOrDefaultAsync(u => u.Email == googleUser!.Email);
 
         if (existingUser == null)
         {
-            // Usuario nuevo - crear con rol Guest
             var createResult = await CreateGoogleUser(googleUser!);
             if (!createResult.IsSuccess)
                 return createResult.Error!;
 
             existingUser = createResult.Value;
-        }// else? maybe
+        }
 
-        // Generar JWT token
-        var token = tokenGenerator.GenerateAccessToken(existingUser!.Id, tenantContext.Schema?? "");
-        var refreshToken = tokenGenerator.GenerateRefreshToken();
-        //BUILD PERMISSIONS
-        var branchesResult = await UserMappingUtils.BuildBranchAccessByModule(existingUser, branchService);
+        var featureIds = existingUser!.UserBranchRoles
+            .SelectMany(ubr => ubr.Role.RoleFeaturePermissions)
+            .Select(rmp => rmp.FeatureId)
+            .Distinct();
+
+        var features = await featureService.GetFeaturesByIdsAsync(featureIds);
+        var featureMap = features.ToDictionary(f => f.Id);
+
+        var branchesResult = await UserMappingUtils.BuildBranchAccessByModule(existingUser, branchService, featureMap);
         if (!branchesResult.IsSuccess)
             return branchesResult.Error!;
 
+        var accessToken  = tokenGenerator.GenerateAccessToken(existingUser.Id, tenantContext.Schema?? "");
+        var refreshToken = tokenGenerator.GenerateRefreshToken();
 
-        var response = new SuccessLoginDto
+        return new SuccessLoginDto
         {
-            AccessToken = token,
+            AccessToken  = accessToken,
             RefreshToken = refreshToken,
             AuthProvider = existingUser.AuthProvider.ToString(),
-            Status = existingUser.Status.ToString(),
-            User = mapper.Map<UserDetailsDto>(existingUser),
-            Branches = branchesResult.Value,
+            Status       = existingUser.Status.ToString(),
+            User         = mapper.Map<UserDetailsDto>(existingUser),
+            Branches     = branchesResult.Value,
         };
-
-        return response;
-
     }
 
     private async Task<Result<User>> CreateGoogleUser(GoogleUserInfo googleUser)
     {
-        // Obtener rol Guest
         var roleResult = await registerUser.GetDefaultUserRole();
         if (!roleResult.IsSuccess)
             return roleResult.Error!;
+
         var user = new User
         {
-            Email = googleUser.Email,
-            Username = googleUser.Email.Split('@')[0], // Generar username del email
-            FirstName = googleUser.GivenName,
-            LastName = googleUser.FamilyName,
-            // EmailVerified = googleUser.EmailVerified, // Google ya verificó el email
-            Status = UserStatus.PendingRoleSelecting,
-            AuthProvider = AuthProvider.Google,
+            Email          = googleUser.Email,
+            Username       = googleUser.Email.Split('@')[0],
+            FirstName      = googleUser.GivenName,
+            LastName       = googleUser.FamilyName,
+            Status         = UserStatus.PendingRoleSelecting,
+            AuthProvider   = AuthProvider.Google,
             ExternalAuthId = googleUser.GoogleId,
-            // ProfilePictureUrl = googleUser.Picture,
             UserBranchRoles = new List<UserBranchRole>
             {
-                new UserBranchRole { RoleId = roleResult.Value }
+                new() { RoleId =Guid.Empty }
             }
         };
 
@@ -99,28 +98,4 @@ public class AuthenticateWithGoogle(AuthDbContext dbContext,
 
         return user;
     }
-        // private async Task UpdateGoogleInfo(User user, GoogleUserInfo googleUser)
-        // {
-        //     // Actualizar info si cambió
-        //     bool hasChanges = false;
-
-        //     if (user.ProfilePictureUrl != googleUser.Picture)
-        //     {
-        //         user.ProfilePictureUrl = googleUser.Picture;
-        //         hasChanges = true;
-        //     }
-
-        //     if (!user.EmailVerified && googleUser.EmailVerified)
-        //     {
-        //         user.EmailVerified = true;
-        //         hasChanges = true;
-        //     }
-
-        //     if (hasChanges)
-        //     {
-        //         await _dbContext.SaveChangesAsync();
-        //     }
-        // }
-
 }
-    

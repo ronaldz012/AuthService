@@ -1,12 +1,12 @@
 using Inventory.Data.Entities.Receptions;
-using Shared.Extensions;
+using Common.Extensions;
 
 namespace Inventory.Contracts.Dtos.Receptions;
 
 public class StockReceptionListDto
 {
-    public int Id { get; set; }
-    public int BranchId { get; set; }
+    public Guid Id { get; set; }
+    public Guid BranchId { get; set; }
     public DateTime ReceivedAt { get; set; }
     public ReceptionStatus Status { get; set; }
     public int TotalItems { get; set; }

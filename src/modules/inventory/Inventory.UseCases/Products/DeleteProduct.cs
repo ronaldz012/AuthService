@@ -1,14 +1,14 @@
 using System.Security.Cryptography.X509Certificates;
 using Auth.Contracts.Interfaces;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Products;
 
 public class DeleteProduct(InvDbContext context, ICurrentUser currentUser)
 {
-    public async Task<Result<bool>> Execute(int id)
+    public async Task<Result<bool>> Execute(Guid id)
     {
 
         var hasStock = await context.ProductVariants

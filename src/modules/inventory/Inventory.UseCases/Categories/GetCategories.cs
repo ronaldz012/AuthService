@@ -1,9 +1,9 @@
 using Inventory.Contracts.Dtos.Categories;
 using Inventory.Data.Entities.Products;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Extensions;
-using Shared.Result;
+using Common.Extensions;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Categories;
 

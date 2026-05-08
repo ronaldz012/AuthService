@@ -1,14 +1,14 @@
 using System;
 using Branches.module.Entities;
-using Shared.Domain;
+using Common.Domain;
 
 namespace Auth.Data.Entities;
 public class UserBranchRole : ICreatedBy, ICreatedAt, ISoftDelete
 {
     public int Id { get; set; }
-    public int UserId { get; set; }
-    public int RoleId { get; set; }
-    public int BranchId { get; set; }  // in other module
+    public Guid UserId { get; set; }
+    public Guid RoleId { get; set; }
+    public Guid BranchId { get; set; }  // in other module
 
     //Audit fields
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

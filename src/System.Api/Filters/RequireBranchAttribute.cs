@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Build.Experimental.ProjectCache;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Shared.Result;
-using Shared.Services;
+using Common.Result;
+using Common.Services;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace System.Api.Filters;

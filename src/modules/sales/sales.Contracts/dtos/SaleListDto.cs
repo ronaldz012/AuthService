@@ -1,11 +1,11 @@
+using Common.Extensions;
 using sales.use.Entities;
-using Shared.Extensions;
 
 namespace sales.Contracts.dtos;
 
 public class SaleListDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public DateTime CreatedAt { get; set; }
     public decimal TotalAmount { get; set; }
     public SaleStatus Status { get; set; }

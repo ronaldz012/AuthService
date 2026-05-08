@@ -11,7 +11,6 @@ using Auth.Infrastructure.Authentication;
 using Auth.UseCases;
 using Branches.module;
 using Branches.module.Data;
-using Inventory.Data.Persistence;
 using Inventory.Infrastructure;
 using Inventory.Infrastructure.Notifications;
 using Inventory.UseCases;
@@ -24,9 +23,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using sales.Module.Data;
 using sales.UseCases;
-using Shared;
-using Shared.Data;
-using Shared.Services;
+using Common;
+using Common.Data;
+using Common.Services;
+using Inventory.Data;
+using shared.Module.UseCases;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -203,10 +204,11 @@ builder.Services.AddMemoryCache();
 builder.Services.AddAuthData()
                 .AddUseCases()
                 .AddInfrastructure(builder.Configuration)
-                .AddShared(builder.Configuration)
+                .AddCommon(builder.Configuration)
                 .AddBranch(builder.Configuration)
                 .AddInventory()
-                .AddSales();
+                .AddSales()
+                .AddShared();
 //EXTRAER en un DI
 builder.Services.AddSignalR();
 builder.Services.AddScoped<InventorySignalRStockNotifier>();   // tu notifier

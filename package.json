@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "zxing": "^0.1.2"
+  }
+}

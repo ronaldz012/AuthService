@@ -1,6 +1,6 @@
 using Branches.module.Entities;
+using Common.Data;
 using Microsoft.EntityFrameworkCore;
-using Shared.Data;
 
 namespace Branches.module.Data;
 

@@ -1,8 +1,9 @@
 using System.Api.Result;
-using Auth.Contracts.Dtos.Modules;
-using Auth.UseCases.Modules;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using shared.Contracts.dtos.Modules;
+using shared.Module.UseCases.Modules;
+
 
 namespace System.Api.Controllers.Auth;
 

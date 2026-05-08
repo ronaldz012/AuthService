@@ -1,8 +1,8 @@
 using Inventory.Contracts.Dtos.Products;
 using Inventory.Data.Entities.Products;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Products;
 

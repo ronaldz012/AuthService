@@ -3,13 +3,13 @@ using Auth.Contracts.Interfaces;
 using Auth.Data.Entities;
 using Auth.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
 
 namespace Auth.UseCases.Users;
 
 public class UserIntegrationService(AuthDbContext context) : IUserIntegrationService
 {
-    public async Task<Result<List<UserDetailsDto>>> GetUsersByIds(List<int> userIds)
+    public async Task<Result<List<UserDetailsDto>>> GetUsersByIds(List<Guid> userIds)
     {
         var usersFound = await context.Users.IgnoreQueryFilters().Where(x => userIds.Contains(x.Id)).Select(u => new UserDetailsDto
         {

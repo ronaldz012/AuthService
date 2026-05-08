@@ -2,7 +2,7 @@ using Auth.Contracts.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using sales.Contracts.dtos;
 using sales.Module.Data;
-using Shared.Result;
+using Common.Result;
 
 namespace sales.UseCases.UseCases;
 

@@ -2,8 +2,8 @@ using Auth.Contracts.Dtos.Users;
 using Auth.Data.Persistence;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
-using Shared.Extensions;
-using Shared.Result;
+using Common.Extensions;
+using Common.Result;
 
 namespace Auth.UseCases.Users;
 

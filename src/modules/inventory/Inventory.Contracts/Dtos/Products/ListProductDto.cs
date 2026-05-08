@@ -1,12 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using Inventory.Data.Entities.Products;
-using Shared.Extensions;
+using Common.Extensions;
 
 namespace Inventory.Contracts.Dtos.Products;
 
 public class ListProductDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string InternalCode { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty; // Para el chip gris

@@ -7,7 +7,7 @@ using Auth.Infrastructure.Authentication;
 using Auth.Infrastructure.Email.EmailTemplates;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Shared.Services;
+using Common.Services;
 
 namespace Auth.UseCases.Services;
 
@@ -109,7 +109,7 @@ public class EmailVerificationService(AuthDbContext dbContext,
         }
         return result.ToString();
     }
-    private async Task InvalidateExistingCodesAsync(int userId, VerificationCodePurpose purpose)
+    private async Task InvalidateExistingCodesAsync(Guid userId, VerificationCodePurpose purpose)
     {
         var existingCodes = await dbContext.EmailVerificationCodes.Where(
             c => c.UserId == userId &&

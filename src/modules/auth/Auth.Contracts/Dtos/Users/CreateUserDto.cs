@@ -22,6 +22,6 @@ public class CreateUserDto
 }
 public class UserBranchRoleDto
 {
-    public int BranchId { get; set; }
-    public int RoleId { get; set; }
+    public Guid BranchId { get; set; }
+    public Guid RoleId { get; set; }
 }

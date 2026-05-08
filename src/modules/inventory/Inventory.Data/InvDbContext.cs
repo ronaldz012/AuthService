@@ -1,12 +1,12 @@
+using Common.Data;
 using Inventory.Data.Entities.Inventory;
 using Inventory.Data.Entities.Organization;
 using Inventory.Data.Entities.Products;
 using Inventory.Data.Entities.Receptions;
 using Inventory.Data.Entities.Transfers;
 using Microsoft.EntityFrameworkCore;
-using Shared.Data;
 
-namespace Inventory.Data.Persistence;
+namespace Inventory.Data;
 
 public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext tenantContext ) : DbContext(options)
 {
@@ -35,20 +35,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
         }
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema(tenantContext.Schema);
-        //SEEDER
-        modelBuilder.Entity<Category>(entity =>
-        {
-            entity.HasData(
-                new Category { Id = 1, Name = "Sin categoria" }
-            );
-        });
-
-        modelBuilder.Entity<Brand>(entity =>
-        {
-            entity.HasData(
-                new Brand { Id = 1, Name = "Sin Marca" });
-        });
-        //
+  
         modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasMany(product => product.ProductVariants)

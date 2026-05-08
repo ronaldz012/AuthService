@@ -1,14 +1,14 @@
 using Auth.Contracts.Interfaces;
 using Inventory.Contracts.Dtos.Receptions;
-using Inventory.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Receptions;
 
 public class GetReception(InvDbContext context, ICurrentUser currentUser)
 {
-    public async Task<Result<StockReceptionDetailDto>> Execute(int id)
+    public async Task<Result<StockReceptionDetailDto>> Execute(Guid id)
     {
         var currentBranch = currentUser.BranchIds[0];
        

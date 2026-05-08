@@ -1,7 +1,7 @@
 using Inventory.Contracts.Dtos.Brands;
 using Inventory.Data.Entities.Products;
-using Inventory.Data.Persistence;
-using Shared.Result;
+using Common.Result;
+using Inventory.Data;
 
 namespace Inventory.UseCases.Brands;
 
