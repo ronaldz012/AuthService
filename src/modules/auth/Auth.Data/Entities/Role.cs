@@ -9,6 +9,7 @@ public class Role : ICreatedAt, ISoftDelete, ICreatedBy, IMustHaveTenant
     public Guid TenantId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public bool IsAdmin { get; set; } = false;
     public bool Public { get; set; } = false;
 
         //Audit fields

@@ -30,4 +30,23 @@ public class FeatureService(SharedDbContext db) : IFeatureService
             })
             .ToListAsync();
     }
+
+    public async  Task<List<FeatureWithModuleDto>> GetAllFeaturesAsync()
+    {
+        return await db.Features
+            .Include(f => f.Module)
+            .Select(f => new FeatureWithModuleDto
+            {
+                Id            = f.Id,
+                Name          = f.Name,
+                Route         = f.Route,
+                Icon          = f.Icon,
+                ModuleId      = f.Module.Id,
+                ModuleName    = f.Module.Name,
+                ModuleRoute   = f.Module.Route,
+                ModuleIcon    = f.Module.Icon,
+                ModuleIsEnabled = f.Module.IsEnabled,
+            })
+            .ToListAsync();
+    }
 }

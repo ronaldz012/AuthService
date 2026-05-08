@@ -7,3 +7,11 @@ public record CreateTenantDto(
     string AdminEmail, 
     string AdminPassword
 );
+
+public class CreateTenantAdminDto
+{
+    
+    public string Email  { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}
+   

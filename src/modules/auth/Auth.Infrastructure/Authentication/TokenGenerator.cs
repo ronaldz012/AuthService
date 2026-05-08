@@ -19,17 +19,23 @@ public class TokenGenerator : ITokenGenerator
             throw new ArgumentException("TokenSettings.SecretKey no está configurado");
         }
     }
-    public string GenerateAccessToken(Guid userId, string tenant)
+    public string GenerateAccessToken(Guid userId,Guid tenantId, string schema,string db, bool isAdmin)
     {
         var securityKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_tokenSettings.SecretKey));
         var credentials = new SigningCredentials(
             securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = new List<Claim> {
-                    new Claim (ClaimTypes.NameIdentifier, userId.ToString()),
-                    new Claim ("tenant", tenant),
-                };
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim("schema", schema),                          // para TenantMiddleware
+            new Claim("tenantId", tenantId.ToString()),           // para TenantMiddleware
+            new Claim("is_admin", isAdmin.ToString().ToLower()),  // para ICurrentUser
+        };
+
+        if (!string.IsNullOrEmpty(db))
+            claims.Add(new Claim("databaseName", db));    
           
         var token = new JwtSecurityToken(
             claims:claims,

@@ -26,6 +26,7 @@ using Common;
 using Common.Data;
 using Common.Services;
 using Inventory.Data;
+using Npgsql;
 using shared.Module.Data;
 using shared.Module.UseCases;
 
@@ -163,41 +164,57 @@ builder.Services.AddDbContext<SharedDbContext>((sp, options) =>
 var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
 
 builder.Services.AddScoped<ITenantContext, TenantContext>();
+
 builder.Services.AddDbContext<AuthDbContext>((sp, options) =>
 {
-  options.UseNpgsql(defaultConnection,
-    x => x.MigrationsHistoryTable("__EFMigrationsHistory_auth", null));
+  var tenant = sp.GetRequiredService<ITenantContext>();
+  var connString = BuildConnectionString(defaultConnection, tenant.DatabaseName);
+    
+  options.UseNpgsql(connString,
+    x => x.MigrationsHistoryTable("__EFMigrationsHistory_auth", tenant.Schema));
 });
 
 builder.Services.AddDbContext<BranchDbContext>((sp, options) =>
 {
-  options.UseNpgsql(defaultConnection,
-    x => x.MigrationsHistoryTable("__EFMigrationsHistory_branches", null));
+  var tenant = sp.GetRequiredService<ITenantContext>();
+  var connString = BuildConnectionString(defaultConnection, tenant.DatabaseName);
+    
+  options.UseNpgsql(connString,
+    x => x.MigrationsHistoryTable("__EFMigrationsHistory_branches", tenant.Schema));
 });
 
 builder.Services.AddDbContext<InvDbContext>((sp, options) =>
 {
-  options.UseNpgsql(defaultConnection,
-    x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", null));
+  var tenant = sp.GetRequiredService<ITenantContext>();
+  var connString = BuildConnectionString(defaultConnection, tenant.DatabaseName);
+    
+  options.UseNpgsql(connString,
+    x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", tenant.Schema));
 });
-
-builder.Services.AddScoped<ITenantContext, TenantContext>();
 
 builder.Services.AddDbContext<SalesDbContext>((sp, options) =>
 {
-
-  var tenantContext = sp.GetRequiredService<ITenantContext>();
-
-  options.UseNpgsql(defaultConnection, x =>
-    x.MigrationsHistoryTable("__EFMigrationsHistory_sales", tenantContext.Schema));
-
+  var tenant = sp.GetRequiredService<ITenantContext>();
+  var connString = BuildConnectionString(defaultConnection, tenant.DatabaseName);
+      
+  options.UseNpgsql(connString,
+    x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", tenant.Schema));
 });
 
-builder.Services.Configure<TenantOptions>(
-  builder.Configuration.GetSection(TenantOptions.Section));
+// Helper local — o lo mueves a TenantDbConnectionFactory si prefieres
+static string BuildConnectionString(string baseConnection, string? databaseName)
+{
+  if (string.IsNullOrEmpty(databaseName))
+    return baseConnection;
 
+  var builder = new NpgsqlConnectionStringBuilder(baseConnection)
+  {
+    Database = databaseName
+  };
+  return builder.ConnectionString;
+}
 
-
+builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddControllers(options =>
 {
   options.Filters.Add<ValidationFilter>();

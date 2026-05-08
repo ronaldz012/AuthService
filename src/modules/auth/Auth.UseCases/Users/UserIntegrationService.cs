@@ -2,8 +2,10 @@ using Auth.Contracts.Dtos.Users;
 using Auth.Contracts.Interfaces;
 using Auth.Data;
 using Auth.Data.Entities;
+using Auth.UseCases.Autentication.functions;
 using Microsoft.EntityFrameworkCore;
 using Common.Result;
+using shared.Contracts.dtos;
 
 namespace Auth.UseCases.Users;
 
@@ -25,4 +27,29 @@ public class UserIntegrationService(AuthDbContext context) : IUserIntegrationSer
         if (missingUsersIds.Any()) return new Error("NOT_FOUND", $"Users with Ids not found{missingUsersIds.ToString()}");
         return usersFound;
     }
+
+    public async Task<Result<Guid>> CreateTenantAdminAsync(string email, string password)
+    {
+            if (await context.Users.AnyAsync(u => u.Email == email))
+                return new Error("CONFLICT", "El email ya está registrado.");
+
+            ValidatePassword.CreatePasswordHash(password, out var hash, out var salt);
+
+            var user = new User
+            {
+                Email        = email,
+                Username     = email, // o separar si tienes username
+                PasswordHash = hash,
+                PasswordSalt = salt,
+                IsAdmin      = true,       // ← flag de admin
+                Status       = UserStatus.Active,
+            };
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync(); // usa el schema del tenantContext ya seteado
+
+            return user.Id;
+        
+    }
+    
 }

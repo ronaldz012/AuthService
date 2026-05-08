@@ -20,7 +20,7 @@ namespace System.Api.Controllers.Branch
         [HttpGet]
         public async Task<IActionResult> GetBranches()
         {
-            return await branchService.GetBranches().ToValueOrProblemDetails();
+            return await branchService.GetAllBranches().ToValueOrProblemDetails();
         }
     }
 }

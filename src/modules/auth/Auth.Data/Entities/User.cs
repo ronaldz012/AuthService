@@ -8,6 +8,7 @@ public class User : ICreatedAt, ICreatedBy, IUpdatedAt, ISoftDelete, IUpdatedBy,
     public Guid Id { get; set; }
     [StringLength(100)]
     public string Username { get; set; } = string.Empty;
+    public bool IsAdmin { get; set; } = false;  // ← aquí
 
     public byte[] PasswordHash { get; set; } = [];
     public byte[] PasswordSalt { get; set; } = [];

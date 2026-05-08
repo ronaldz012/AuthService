@@ -1,3 +1,5 @@
+using Auth.Contracts.Dtos.permissions;
+using Auth.Contracts.Dtos.Roles;
 using Auth.Contracts.Dtos.Users;
 using Auth.Data;
 using Auth.Data.Entities;
@@ -12,12 +14,11 @@ using Common.Result;
 using shared.Contracts.interfaces;
 
 namespace Auth.UseCases.Autentication;
-
-public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper, IBranchService branchService,ITenantContext tenantContext, IFeatureService featureService)
+public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper, IBranchService branchService, ITenantContext tenantContext, IFeatureService featureService)
 {
-  public async Task<Result<SuccessLoginDto>> Execute(LoginDto request)
+    public async Task<Result<SuccessLoginDto>> Execute(LoginDto request)
     {
-        // 1. Query en AuthDbContext — ya sin Include hacia Feature/Module
+        // 1. Query
         var user = await dbContext.Users
             .AsSplitQuery()
             .Include(u => u.UserBranchRoles.Where(ur => ur.DeletedAt == null))
@@ -32,28 +33,53 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMap
             return new Error("VALIDATION_ERROR", "Correo electrónico o contraseña incorrectos.");
 
         if (user.Status == UserStatus.PendingVerification)
+            return new SuccessLoginDto { Status = user.Status.ToString(), User = mapper.Map<UserDetailsDto>(user) };
+
+        // 2. Cortocircuito admin
+        var isAdmin = user.IsAdmin;
+
+        Dictionary<Guid, BranchDto> branchesById;
+
+        if (isAdmin)
         {
-            return new SuccessLoginDto
-            {
-                Status = user.Status.ToString(),
-                User   = mapper.Map<UserDetailsDto>(user)
-            };
+            var allBranchesResult = await branchService.GetAllBranches();
+            if (!allBranchesResult.IsSuccess)
+                return new Error("NOT_FOUND", allBranchesResult.Error.Message);
+
+            branchesById = allBranchesResult.Value.ToDictionary(b => b.Id);
+        }
+        else
+        {
+            var branchIds = user.UserBranchRoles
+                .Select(ubr => ubr.BranchId)
+                .Distinct()
+                .ToList();
+
+            var branchesResult = await branchService.GetBranchesByIds(branchIds);
+            if (!branchesResult.IsSuccess)
+                return new Error("NOT_FOUND", branchesResult.Error.Message);
+
+            branchesById = branchesResult.Value.ToDictionary(b => b.Id);
         }
 
-        // 2. Recolectar todos los featureIds del usuario
-        var featureIds = user.UserBranchRoles
-            .SelectMany(ur => ur.Role.RoleFeaturePermissions)
-            .Select(rmp => rmp.FeatureId)
-            .Distinct();
+        List<PermissionsByModuleDto> branches;
+        if (isAdmin)
+        {
+            var allFeatures = await featureService.GetAllFeaturesAsync();
+            branches = UserMappingUtils.BuildAdminBranchAccess(branchesById, allFeatures);
+        }
+        else
+        {
+            var featureIds = user.UserBranchRoles
+                .SelectMany(ur => ur.Role.RoleFeaturePermissions)
+                .Select(rmp => rmp.FeatureId)
+                .Distinct();
 
-        // 3. Query en SharedDbContext
-        var features = await featureService.GetFeaturesByIdsAsync(featureIds);
-        var featureMap = features.ToDictionary(f => f.Id);  // ← se pasa a los métodos
-        var branchResult = await UserMappingUtils.BuildBranchAccessByModule(user, branchService, featureMap);
-        if (!branchResult.IsSuccess)
-            return new Error("NOT_FOUND", branchResult.Error.Message);
-
-        var accessToken = tokenGenerator.GenerateAccessToken(user.Id, tenantContext.Schema ?? "");
+            var features = await featureService.GetFeaturesByIdsAsync(featureIds);
+            var featureMap = features.ToDictionary(f => f.Id);
+            branches = UserMappingUtils.BuildBranchAccessByModule(user, branchesById, featureMap);
+        }
+        var accessToken = tokenGenerator.GenerateAccessToken(user.Id, tenantContext.TenantId!.Value,tenantContext.Schema ?? "",tenantContext.DatabaseName ?? "", user.IsAdmin);
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 
         return new SuccessLoginDto
@@ -64,7 +90,7 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMap
             RefreshToken = refreshToken,
             ExpiresIn    = tokenGenerator.GetAccessTokenExpirationMinutes() * 60,
             User         = mapper.Map<UserDetailsDto>(user),
-            Branches     = branchResult.Value
+            Branches     = branches
         };
     }
 }

@@ -1,3 +1,5 @@
+using Auth.Contracts.Dtos.Users;
+using Auth.Contracts.Interfaces;
 using Auth.Data;
 using Auth.Data.Entities;
 using Common.Data;
@@ -13,48 +15,56 @@ namespace shared.Module.UseCases;
 
 public class TenantService(
     SharedDbContext sharedContext,
-    AuthDbContext authContext,
+    IUserIntegrationService userIntegrationService, 
     ITenantContext tenantContext,
     IConfiguration configuration) // Usado para "saltar" al nuevo esquema
 {
     public async Task<Result<Guid>> CreateTenantAsync(CreateTenantDto dto)
     {
-        // 1. Validaciones de Negocio (DisplayName único)
+        // 1. Validación de negocio
         if (await sharedContext.Tenants.AnyAsync(t => t.DisplayName == dto.DisplayName))
             return new Error("CONFLICT", "El nombre ya está registrado.");
 
-        // 2. Validaciones de Infraestructura (DB y Schema)
+        // 2. Validación de infraestructura
         var infraValidation = await ValidateDatabaseAndSchema(dto.DatabaseName, dto.Schema);
         if (!infraValidation.IsSuccess) return infraValidation.Error!;
 
-        // 3. Persistencia del Tenant
+        // 3. Persistir tenant en SharedDb
         var newTenant = new Tenant
         {
-            DisplayName = dto.DisplayName,
-            Schema = dto.Schema,
+            DisplayName  = dto.DisplayName,
+            Schema       = dto.Schema,
             DatabaseName = dto.DatabaseName,
         };
 
         sharedContext.Tenants.Add(newTenant);
 
-        // 4. Creación del Usuario Admin (Cross-Context Transaction)
-        using var transaction = await sharedContext.Database.BeginTransactionAsync();
-        try 
+        using var sharedTransaction = await sharedContext.Database.BeginTransactionAsync();
+        try
         {
             await sharedContext.SaveChangesAsync();
 
-            // Cambiamos el contexto para apuntar al nuevo "mundo"
-            tenantContext.TenantId = newTenant.Id;
-            tenantContext.Schema = newTenant.Schema;
+            // 4. Saltar al schema del nuevo tenant para crear el admin
+            tenantContext.TenantId    = newTenant.Id;
+            tenantContext.Schema      = newTenant.Schema;
+            tenantContext.DatabaseName = newTenant.DatabaseName;
 
-            //await CreateDefaultAdmin(newTenant.Id, dto.AdminEmail, dto.AdminPassword);
-        
-            await transaction.CommitAsync();
+            // 5. Crear usuario admin en AuthDbContext (schema del tenant)
+            var adminResult = await userIntegrationService.CreateTenantAdminAsync( dto.AdminEmail, dto.AdminPassword);
+
+            if (!adminResult.IsSuccess)
+            {
+                // Compensación — el tenant no queda huérfano sin admin
+                await sharedTransaction.RollbackAsync();
+                return adminResult.Error!;
+            }
+
+            await sharedTransaction.CommitAsync();
             return newTenant.Id;
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            await sharedTransaction.RollbackAsync();
             return new Error("INTERNAL_ERROR", ex.Message);
         }
     }

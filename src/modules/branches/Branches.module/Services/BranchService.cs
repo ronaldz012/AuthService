@@ -30,7 +30,7 @@ public class BranchService(BranchDbContext context) : IBranchService
         return branches;
     }
 
-    public async Task<Result<List<BranchDto>>> GetBranches()
+    public async Task<Result<List<BranchDto>>> GetAllBranches()
     {
         return await context.Branches.AsNoTracking().Select( x => new BranchDto()
         {
@@ -40,6 +40,7 @@ public class BranchService(BranchDbContext context) : IBranchService
             Status =  x.Status,
         }).ToListAsync();
     }
+    
 
 
     public async Task<Result<bool>> CreateBranch(CreateBranchDto request)

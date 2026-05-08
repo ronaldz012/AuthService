@@ -3,6 +3,7 @@ using Auth.Contracts.Dtos.Roles;
 using Auth.Contracts.Dtos.Users;
 using Auth.Data.Entities;
 using Branches.Contracts;
+using Branches.Contracts.Dtos;
 using Common.Result;
 using shared.Contracts.dtos;
 
@@ -25,15 +26,15 @@ public static class UserMappingUtils
                 var feature = featureMap[g.Key];
                 return new FeaturePermissionsDeductedDto
                 {
-                    Id        = feature.Id,
-                    Name      = feature.Name,
-                    Route     = feature.Route,
-                    ModuleId  = feature.ModuleId,
+                    Id         = feature.Id,
+                    Name       = feature.Name,
+                    Route      = feature.Route,
+                    ModuleId   = feature.ModuleId,
                     ModuleName = feature.ModuleName,
-                    CanRead   = g.Any(rmp => rmp.CanRead),
-                    CanCreate = g.Any(rmp => rmp.CanCreate),
-                    CanUpdate = g.Any(rmp => rmp.CanUpdate),
-                    CanDelete = g.Any(rmp => rmp.CanDelete),
+                    CanRead    = g.Any(rmp => rmp.CanRead),
+                    CanCreate  = g.Any(rmp => rmp.CanCreate),
+                    CanUpdate  = g.Any(rmp => rmp.CanUpdate),
+                    CanDelete  = g.Any(rmp => rmp.CanDelete),
                 };
             }).ToList();
     }
@@ -77,24 +78,45 @@ public static class UserMappingUtils
             }).ToList();
     }
 
+    // ← nuevo: admin con todo en true, agrupa igual que CalculateFeatureByModule
+    private static List<PermissiónByModuleDto> CalculateAdminModules(
+        List<FeatureWithModuleDto> allFeatures)
+    {
+        return allFeatures
+            .GroupBy(f => f.ModuleId)
+            .Select(g =>
+            {
+                var module = g.First();
+                return new PermissiónByModuleDto
+                {
+                    Id          = module.ModuleId,
+                    Name        = module.ModuleName,
+                    Description = module.ModuleDescription,
+                    Route       = module.ModuleRoute,
+                    Icon        = module.ModuleIcon,
+                    Features    = g.Select(f => new FeaturePermissionByModuleDto
+                    {
+                        Id        = f.Id,
+                        Name      = f.Name,
+                        Route     = f.Route,
+                        Icon      = f.Icon,
+                        CanRead   = true,
+                        CanCreate = true,
+                        CanUpdate = true,
+                        CanDelete = true,
+                    }).ToList()
+                };
+            }).ToList();
+    }
+
     // ─── Métodos públicos ─────────────────────────────────────────────────────
 
-    public static async Task<Result<List<PermissionsDto>>> BuildBranchAccess(
+    // branchesById viene resuelto desde afuera — Login se encarga de llamar branchService
+    public static List<PermissionsDto> BuildBranchAccess(
         User user,
-        IBranchService branchService,
+        Dictionary<Guid, BranchDto> branchesById,
         Dictionary<int, FeatureWithModuleDto> featureMap)
     {
-        var branchIds = user.UserBranchRoles
-            .Select(ubr => ubr.BranchId)
-            .Distinct()
-            .ToList();
-
-        var branchesResult = await branchService.GetBranchesByIds(branchIds);
-        if (!branchesResult.IsSuccess)
-            return new Error("NOT_FOUND", branchesResult.Error.Message);
-
-        var branchesById = branchesResult.Value.ToDictionary(b => b.Id);
-
         return user.UserBranchRoles
             .GroupBy(ubr => ubr.BranchId)
             .Select(g =>
@@ -109,27 +131,16 @@ public static class UserMappingUtils
                         Id   = ubr.Role.Id,
                         Name = ubr.Role.Name
                     }).ToList(),
-                    Features = CalculateFeaturePermissions(g.ToList(), featureMap)
+                    Features   = CalculateFeaturePermissions(g.ToList(), featureMap)
                 };
             }).ToList();
     }
 
-    public static async Task<Result<List<PermissionsByModuleDto>>> BuildBranchAccessByModule(
+    public static List<PermissionsByModuleDto> BuildBranchAccessByModule(
         User user,
-        IBranchService branchService,
+        Dictionary<Guid, BranchDto> branchesById,
         Dictionary<int, FeatureWithModuleDto> featureMap)
     {
-        var branchIds = user.UserBranchRoles
-            .Select(ubr => ubr.BranchId)
-            .Distinct()
-            .ToList();
-
-        var branchesResult = await branchService.GetBranchesByIds(branchIds);
-        if (!branchesResult.IsSuccess)
-            return new Error("NOT_FOUND", branchesResult.Error.Message);
-
-        var branchesById = branchesResult.Value.ToDictionary(b => b.Id);
-
         return user.UserBranchRoles
             .GroupBy(ubr => ubr.BranchId)
             .Select(g =>
@@ -144,8 +155,23 @@ public static class UserMappingUtils
                         Id   = ubr.Role.Id,
                         Name = ubr.Role.Name
                     }).ToList(),
-                    Modules = CalculateFeatureByModule(g.ToList(), featureMap)
+                    Modules    = CalculateFeatureByModule(g.ToList(), featureMap)
                 };
             }).ToList();
+    }
+
+    public static List<PermissionsByModuleDto> BuildAdminBranchAccess(
+        Dictionary<Guid, BranchDto> branchesById,
+        List<FeatureWithModuleDto> allFeatures)
+    {
+        var adminModules = CalculateAdminModules(allFeatures);
+
+        return branchesById.Values.Select(branch => new PermissionsByModuleDto
+        {
+            BranchId   = branch.Id,
+            BranchName = branch.Name,
+            Roles      = [], // admin no necesita roles en el frontend
+            Modules    = adminModules
+        }).ToList();
     }
 }
