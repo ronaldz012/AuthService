@@ -31,7 +31,7 @@ public class ProductDetails(InvDbContext context, ICurrentUser currentUser)
                 Sku = pv.Sku,
                 Description = pv.Description,
                 Size = pv.Size,
-                Color = pv.Color,
+                Color = pv.Color.Name,
                 Price = pv.Price,
                 Stock = pv.BranchInventories
                     .Where(x => x.BranchId == currentBranch)

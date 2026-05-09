@@ -15,13 +15,8 @@ public static class CodeGenerator
         return $"P-{new string(chars)}";
     }
 
-    public static string GenerateVariantSku(string productInternalCode)
+    public static string GenerateVariantSku(string productInternalCode, string colorCode,string size)
     {
-        var chars = new char[3];
-        for (int i = 0; i < 3; i++)
-        {
-            chars[i] = Alphabet[Random.Next(Alphabet.Length)];
-        }
-        return $"{productInternalCode}-{new string(chars)}";
+        return $"{productInternalCode}-{colorCode}-{size}";
     }
 }

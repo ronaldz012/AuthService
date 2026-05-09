@@ -17,7 +17,7 @@ public class GetProductVariantByCode(InvDbContext context, ICurrentUser currentU
                 Sku = pv.Sku,
                 Description = pv.Description,
                 Size = pv.Size,
-                Color = pv.Color,
+                Color = pv.Color.Name,
                 Price = pv.Price,
                 BranchId = branch,
                 AvailableStockInBranch = pv.BranchInventories.Where(bi => bi.BranchId == branch).Select(bi => bi.Stock).FirstOrDefault(),

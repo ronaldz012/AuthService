@@ -52,7 +52,7 @@ public class SearchProduct(InvDbContext context)
                     Description = y.Description,
                     Sku =  y.Sku,
                     Size = y.Size,
-                    Color = y.Color,
+                    Color = y.Color.Name,
                     Price = y.Price
                 }).ToList()
             })

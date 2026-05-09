@@ -18,7 +18,7 @@ public class ReceptionLabels(InvDbContext context)
                 VariantId = ri.ProductVariantId,
                 Sku = ri.ProductVariant.Sku,
                 Size = ri.ProductVariant.Size,
-                Color = ri.ProductVariant.Color,
+                Color = ri.ProductVariant.Color.Name,
                 Gender = ri.ProductVariant.Product.Gender,
                 Price = ri.ProductVariant.Price,
                 ProductName = ri.ProductVariant.Product.Name+"/"+ri.ProductVariant.Description +"/"+ri.ProductVariant.Description,

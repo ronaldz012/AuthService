@@ -16,7 +16,9 @@ public class StockTransferDetails(InvDbContext context, IBranchService branchSer
         var transfer = await context.StockTransfers
             .Include(st => st.Items)
                 .ThenInclude(i => i.ProductVariant)
-                    .ThenInclude(pv => pv.Product)
+                    .ThenInclude(pv => pv.Product).Include(stockTransfer => stockTransfer.Items)
+                        .ThenInclude(stockTransferItem => stockTransferItem.ProductVariant)
+                                .ThenInclude(productVariant => productVariant.Color)
             .FirstOrDefaultAsync(x => x.Id == stockTransferId);
 
         if (transfer == null)
@@ -59,7 +61,7 @@ public class StockTransferDetails(InvDbContext context, IBranchService branchSer
                 VariantDescription = i.ProductVariant.Description,
                 Sku = i.ProductVariant.Sku,
                 Size = i.ProductVariant.Size,
-                Color = i.ProductVariant.Color,
+                Color = i.ProductVariant.Color.Name,
                 QuantityRequested = i.QuantityRequested
             }).ToList()
         };

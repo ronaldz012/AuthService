@@ -18,6 +18,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
     public DbSet<Category> Categories { get; set; }
     public DbSet<Provider> Providers { get; set; }
     public DbSet<Brand> Brands { get; set; }
+    public DbSet<Color> Colors { get; set; }
     public DbSet<StockReception> StockReceptions { get; set; }
     public DbSet<StockReceptionItem> StockReceptionItems { get; set; }
 
@@ -70,6 +71,10 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
             entity.HasMany(pv => pv.TransferItems)
                 .WithOne(ti => ti.ProductVariant)
                 .HasForeignKey(ti => ti.ProductVariantId);
+            
+            entity.HasOne(pv => pv.Color)
+                .WithMany(c => c.ProductVariant)
+                .HasForeignKey(pv => pv.ColorId);
         });
         modelBuilder.Entity<BranchInventory>(entity =>
         {

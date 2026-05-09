@@ -76,6 +76,6 @@ public class NewProductVariantDto
     public int? ProductId { get; set; } // Si el producto ya existe pero la variante es nueva
     public string Description { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
-    public string Color { get; set; } = string.Empty;
+    public Guid ColorId { get; set; }
     public decimal Price { get; set; }
 }

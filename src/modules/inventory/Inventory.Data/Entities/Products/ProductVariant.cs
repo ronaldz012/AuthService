@@ -13,9 +13,11 @@ public class ProductVariant: Params, IMustHaveTenant
     public string Sku { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty; 
     public string Size { get; set; } = string.Empty;
-    public string Color { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public Guid TenantId { get; set; }
+    public Guid ColorId { get; set; }
+
+    public Color Color { get; set; } = null;
     
     public Product Product { get; set; } = default!;
     public ICollection<BranchInventory> BranchInventories { get; set; } = new List<BranchInventory>();

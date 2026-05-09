@@ -23,7 +23,7 @@ public static class ProductMappingExtensions
         productVariant.Description = dto.Description ?? productVariant.Description;
         productVariant.Size = dto.Size ?? productVariant.Size;
         productVariant.Price = dto.Price ?? productVariant.Price;
-        productVariant.Color = dto.Color ?? productVariant.Color;
+        productVariant.ColorId = dto.ColorId ?? productVariant.ColorId;
     }
     
 }
