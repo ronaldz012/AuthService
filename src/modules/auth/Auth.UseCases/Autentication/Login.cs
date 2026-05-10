@@ -14,6 +14,7 @@ using Common.Result;
 using shared.Contracts.interfaces;
 
 namespace Auth.UseCases.Autentication;
+
 public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMapper mapper, IBranchService branchService, ITenantContext tenantContext, IFeatureService featureService)
 {
     public async Task<Result<SuccessLoginDto>> Execute(LoginDto request)
@@ -79,18 +80,18 @@ public class Login(AuthDbContext dbContext, ITokenGenerator tokenGenerator, IMap
             var featureMap = features.ToDictionary(f => f.Id);
             branches = UserMappingUtils.BuildBranchAccessByModule(user, branchesById, featureMap);
         }
-        var accessToken = tokenGenerator.GenerateAccessToken(user.Id, tenantContext.TenantId!.Value,tenantContext.Schema ?? "",tenantContext.DatabaseName ?? "", user.IsAdmin);
+        var accessToken = tokenGenerator.GenerateAccessToken(user.Id, tenantContext.TenantId!.Value, tenantContext.Schema ?? "", tenantContext.DatabaseName ?? "", user.IsAdmin);
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 
         return new SuccessLoginDto
         {
-            Status       = user.Status.ToString(),
+            Status = user.Status.ToString(),
             AuthProvider = user.AuthProvider.ToString(),
-            AccessToken  = accessToken,
+            AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresIn    = tokenGenerator.GetAccessTokenExpirationMinutes() * 60,
-            User         = mapper.Map<UserDetailsDto>(user),
-            Branches     = branches
+            ExpiresIn = tokenGenerator.GetAccessTokenExpirationMinutes() * 60,
+            User = mapper.Map<UserDetailsDto>(user),
+            Branches = branches
         };
     }
 }

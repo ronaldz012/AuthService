@@ -5,7 +5,6 @@ namespace Inventory.Contracts.Dtos.Receptions;
 
 public class CreateStockReceptionDto : IValidatableObject
 {
-    public Guid BranchId { get; set; }
     public string? Notes { get; set; }
     public List<CreateStockReceptionItemDto> Items { get; set; } = new();
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -73,7 +72,6 @@ public class NewProductDto
 
 public class NewProductVariantDto
 {
-    public int? ProductId { get; set; } // Si el producto ya existe pero la variante es nueva
     public string Description { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
     public Guid ColorId { get; set; }

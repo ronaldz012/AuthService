@@ -3,6 +3,7 @@ using System;
 using Inventory.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Inventory.Data.Migrations
 {
     [DbContext(typeof(InvDbContext))]
-    partial class InvDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510022241_colorId")]
+    partial class colorId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -212,9 +215,6 @@ namespace Inventory.Data.Migrations
                     b.Property<string>("Prefix")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("ProductCounter")
-                        .HasColumnType("integer");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");

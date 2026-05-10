@@ -1,4 +1,5 @@
 using Auth.Contracts.Interfaces;
+using Common.Data;
 using Inventory.Contracts.Dtos.Receptions;
 using Inventory.Data.Entities.Inventory;
 using Inventory.Data.Entities.Products;
@@ -14,11 +15,13 @@ namespace Inventory.UseCases.Receptions;
 public class CreateReceptionUc(
     InvDbContext context,
     ProductUseCases productUseCases,
-    ICurrentUser currentUser)
+    ICurrentUser currentUser,
+    ITenantContext tenantContext)
 {
     public async Task<Result<StockReceptionResultDto>> Execute(CreateStockReceptionDto dto)
     {
         var userId = currentUser.UserId;
+        var schema = tenantContext.Schema;
 
         // -- 1. Ids de productos existentes referenciados ----------------------
         var productIds = dto.Items
@@ -71,13 +74,13 @@ public class CreateReceptionUc(
             //    Hacemos un UPDATE por marca que incrementa N lugares de golpe
             //    y retorna el nuevo valor. Así dos requests concurrentes nunca
             //    obtienen el mismo rango.
-            var reservedStart = await ReserveProductCounters(newProductItems, brands);
+            var reservedStart = await ReserveProductCounters(newProductItems, brands,schema);
             if (!reservedStart.IsSuccess) return reservedStart.Error;
 
             // -- 6. Construir el grafo -----------------------------------------
             var newReception = new StockReception
             {
-                BranchId = dto.BranchId,
+                BranchId = currentUser.BranchIds[0],
                 Notes = dto.Notes,
                 ReceivedAt = DateTime.UtcNow
             };
@@ -100,9 +103,9 @@ public class CreateReceptionUc(
                         variantDto.QuantityReceived,
                         variantDto.UnitCost);
 
-                    productVariant.AddQuantity(variantDto.QuantityReceived, dto.BranchId);
+                    productVariant.AddQuantity(variantDto.QuantityReceived, currentUser.BranchIds[0]);
                     stockMovements.Add(StockMovement.CreateReception(
-                        dto.BranchId, productVariant.Id, userId, variantDto.QuantityReceived));
+                        currentUser.BranchIds[0], productVariant.Id, userId, variantDto.QuantityReceived));
                 }
 
                 // Variantes NUEVAS de producto existente
@@ -119,7 +122,7 @@ public class CreateReceptionUc(
                         Sku = CodeGenerator.GenerateVariantSku(parentInternalCode, colorCode, variantDto.NewVariant.Size)
                     };
 
-                    newPv.AddQuantity(variantDto.QuantityReceived, dto.BranchId);
+                    newPv.AddQuantity(variantDto.QuantityReceived, currentUser.BranchIds[0]);
                     newReception.Items.Add(new StockReceptionItem
                     {
                         ProductVariant = newPv,
@@ -127,7 +130,7 @@ public class CreateReceptionUc(
                         UnitCost = variantDto.UnitCost
                     });
                     stockMovements.Add(StockMovement.CreateReceptionForNewVariant(
-                        dto.BranchId, newPv, userId, variantDto.QuantityReceived, string.Empty));
+                        currentUser.BranchIds[0], newPv, userId, variantDto.QuantityReceived, string.Empty));
                 }
             }
 
@@ -169,7 +172,7 @@ public class CreateReceptionUc(
                         Sku = CodeGenerator.GenerateVariantSku(internalCode, colorCode, variantDto.NewVariant.Size)
                     };
 
-                    newVariant.AddQuantity(variantDto.QuantityReceived, dto.BranchId);
+                    newVariant.AddQuantity(variantDto.QuantityReceived, currentUser.BranchIds[0]);
                     newProduct.ProductVariants.Add(newVariant);
                     newReception.Items.Add(new StockReceptionItem
                     {
@@ -178,7 +181,7 @@ public class CreateReceptionUc(
                         UnitCost = variantDto.UnitCost
                     });
                     stockMovements.Add(StockMovement.CreateReceptionForNewVariant(
-                        dto.BranchId, newVariant, userId, variantDto.QuantityReceived));
+                        currentUser.BranchIds[0], newVariant, userId, variantDto.QuantityReceived));
                 }
 
                 context.Products.Add(newProduct);
@@ -231,7 +234,7 @@ public class CreateReceptionUc(
     //    → números disponibles: 6, 7, 8 (retornamos 6 como inicio del rango)
     private async Task<Result<Dictionary<Guid, int>>> ReserveProductCounters(
         List<CreateStockReceptionItemDto> newItems,
-        Dictionary<Guid, Brand> brands)
+        Dictionary<Guid, Brand> brands,string schema)
     {
         if (newItems.Count == 0) return new Dictionary<Guid, int>();
 
@@ -250,14 +253,13 @@ public class CreateReceptionUc(
             // UPDATE atómico: incrementa el counter y retorna el nuevo valor.
             // Dos requests concurrentes nunca obtienen el mismo rango porque
             // PostgresSQL serializa los Updates sobre la misma fila.
-            var newCounter = await context.Database
-                .SqlQueryRaw<int>("""
-                    UPDATE brands
-                    SET product_counter = product_counter + {1}
-                    WHERE id = {0}
-                    RETURNING product_counter
-                    """, brandId, count)
-                .FirstAsync();
+            var sql = "UPDATE \"" + schema + "\".\"Brands\" SET \"ProductCounter\" = \"ProductCounter\" + {0} WHERE \"Id\" = {1} RETURNING \"ProductCounter\"";
+
+            var result = await context.Database
+                .SqlQueryRaw<int>(sql, count, brandId)
+                .ToListAsync();
+
+            var newCounter = result[0];
 
             // Si counter era 5 y reservamos 3 → newCounter = 8
             // El rango reservado es [6, 7, 8], el inicio es 6

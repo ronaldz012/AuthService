@@ -93,6 +93,10 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
         {
             entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
         });
+        modelBuilder.Entity<Color>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+        });
         //RECEPTIONS
         modelBuilder.Entity<StockReception>(entity =>
             {

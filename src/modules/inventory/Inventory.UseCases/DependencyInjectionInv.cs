@@ -2,6 +2,7 @@ using Inventory.Contracts.interfaces;
 using Inventory.Data.Entities.Transfers;
 using Inventory.UseCases.Brands;
 using Inventory.UseCases.Categories;
+using Inventory.UseCases.Colors;
 using Inventory.UseCases.Products;
 using Inventory.UseCases.ProductVariants;
 using Inventory.UseCases.Receptions;
@@ -49,6 +50,10 @@ public  static class DependencyInjectionInv
             .AddScoped<StockTransferDetails>()
             .AddScoped<CancelStockTransfer>()
             .AddScoped<ListStockTransfers>();
+
+        services.AddScoped<ColoreUseCases>()
+            .AddScoped<CreateColor>()
+            .AddScoped<GetListColors>();
 
         services.AddScoped<IInventoryIntegrationService, InventoryIntegrationService>();
         
