@@ -14,11 +14,7 @@ public class SearchProduct(InvDbContext context)
 
         var keywords = query.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        // Identificamos si alguna palabra coincide con nuestros Enums
-        Gender? genderFilter = null;
-        if (keywords.Any(k => k.Contains("hom") || k == "male")) genderFilter = Gender.Male;
-        else if (keywords.Any(k => k.Contains("muj") || k == "fema")) genderFilter = Gender.Female;
-        else if (keywords.Any(k => k.Contains("uni"))) genderFilter = Gender.Unisex;
+
 
         var dbQuery = context.Products
             .Include(x => x.Brand)
@@ -29,10 +25,9 @@ public class SearchProduct(InvDbContext context)
             var pattern = $"%{word}%";
 
             dbQuery = dbQuery.Where(x =>
-                EF.Functions.ILike(x.Name, pattern) ||
-                EF.Functions.ILike(x.Brand.Name, pattern) ||
-                EF.Functions.ILike(x.Category.Name, pattern) ||
-                (genderFilter.HasValue && x.Gender == genderFilter.Value));
+                    EF.Functions.ILike(x.Name, pattern) ||
+                    EF.Functions.ILike(x.InternalCode, pattern) ||  // ← agregar esto
+                    EF.Functions.ILike(x.Brand.Name, pattern));
         }
 
         var result = await dbQuery
@@ -50,7 +45,7 @@ public class SearchProduct(InvDbContext context)
                 {
                     Id = y.Id,
                     Description = y.Description,
-                    Sku =  y.Sku,
+                    Sku = y.Sku,
                     Size = y.Size,
                     Color = y.Color.Name,
                     Price = y.Price
