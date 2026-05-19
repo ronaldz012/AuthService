@@ -47,6 +47,7 @@ public class SearchProduct(InvDbContext context)
                     Description = y.Description,
                     Sku = y.Sku,
                     Size = y.Size,
+                    ColorId =  y.ColorId,
                     Color = y.Color.Name,
                     Price = y.Price
                 }).ToList()

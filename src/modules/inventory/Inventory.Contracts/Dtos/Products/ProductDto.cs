@@ -24,6 +24,7 @@ public class ProductVariantDto
     public string Sku { get; set; } = string.Empty;
 
     public string Size { get; set; } = string.Empty;
+    public Guid ColorId { get; set; }
     public string Color { get; set; } = string.Empty;
     public decimal Price { get; set; }
 }

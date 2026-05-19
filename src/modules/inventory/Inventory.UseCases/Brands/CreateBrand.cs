@@ -20,6 +20,7 @@ public class CreateBrand(InvDbContext context)
         {
             Id = newBrand.Id,
             Name = newBrand.Name,
+            Prefix = newBrand.Prefix,
             Description = newBrand.Description
         };
     }
