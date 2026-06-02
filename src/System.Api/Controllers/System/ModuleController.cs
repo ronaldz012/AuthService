@@ -1,3 +1,4 @@
+using System.Api.Filters;
 using System.Api.Result;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,9 +8,10 @@ using shared.Module.UseCases.Modules;
 
 namespace System.Api.Controllers.Auth;
 
-[Route("api/[controller]")]
+[Route("api/system/[controller]")]
 [ApiController]
-[Tags("Authentication | Modules")]
+[Tags("Admin | Features")]
+[ApiKey]
 
 public class ModuleController(ModuleUseCases service) : ControllerBase
 {

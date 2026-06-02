@@ -42,10 +42,8 @@ public class RequireFeatureFilter(
         }
         else
         {
-            // Single-branch: la única branch activa debe tener el permiso
             hasPermission = activeBranches.All(b =>
                 b.Features.Any(m => m.Route == moduleRoute && HasPerm(m, permission)));
-            // All() con un solo elemento == same as checking that one branch
         }
 
         if (!hasPermission)
@@ -60,6 +58,7 @@ public class RequireFeatureFilter(
                 StatusCode = 403,
                 Message = $"No tiene permiso '{permission}' en el módulo '{moduleRoute}'.",
             }) { StatusCode = 403 };
+            context.HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
         }
     }
 

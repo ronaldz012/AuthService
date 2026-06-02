@@ -9,10 +9,14 @@ public class CreateBrand(InvDbContext context)
 {
     public async Task<Result<BrandDto>> Execute(CreateBrandDto dto)
     {
+        var uniquePrefix = context.Brands.Any(b => b.Prefix == dto.Prefix);
+            if(uniquePrefix) return new Error("DUPLICATE", "there is already a brand with that prefix");
+            
         var newBrand = new Brand
         {
             Name = dto.Name,
-            Description = dto.Description
+            Description = dto.Description,
+            Prefix = dto.Prefix
         };
         context.Brands.Add(newBrand);
         await context.SaveChangesAsync();

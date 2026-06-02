@@ -25,6 +25,11 @@ public class ProductVariant: Params, IMustHaveTenant
     public ICollection<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
 
     public ICollection<StockTransferItem> TransferItems { get; set; } = new List<StockTransferItem>();
+
+    public static  string GenerateSku(string internalCode, string colorCode, string size)
+    {
+        return internalCode +"-"+colorCode+"-"+size;
+    }
     public void AddQuantity(int quantity, Guid branchId)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);

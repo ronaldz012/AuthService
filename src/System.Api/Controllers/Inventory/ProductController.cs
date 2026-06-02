@@ -15,10 +15,10 @@ namespace System.Api.Controllers.Inventory
     public class ProductController(ProductUseCases productUseCases) : ControllerBase
     {
         [HttpPost]
-        [RequireFeature("inventory", "read")]
+        [RequireFeature("products", "create")]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto request)
         {
-            return await productUseCases.CreateProduct.Execute(request).ToValueOrProblemDetails();
+            return await productUseCases.CreateProductUc.Execute(request).ToValueOrProblemDetails();
         }
 
         [HttpGet]

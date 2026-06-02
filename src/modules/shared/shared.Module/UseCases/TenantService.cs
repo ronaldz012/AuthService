@@ -2,6 +2,7 @@ using Auth.Contracts.Dtos.Users;
 using Auth.Contracts.Interfaces;
 using Auth.Data;
 using Auth.Data.Entities;
+using Branches.Contracts;
 using Common.Data;
 using Common.Result;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,8 @@ namespace shared.Module.UseCases;
 
 public class TenantService(
     SharedDbContext sharedContext,
-    IUserIntegrationService userIntegrationService, 
+    IUserIntegrationService userIntegrationService,
+    IBranchService branchService, 
     ITenantContext tenantContext,
     IConfiguration configuration) // Usado para "saltar" al nuevo esquema
 {
@@ -56,7 +58,19 @@ public class TenantService(
             {
                 // Compensación — el tenant no queda huérfano sin admin
                 await sharedTransaction.RollbackAsync();
-                return adminResult.Error!;
+                return adminResult.Error;
+            }
+            var branchResult = await branchService.CreateBranch(new Branches.Contracts.Dtos.CreateBranchDto
+            {
+                Name = dto.BranchName,
+                Place = dto.BranchPlace,
+                PhoneNumber = dto.BranchPhoneNumber,
+                BranchCode = dto.BranchCode
+            });
+            if(!branchResult.IsSuccess)
+            {
+                await sharedTransaction.RollbackAsync();
+                return branchResult.Error;
             }
 
             await sharedTransaction.CommitAsync();

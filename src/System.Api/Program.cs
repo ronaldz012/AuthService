@@ -60,14 +60,14 @@ builder.Services.AddSwaggerGen(c =>
     Name = "X-Branch-Id",
     Description = "IDs de sucursal separados por coma. Ejemplo: `1,2,3`"
   });
-  c.AddSecurityDefinition("Tenant", new OpenApiSecurityScheme  // "Tenant"
+
+  c.AddSecurityDefinition("SystemApiKey", new OpenApiSecurityScheme
   {
     Type = SecuritySchemeType.ApiKey,
     In = ParameterLocation.Header,
-    Name = "X-Forwarded-Host",
-    Description = "Schema del tenant. Ejemplo: `client1`"
+    Name = "X-Api-Key",
+    Description = "API Key requerida para endpoints de sistema (ej. migraciones)."
   });
-
   // ── Ambos requeridos globalmente ─────────────────────────────
   c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -92,19 +92,7 @@ builder.Services.AddSwaggerGen(c =>
                 }
             },
             Array.Empty<string>()
-        },
-        {
-          new OpenApiSecurityScheme
-          {
-            Reference = new OpenApiReference
-            {
-              Type = ReferenceType.SecurityScheme,
-              Id = "Tenant"  // mismo nombre
-            }
-          },
-          Array.Empty<string>()
         }
-        
     });
 
   // ── Bearer estándar (para el candado verde) ──────────────────
@@ -119,6 +107,9 @@ builder.Services.AddSwaggerGen(c =>
     Type = SecuritySchemeType.ApiKey,
     Scheme = "Bearer"
   });
+  
+  // Register Operation Filter to only require ApiKey where [ApiKey] is used
+  c.OperationFilter<System.Api.Filters.ApiKeyOperationFilter>();
 });
 
 builder.Services.AddHttpContextAccessor();

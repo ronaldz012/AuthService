@@ -1,3 +1,4 @@
+using System.Api.Filters;
 using System.Api.Result;
 using Microsoft.AspNetCore.Mvc;
 using shared.Contracts.dtos;
@@ -5,7 +6,9 @@ using shared.Module.UseCases;
 
 namespace System.Api.Controllers.System;
 [ApiController]
-[Route("api/system/migrations")]
+[Route("api/system/[controller]")]
+[ApiKey]
+[Tags("Admin | System")]
 public class TenantController(TenantService service) : ControllerBase
 {
     [HttpPost]

@@ -1,79 +1,24 @@
 using System.ComponentModel.DataAnnotations;
-using Inventory.Data.Entities.Products;
 
 namespace Inventory.Contracts.Dtos.Receptions;
 
-public class CreateStockReceptionDto : IValidatableObject
+public class CreateStockReceptionDto
 {
     public string? Notes { get; set; }
+
+    [Required]
+    [MinLength(1, ErrorMessage = "At least one item is required")]
     public List<CreateStockReceptionItemDto> Items { get; set; } = new();
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-        if (!Items.Any())
-            yield return new ValidationResult("At least one item is required", [nameof(Items)]);
-
-        // Productos nuevos deben tener NewProduct y todas sus variantes con NewVariant
-        var newProducts = Items.Where(x => x.ProductId == null).ToList();
-
-        if (newProducts.Any(x => x.NewProduct == null))
-            yield return new ValidationResult(
-                "NewProduct is required when ProductId is not provided",
-                [nameof(Items)]);
-
-        if (newProducts.Any(x => x.Variants.Any(v => v.NewVariant == null)))
-            yield return new ValidationResult(
-                "All variants must have NewVariant when creating a new product",
-                [nameof(Items)]);
-
-        // Productos existentes deben tener al menos una variante
-        var existingProducts = Items.Where(x => x.ProductId.HasValue).ToList();
-
-        if (existingProducts.Any(x => !x.Variants.Any()))
-            yield return new ValidationResult(
-                "Each existing product must have at least one variant",
-                [nameof(Items)]);
-    }
 }
+
 public class CreateStockReceptionItemDto
 {
-    // Si el producto ya existe
-    public Guid? ProductId { get; set; }
+    [Required]
+    public Guid ProductVariantId { get; set; }
 
-    // Si es producto nuevo
-    public NewProductDto? NewProduct { get; set; }
-
-    // Variantes — siempre una lista
-    public List<NewStockReceptionVariantDto> Variants { get; set; } = new();
-}
-
-public class NewStockReceptionVariantDto
-{
-    // Si la variante ya existe
-    public Guid? ProductVariantId { get; set; }
-
-    // Si es variante nueva
-    public NewProductVariantDto? NewVariant { get; set; }
-
+    [Range(1, int.MaxValue, ErrorMessage = "QuantityReceived must be greater than 0")]
     public int QuantityReceived { get; set; }
-    public decimal UnitCost { get; set; }
-}
-public class NewProductDto
-{
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public Guid CategoryId { get; set; }
-    public Guid BrandId { get; set; }
-    public Gender Gender { get; set; }
-    public decimal BasePrice { get; set; }
-    public int UnitMeasurementSin { get; set; }
-    public string EconomicActivity { get; set; } = string.Empty;
-    public int ProductCodeSin { get; set; }
-}
 
-public class NewProductVariantDto
-{
-    public string Description { get; set; } = string.Empty;
-    public string Size { get; set; } = string.Empty;
-    public Guid ColorId { get; set; }
-    public decimal Price { get; set; }
+    [Range(0.5, double.MaxValue, ErrorMessage = "UnitCost must be at least 0.5")]
+    public decimal UnitCost { get; set; }
 }

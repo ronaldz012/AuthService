@@ -1,10 +1,13 @@
 using System.Api.Migration;
 using Microsoft.AspNetCore.Mvc;
+using System.Api.Filters;
 
 namespace System.Api.Controllers.System;
 
 [ApiController]
-[Route("api/system/migrations")]
+[Route("api/system/[controller]")]
+[ApiKey]
+[Tags("Admin | System")]
 public class MigrationsController(MigrationService migrationService, TenantMigrationOrchestrator orchestrator) : ControllerBase
 {
     // [HttpPost("update-tenant")]

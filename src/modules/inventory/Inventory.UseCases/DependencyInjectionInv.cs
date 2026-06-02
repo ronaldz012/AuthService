@@ -8,6 +8,7 @@ using Inventory.UseCases.ProductVariants;
 using Inventory.UseCases.Receptions;
 using Inventory.UseCases.Transfers;
 using Microsoft.Extensions.DependencyInjection;
+using Inventory.Contracts.Dtos.ProductVariants;
 
 namespace Inventory.UseCases;
 
@@ -16,7 +17,7 @@ public  static class DependencyInjectionInv
     public static IServiceCollection AddInventory(this IServiceCollection services)
     {
         services.AddScoped<ProductUseCases>()
-            .AddScoped<CreateProduct>()
+            .AddScoped<CreateProductUc>()
             .AddScoped<ListProducts>()
             .AddScoped<SearchProduct>()
             .AddScoped<ValidateProducts>()
@@ -28,7 +29,8 @@ public  static class DependencyInjectionInv
 
         services.AddScoped<ProductVariantUseCases>()
             .AddScoped<UpdateProductVariant>()
-            .AddScoped<CorrectProductVariantStock>();
+            .AddScoped<CorrectProductVariantStock>()
+            .AddScoped<CreateProductVariantUc>();
         
         services.AddScoped<CategoryUseCases>()
             .AddScoped<CreateCategory>()

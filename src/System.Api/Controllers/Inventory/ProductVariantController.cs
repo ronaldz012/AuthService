@@ -28,5 +28,11 @@ namespace System.Api.Controllers.Inventory
         {
             return await useCases.GetProductVariantByCode.Execute(request).ToValueOrProblemDetails();
         }
+        [HttpPost("{productId:guid}")]
+        public async Task<IActionResult> CreateProductVariants([FromRoute]Guid productId, [FromBody] List<CreateProductVariantDto> variants)
+        {
+            return await useCases.CreateProductVariantUc.Execute(productId, variants).ToValueOrProblemDetails();
+        }
+
     }
 }

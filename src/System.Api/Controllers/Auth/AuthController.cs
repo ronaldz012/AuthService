@@ -24,11 +24,10 @@ namespace System.Api.Controllers.Auth
                                                     .ToValueOrProblemDetails();
         }
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login(
+            [FromBody] LoginDto dto, 
+            [FromHeader(Name = "X-Forwarded-Host")] string? tenantHost = null)
         {
-          
-    
-            
             return await autenticationUseCases.Login.Execute(dto)
                                                     .ToValueOrProblemDetails();
         }

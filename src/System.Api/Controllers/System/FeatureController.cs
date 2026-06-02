@@ -1,3 +1,4 @@
+using System.Api.Filters;
 using System.Api.Result;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,9 +9,10 @@ using shared.Module.UseCases.Features;
 
 namespace System.Api.Controllers.Auth
 {
-    [Route("api/[controller]")]
+    [Route("api/system/[controller]")]
     [ApiController]
-    [Tags("Authentication | Features")]
+    [Tags("Admin | Features")]
+    [ApiKey]
     public class FeatureController(FeatureUseCases featureUseCases) : ControllerBase
     {
         [HttpPost]

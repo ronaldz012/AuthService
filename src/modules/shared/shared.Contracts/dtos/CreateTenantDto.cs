@@ -5,7 +5,11 @@ public record CreateTenantDto(
     string Schema, 
     string? DatabaseName, 
     string AdminEmail, 
-    string AdminPassword
+    string AdminPassword,
+    string BranchName,
+    string BranchPlace,
+    string BranchPhoneNumber,
+    string BranchCode
 );
 
 public class CreateTenantAdminDto
