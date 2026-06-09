@@ -16,11 +16,11 @@ public class ProductDetailDto
     public string BrandName { get; set; } = string.Empty;
     public int TotalStock { get; set; }
 
-    public IEnumerable<ProductVariantDetailDto> Variants { get; set; } = [];
+    public IEnumerable<ProductVarianListDto> Variants { get; set; } = [];
 
 }
 
-public class ProductVariantDetailDto
+public class ProductVarianListDto
 {
     public Guid Id { get; set; }
     public string Sku { get; set; } = string.Empty;

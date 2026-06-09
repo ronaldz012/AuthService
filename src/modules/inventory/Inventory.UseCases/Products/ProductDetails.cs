@@ -25,7 +25,7 @@ public class ProductDetails(InvDbContext context, ICurrentUser currentUser)
             CategoryName = p.Category.Name,
             BrandId = p.BrandId,
             BrandName = p.Brand.Name,
-            Variants = p.ProductVariants.Select(pv => new ProductVariantDetailDto
+            Variants = p.ProductVariants.Select(pv => new ProductVarianListDto
             {
                 Id = pv.Id,
                 Sku = pv.Sku,
