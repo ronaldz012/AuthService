@@ -8,7 +8,7 @@ public interface IInventoryIntegrationService
         List<Guid> variantIds, Guid branchId);
 
     Task<Result<bool>> DeductStock(
-        List<StockDeductionDto> deductions, Guid branchId, Guid userId);
+        List<StockDeductionDto> deductions, Guid branchId, Guid userId, Guid referenceId);
 }
 
 public record ProductVariantStockDto(

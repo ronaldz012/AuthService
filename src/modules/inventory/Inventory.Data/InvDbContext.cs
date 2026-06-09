@@ -121,15 +121,6 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
                 .WithMany(pv => pv.StockReceptionItems)
                 .HasForeignKey(pv => pv.ProductVariantId);
         });
-        modelBuilder.Entity<StockMovement>(entity =>
-        {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
-
-            entity.HasOne(sm => sm.StockTransfer)
-                .WithMany(st => st.StockMovements)
-                .HasForeignKey(sm => sm.stockTransferId)
-                .IsRequired(false);
-        });
 
         modelBuilder.Entity<StockTransfer>(entity =>
         {

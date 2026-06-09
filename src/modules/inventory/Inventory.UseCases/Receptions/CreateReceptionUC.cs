@@ -36,10 +36,12 @@ public class CreateReceptionUc(
         {
             var newReception = new StockReception
             {
+                Id = new Guid(),
                 BranchId = branchId,
                 Notes = dto.Notes,
                 ReceivedAt = DateTime.UtcNow
             };
+            var receptionId = newReception.Id;
 
             var stockMovements = new List<StockMovement>();
             var variantMap = variants.ToDictionary(v => v.Id);
@@ -58,7 +60,7 @@ public class CreateReceptionUc(
                 variant.AddQuantity(item.QuantityReceived, branchId);
 
                 stockMovements.Add(StockMovement.CreateReception(
-                    branchId, variant.Id, userId, item.QuantityReceived));
+                    branchId, variant.Id, userId, item.QuantityReceived, receptionId));
             }
 
             context.StockReceptions.Add(newReception);

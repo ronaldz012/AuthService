@@ -70,7 +70,9 @@ public class ResolveStockTransfer(InvDbContext context, ICurrentUser currentUser
                     transfer.ToBranchId,
                     item.ProductVariantId,
                     currentUser.UserId,
-                    item.QuantityRequested
+                    item.QuantityRequested,
+                    transfer.Id
+
                 );
                 transfer.StockMovements.Add(movIn);
                 transfer.StockMovements.Add(movOut);

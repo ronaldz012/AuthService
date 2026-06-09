@@ -24,17 +24,10 @@ public class CreateSale(SalesDbContext context, ICurrentUser currentUser, IInven
         await using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
-            // 1. Descontar stock + crear movements (sin SaveChanges aún)
-            var deductions = dto.Items
-                .Select(i => new StockDeductionDto(i.ProductVariantId, i.Quantity))
-                .ToList();
 
-            var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId);
-            if (!deductResult.IsSuccess) return deductResult.Error;
-
-            // 2. Construir y guardar Sale
             var sale = new Sale
             {
+                Id = new Guid(),
                 BranchId = branchId,
                 SoldById = currentUser.UserId,
                 PaymentMethod = dto.PaymentMethod,
@@ -42,6 +35,16 @@ public class CreateSale(SalesDbContext context, ICurrentUser currentUser, IInven
                 Status = SaleStatus.Completed,
                 CreatedAt = DateTime.UtcNow
             };
+            // 1. Descontar stock + crear movements (sin SaveChanges aún)
+            var deductions = dto.Items
+                .Select(i => new StockDeductionDto(i.ProductVariantId, i.Quantity))
+                .ToList();
+
+            var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId, sale.Id);
+            if (!deductResult.IsSuccess) return deductResult.Error;
+
+            // 2. Construir y guardar Sale
+        
 
             foreach (var itemDto in dto.Items)
             {

@@ -1,4 +1,6 @@
 
+using Inventory.UseCases.StockMovements;
+
 namespace Inventory.UseCases.ProductVariants;
 
 public record ProductVariantUseCases(
@@ -7,4 +9,5 @@ public record ProductVariantUseCases(
     , CorrectProductVariantStock CorrectProductVariantStock
     ,GetProductVariantByCode  GetProductVariantByCode
     ,CreateProductVariantUc CreateProductVariantUc
-    ,DeleteProductVariantUc DeleteProductVariantUc);
+    ,DeleteProductVariantUc DeleteProductVariantUc
+    ,ListStockMovementsUc ListStockMovementsUc);

@@ -1,5 +1,6 @@
 using System.Api.Result;
 using Inventory.Contracts.Dtos.ProductVariants;
+using Inventory.Contracts.Dtos.StockMovements;
 using Inventory.UseCases.ProductVariants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +29,12 @@ namespace System.Api.Controllers.Inventory
         {
             return await useCases.GetProductVariantByCode.Execute(request).ToValueOrProblemDetails();
         }
+
+        [HttpGet("{id:guid}/details")]
+        public async Task<IActionResult> GeProductVariantById([FromRoute] Guid id)
+        {
+            return await useCases.GetProductVariantDetails.Execute(id).ToValueOrProblemDetails();
+        }
         [HttpPost("{productId:guid}")]
         public async Task<IActionResult> CreateProductVariants([FromRoute]Guid productId, [FromBody] List<CreateProductVariantDto> variants)
         {
@@ -39,6 +46,13 @@ namespace System.Api.Controllers.Inventory
         {
             return await useCases.DeleteProductVariantUc.Execute(id).ToValueOrProblemDetails();
         }
+        
+        [HttpGet("{id:guid}/movements")]
+        public async Task<IActionResult> GeProductVariantMovementById([FromRoute] Guid id, [FromQuery] StockMovementsQuery request)
+        {
+            return await useCases.ListStockMovementsUc.Execute(id,request).ToValueOrProblemDetails();
+        }
+
 
     }
 }

@@ -27,7 +27,7 @@ public class InventoryIntegrationService(InvDbContext context) : IInventoryInteg
     }
 
     public async Task<Result<bool>> DeductStock(
-        List<StockDeductionDto> deductions, Guid branchId, Guid userId)
+        List<StockDeductionDto> deductions, Guid branchId, Guid userId, Guid referenceId)
     {
         var variantIds = deductions.Select(d => d.ProductVariantId).ToList();
 
@@ -42,7 +42,7 @@ public class InventoryIntegrationService(InvDbContext context) : IInventoryInteg
         {
             var pv = variants.First(v => v.Id == deduction.ProductVariantId);
             pv.RemoveQuantity(deduction.Quantity, branchId); // lanza si stock insuficiente
-            movements.Add(StockMovement.CreateSale(branchId, pv.Id, userId, deduction.Quantity));
+            movements.Add(StockMovement.CreateSale(branchId, pv.Id, userId, deduction.Quantity,referenceId));
         }
 
         context.StockMovements.AddRange(movements);

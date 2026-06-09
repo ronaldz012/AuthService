@@ -9,6 +9,7 @@ using Inventory.UseCases.Receptions;
 using Inventory.UseCases.Transfers;
 using Microsoft.Extensions.DependencyInjection;
 using Inventory.Contracts.Dtos.ProductVariants;
+using Inventory.UseCases.StockMovements;
 
 namespace Inventory.UseCases;
 
@@ -28,11 +29,15 @@ public  static class DependencyInjectionInv
             .AddScoped<DeleteProduct>();
 
         services.AddScoped<ProductVariantUseCases>()
+            .AddScoped<GetProductVariantDetails>()
             .AddScoped<ProductVariantDetailsDto>()
             .AddScoped<UpdateProductVariant>()
             .AddScoped<CorrectProductVariantStock>()
             .AddScoped<CreateProductVariantUc>()
-            .AddScoped<DeleteProductVariantUc>();
+            .AddScoped<DeleteProductVariantUc>()
+            .AddScoped<ListStockMovementsUc>();
+
+      
         
         services.AddScoped<CategoryUseCases>()
             .AddScoped<CreateCategory>()
