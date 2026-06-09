@@ -28,6 +28,7 @@ public  static class DependencyInjectionInv
             .AddScoped<DeleteProduct>();
 
         services.AddScoped<ProductVariantUseCases>()
+            .AddScoped<ProductVariantDetailsDto>()
             .AddScoped<UpdateProductVariant>()
             .AddScoped<CorrectProductVariantStock>()
             .AddScoped<CreateProductVariantUc>()

@@ -1,7 +1,9 @@
 
 namespace Inventory.UseCases.ProductVariants;
 
-public record ProductVariantUseCases(UpdateProductVariant UpdateProductVariant
+public record ProductVariantUseCases(
+    GetProductVariantDetails GetProductVariantDetails
+    ,UpdateProductVariant UpdateProductVariant
     , CorrectProductVariantStock CorrectProductVariantStock
     ,GetProductVariantByCode  GetProductVariantByCode
     ,CreateProductVariantUc CreateProductVariantUc
