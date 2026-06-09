@@ -43,6 +43,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
         modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+                entity.HasQueryFilter(x => x.DeletedAt == null);
 
                 entity.HasMany(product => product.ProductVariants)
                     .WithOne(variant => variant.Product)
@@ -60,6 +61,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
         modelBuilder.Entity<ProductVariant>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.DeletedAt == null);
 
             entity.HasMany(pv => pv.BranchInventories)
                 .WithOne(inv => inv.ProductVariant)

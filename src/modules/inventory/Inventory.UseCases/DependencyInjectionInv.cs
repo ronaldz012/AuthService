@@ -30,7 +30,8 @@ public  static class DependencyInjectionInv
         services.AddScoped<ProductVariantUseCases>()
             .AddScoped<UpdateProductVariant>()
             .AddScoped<CorrectProductVariantStock>()
-            .AddScoped<CreateProductVariantUc>();
+            .AddScoped<CreateProductVariantUc>()
+            .AddScoped<DeleteProductVariantUc>();
         
         services.AddScoped<CategoryUseCases>()
             .AddScoped<CreateCategory>()

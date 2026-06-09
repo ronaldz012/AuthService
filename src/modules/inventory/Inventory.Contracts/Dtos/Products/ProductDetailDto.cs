@@ -27,6 +27,7 @@ public class ProductVariantDetailDto
     public string Description { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty;
+    public Guid ColorId {get;set;}
     public decimal Price { get; set; }
     public int Stock { get; set; }
 }

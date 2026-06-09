@@ -14,6 +14,7 @@ public class Product:Params, IMustHaveTenant
     public Guid BrandId { get; set; }
     public Gender Gender { get; set; }
     public decimal BasePrice { get; set; }
+    public int ProductVariantCounter {get;set;}
 
     public int UnitMeasurementSin { get; set; } // unidad de medida siat
     public string EconomicActivity { get; set; } = string.Empty; // codigo actividad economica siat

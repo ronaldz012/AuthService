@@ -76,4 +76,9 @@ public class ProductVariant: Params, IMustHaveTenant
     public int GetStockByBranch(Guid branchId) 
         => BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId)?.Stock ?? 0;
 
+    public void SoftDelete(Guid userId)
+    {
+       DeletedAt = DateTime.UtcNow;
+       DeletedById = userId;
+    }
 }

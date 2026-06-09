@@ -9,9 +9,7 @@ public static class ProductMappingExtensions
     {
         product.Name = dto.Name ?? product.Name;
         product.Description = dto.Description ?? product.Description;
-        product.BasePrice = dto.BasePrice ?? product.BasePrice;
         product.CategoryId = dto.CategoryId ?? product.CategoryId;
-        product.BrandId = dto.BrandId ?? product.BrandId;
         product.Gender = dto.Gender ?? product.Gender;
         
         product.UpdatedAt = DateTime.UtcNow;
@@ -21,9 +19,7 @@ public static class ProductMappingExtensions
     {
     
         productVariant.Description = dto.Description ?? productVariant.Description;
-        productVariant.Size = dto.Size ?? productVariant.Size;
         productVariant.Price = dto.Price ?? productVariant.Price;
-        productVariant.ColorId = dto.ColorId ?? productVariant.ColorId;
     }
     
 }

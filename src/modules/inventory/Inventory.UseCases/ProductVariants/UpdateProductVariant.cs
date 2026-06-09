@@ -7,7 +7,7 @@ namespace Inventory.UseCases.ProductVariants;
 
 public class UpdateProductVariant(InvDbContext context)
 {
-    public async Task<Result<bool>> Execute(UpdateProductVariantDto dto, int id)
+    public async Task<Result<bool>> Execute(UpdateProductVariantDto dto, Guid id)
     {
         var productVariant = await context.ProductVariants.FindAsync(id);
 

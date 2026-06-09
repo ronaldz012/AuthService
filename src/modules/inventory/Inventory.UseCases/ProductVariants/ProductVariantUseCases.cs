@@ -4,4 +4,5 @@ namespace Inventory.UseCases.ProductVariants;
 public record ProductVariantUseCases(UpdateProductVariant UpdateProductVariant
     , CorrectProductVariantStock CorrectProductVariantStock
     ,GetProductVariantByCode  GetProductVariantByCode
-    ,CreateProductVariantUc CreateProductVariantUc);
+    ,CreateProductVariantUc CreateProductVariantUc
+    ,DeleteProductVariantUc DeleteProductVariantUc);

@@ -1,13 +1,11 @@
-using Inventory.Contracts.Dtos;
+using Common.Data;
+using Common.Result;
 using Inventory.Contracts.Dtos.Products;
+using Inventory.Data;
 using Inventory.Data.Entities.Products;
 using Inventory.Infrastructure;
-using Inventory.Infrastructure.Notifications;
-using Org.BouncyCastle.Ocsp;
-using Common.Result;
-using Inventory.Data;
-using Common.Data;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Inventory.UseCases.Products;
 
@@ -15,86 +13,129 @@ public class CreateProductUc(InvDbContext context, ITenantContext tenantContext)
 {
     public async Task<Result<ProductCreatedDto>> Execute(CreateProductDto request)
     {
+        // ── Validaciones previas ──────────────────────────────────────────
         var brand = await context.Brands.FindAsync(request.BrandId);
         if (brand == null)
             return new Error("NOT_FOUND", "Brand not found");
-        
+
         var colorIds = request.Variants.Select(pv => pv.ColorId).Distinct().ToList();
-        var colors = await context.Colors.Where(c => colorIds.Contains(c.Id)).ToListAsync();
-        var missingColors = colorIds.Except(colors.Select(c => c.Id)).ToList();
-        if (missingColors.Any())
-            return new Error("NOT_FOUND", "Colors not found");
+        var colors = await context.Colors
+            .Where(c => colorIds.Contains(c.Id))
+            .ToListAsync();
 
-        var internalCode = await ReserveBrandCounter(request.BrandId, brand.Prefix);
+        if (colorIds.Except(colors.Select(c => c.Id)).Any())
+            return new Error("NOT_FOUND", "One or more colors not found");
 
-        var product = new Product
+        // ── Transacción ───────────────────────────────────────────────────
+        await using var tx = await context.Database.BeginTransactionAsync();
+        try
         {
-            Name = request.Name,
-            Description = request.Description,
-            CategoryId = request.CategoryId,
-            BrandId = request.BrandId,
-            Gender = request.Gender,
-            InternalCode = internalCode,
-            ProductVariants = request.Variants.Select(pv => new ProductVariant
+            // 1. Reservar código de producto en la marca
+            var internalCode = await ReserveBrandCounter(request.BrandId, brand.Prefix);
+
+            // 2. Crear producto (sin variantes todavía — necesitamos el Id)
+            var product = new Product
             {
-                ColorId = pv.ColorId,
-                Size = pv.Size,
-                Description = pv.Description,
-                Price = pv.Price,
-                Sku = ProductVariant.GenerateSku(
-                    internalCode, 
-                    colors.First(c => c.Id == pv.ColorId).Code, 
-                    pv.Size
-                )
-            }).ToList() 
-        };
+                Name = request.Name,
+                Description = request.Description,
+                CategoryId = request.CategoryId,
+                BrandId = request.BrandId,
+                Gender = request.Gender,
+                InternalCode = internalCode,
+                ProductVariantCounter = 0
+            };
 
-        context.Products.Add(product);
-        await context.SaveChangesAsync();
-        
-        // 4. Traer el producto con TODAS sus relaciones necesarias para el frontend
-        var savedProduct = await context.Products
-            .Include(p => p.Brand)
-            .Include(p => p.Category)
-            .Include(p => p.ProductVariants)
-                .ThenInclude(pv => pv.Color) // Crucial para obtener el ColorName
-            .FirstOrDefaultAsync(p => p.Id == product.Id);
+            context.Products.Add(product);
+            await context.SaveChangesAsync();
 
-        if (savedProduct == null)
-            return new Error("SERVER_ERROR", "Error retrieving created product");
-        
-        return new ProductCreatedDto
+            // 3. Crear variantes con SKU secuencial por producto
+            var variants = new List<ProductVariant>();
+            foreach (var pv in request.Variants)
+            {
+                var sku = await ReserveVariantCounter(product.Id, product.InternalCode);
+                variants.Add(new ProductVariant
+                {
+                    ProductId = product.Id,
+                    ColorId = pv.ColorId,
+                    Size = pv.Size,
+                    Description = pv.Description,
+                    Price = pv.Price,
+                    Sku = sku
+                });
+            }
+
+            context.ProductVariants.AddRange(variants);
+            await context.SaveChangesAsync();
+
+            await tx.CommitAsync();
+
+            // 4. Recargar con todas las relaciones para el frontend
+            var saved = await context.Products
+                .Include(p => p.Brand)
+                .Include(p => p.Category)
+                .Include(p => p.ProductVariants)
+                    .ThenInclude(pv => pv.Color)
+                .FirstOrDefaultAsync(p => p.Id == product.Id);
+
+            if (saved == null)
+                return new Error("SERVER_ERROR", "Error retrieving created product");
+
+            return new ProductCreatedDto
+            {
+                Id = saved.Id,
+                InternalCode = saved.InternalCode,
+                Name = saved.Name,
+                BrandName = saved.Brand.Name,
+                CategoryName = saved.Category.Name,
+                Variants = saved.ProductVariants.Select(pv => new ProductVariantsCreated
+                {
+                    ProductVariantId = pv.Id,
+                    Sku = pv.Sku,
+                    Size = pv.Size,
+                    ColorName = pv.Color.Name
+                }).ToList()
+            };
+        }
+        catch
         {
-            Id = savedProduct.Id,
-            InternalCode = savedProduct.InternalCode,
-            Name = savedProduct.Name,
-            BrandName = savedProduct.Brand.Name,
-            CategoryName = savedProduct.Category.Name,
-            Variants = savedProduct.ProductVariants.Select(pv => new ProductVariantsCreated
-            {
-                ProductVariantId = pv.Id, 
-                Sku = pv.Sku,
-                Size = pv.Size,
-                ColorName = pv.Color.Name 
-            }).ToList()
-        };
+            await tx.RollbackAsync();
+            throw;
+        }
     }
 
-   private async Task<string> ReserveBrandCounter(Guid brandId, string prefix)
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    private async Task<string> ReserveBrandCounter(Guid brandId, string prefix)
     {
         var schema = tenantContext.Schema;
-
-        var sql = $$"""
-            UPDATE "{{schema}}"."Brands" 
-            SET "ProductCounter" = "ProductCounter" + 1 
-            WHERE "Id" = {0} 
-            RETURNING "ProductCounter"
-            """;
+        var sql = $"""
+                   UPDATE "{schema}"."Brands"
+                   SET "ProductCounter" = "ProductCounter" + 1
+                   WHERE "Id" = @id
+                   RETURNING "ProductCounter"
+                   """;
 
         var result = await context.Database
-            .SqlQueryRaw<int>(sql, brandId)
+            .SqlQueryRaw<int>(sql, new NpgsqlParameter("id", brandId))
             .ToListAsync();
 
         return $"{prefix}-{result[0]}";
+    }
+
+    private async Task<string> ReserveVariantCounter(Guid productId, string productCode)
+    {
+        var schema = tenantContext.Schema;
+        var sql = $"""
+                   UPDATE "{schema}"."Products"
+                   SET "ProductVariantCounter" = "ProductVariantCounter" + 1
+                   WHERE "Id" = @id
+                   RETURNING "ProductVariantCounter"
+                   """;
+
+        var result = await context.Database
+            .SqlQueryRaw<int>(sql, new NpgsqlParameter("id", productId))
+            .ToListAsync();
+
+        return $"{productCode}-{result[0].ToString().PadLeft(3, '0')}";
     }
 }

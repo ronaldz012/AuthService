@@ -13,7 +13,7 @@ namespace System.Api.Controllers.Inventory
     public class ProductVariantController(ProductVariantUseCases useCases) : ControllerBase
     {
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> UpdateProductVariant([FromRoute] int id,[FromBody]UpdateProductVariantDto dto)
+        public async Task<IActionResult> UpdateProductVariant([FromRoute] Guid id,[FromBody]UpdateProductVariantDto dto)
         {
             return await useCases.UpdateProductVariant.Execute(dto, id).ToValueOrProblemDetails();
         }
@@ -32,6 +32,12 @@ namespace System.Api.Controllers.Inventory
         public async Task<IActionResult> CreateProductVariants([FromRoute]Guid productId, [FromBody] List<CreateProductVariantDto> variants)
         {
             return await useCases.CreateProductVariantUc.Execute(productId, variants).ToValueOrProblemDetails();
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteProductVariant([FromRoute] Guid id)
+        {
+            return await useCases.DeleteProductVariantUc.Execute(id).ToValueOrProblemDetails();
         }
 
     }
