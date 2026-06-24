@@ -1,8 +1,8 @@
 using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
-using sales.Contracts.dtos;
-using sales.Module.Data;
-namespace sales.UseCases.UseCases;
+using Module.Sales.Infrastructure.Persistence;
+
+namespace Module.Sales.Application.UseCases.Sales.Get;
 
 public class GetListSales(SalesDbContext context,ICurrentUser currentUser )
 {

@@ -1,4 +1,4 @@
-namespace module.Auth.dtos.Roles;
+namespace Common.permissions;
 
 public class RoleDto
 {

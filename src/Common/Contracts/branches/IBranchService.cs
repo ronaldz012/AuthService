@@ -1,11 +1,10 @@
+using Common.Contracts.branches.dtos;
 using Common.Utilities;
 
-namespace module.Auth.interfaces;
+namespace Common.Contracts.branches;
 
 public interface IBranchService
 {
-    Task<Result<List<BranchResponse>>> GetBranchesByIds(List<Guid> ids);
-    Task<Result<List<BranchResponse>>> GetAllBranches();
-
-    Task<Result<bool>>  CreateBranch(CreateBranchDto request);
+    Task<Result<List<BranchDto>>> GetBranchesByIds(List<Guid> ids);
+    Task<Result<List<BranchDto>>> GetAllBranches();
 }

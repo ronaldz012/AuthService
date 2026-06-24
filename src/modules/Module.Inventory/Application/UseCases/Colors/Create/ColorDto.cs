@@ -1,4 +1,4 @@
-namespace Module.Inventory.Application.UseCases.Colors.CreateColor;
+namespace Module.Inventory.Application.UseCases.Colors.Create;
 
 public class ColorDto
 {

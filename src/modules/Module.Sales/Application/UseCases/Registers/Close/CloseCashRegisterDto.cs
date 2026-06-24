@@ -1,4 +1,4 @@
-namespace sales.Contracts.dtos;
+namespace Module.Sales.Application.UseCases.Registers.Close;
 public class CloseCashRegisterDto
 {
     public Guid Id { get; set; }

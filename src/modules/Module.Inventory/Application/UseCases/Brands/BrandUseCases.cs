@@ -1,3 +1,5 @@
-namespace Inventory.UseCases.Brands;
+using Module.Inventory.Application.UseCases.Brands.CreateBrand;
 
-public record BrandUseCases(CreateBrand CreateBrand, GetBrands GetBrands);
+namespace Module.Inventory.Application.UseCases.Brands;
+
+public record BrandUseCases(CreateBrandUc CreateBrand, GetBrands.GetBrands GetBrands);

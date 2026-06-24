@@ -1,10 +1,11 @@
 using System.Api.Attributes;
-using System.Api.Filters;
 using System.Api.Result;
-using Inventory.Contracts.Dtos.Products;
-using Inventory.UseCases.Products;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Inventory.Application.UseCases.Products;
+using Module.Inventory.Application.UseCases.Products.Create;
+using Module.Inventory.Application.UseCases.Products.Get;
+using Module.Inventory.Application.UseCases.Products.Update;
 
 namespace System.Api.Controllers.Inventory
 {
@@ -16,7 +17,7 @@ namespace System.Api.Controllers.Inventory
     {
         [HttpPost]
         [RequireFeature("products", "create")]
-        public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto request)
+        public async Task<IActionResult> CreateProduct([FromBody]  CreateProductRequest request)
         {
             return await productUseCases.CreateProductUc.Execute(request).ToValueOrProblemDetails();
         }
@@ -24,7 +25,7 @@ namespace System.Api.Controllers.Inventory
         [HttpGet]
         public async Task<IActionResult> GetProducts([FromQuery] ProductQueryDto request)
         {
-            return await productUseCases.ListProducts.Execute(request).ToValueOrProblemDetails();
+            return await productUseCases.GetProductsUc.Execute(request).ToValueOrProblemDetails();
         }
 
         [HttpGet("Search")]

@@ -1,9 +1,11 @@
 using System.Api.Result;
-using Inventory.Contracts.Dtos.ProductVariants;
-using Inventory.Contracts.Dtos.StockMovements;
-using Inventory.UseCases.ProductVariants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Inventory.Application.UseCases.Products.Create;
+using Module.Inventory.Application.UseCases.ProductVariants;
+using Module.Inventory.Application.UseCases.ProductVariants.Create;
+using Module.Inventory.Application.UseCases.ProductVariants.PatchStock;
+using Module.Inventory.Application.UseCases.ProductVariants.Update;
 
 namespace System.Api.Controllers.Inventory
 {
@@ -47,11 +49,11 @@ namespace System.Api.Controllers.Inventory
             return await useCases.DeleteProductVariantUc.Execute(id).ToValueOrProblemDetails();
         }
         
-        [HttpGet("{id:guid}/movements")]
-        public async Task<IActionResult> GeProductVariantMovementById([FromRoute] Guid id, [FromQuery] StockMovementsQuery request)
-        {
-            return await useCases.ListStockMovementsUc.Execute(id,request).ToValueOrProblemDetails();
-        }
+        // [HttpGet("{id:guid}/movements")]
+        // public async Task<IActionResult> GeProductVariantMovementById([FromRoute] Guid id, [FromQuery] StockMovementsQuery request)
+        // {
+        //     return await useCases.ListStockMovementsUc.Execute(id,request).ToValueOrProblemDetails();
+        // }
 
 
     }

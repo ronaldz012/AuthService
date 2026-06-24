@@ -1,7 +1,6 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Common.Extensions;
+namespace Common.Utilities;
 
 public class GenericPaginationQueryDto : IValidatableObject
 {

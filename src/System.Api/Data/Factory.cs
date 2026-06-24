@@ -1,9 +1,8 @@
-using Auth.Data;
-using Branches.module.Data;
+using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
-using sales.Module.Data;
-using Common.Data;
-using Inventory.Data;
+using Module.Auth.Infrastructure.persistence;
+using Module.Inventory.Infrastructure;
+using Module.Sales.Infrastructure.Persistence;
 
 namespace System.Api.Data;
 
@@ -16,13 +15,7 @@ public class AuthDbContextFactory()
     
 }
 
-public class BranchDbContextFactory()
-    : DesignTimeDbContextFactory<BranchDbContext>("__EFMigrationsHistory_branches")
-{
-    protected override BranchDbContext CreateInstance(
-        DbContextOptions<BranchDbContext> options, ITenantContext tenant)
-        => new(options, tenant);
-}
+
 
 public class InvDbContextFactory()
     : DesignTimeDbContextFactory<InvDbContext>("__EFMigrationsHistory_inventory")

@@ -1,6 +1,6 @@
-using Inventory.Data.Entities.Transfers;
+using Module.Inventory.Domain.Transfers;
 
-namespace Inventory.Contracts.Dtos.Transfers;
+namespace Module.Inventory.Application.UseCases.Transfers.GetById;
 
 public class StockTransferDetailDto
 {

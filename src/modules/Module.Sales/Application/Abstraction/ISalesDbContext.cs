@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Module.Sales.Domain;
 
 namespace Module.Sales.Application.Abstraction;
 
-public interface ISaleDbContext
+public interface ISalesDbContext
 {
     public DbSet<Sale> Sales { get; set; }
     public DbSet<SaleItem> SaleItems { get; set; }
@@ -13,6 +14,8 @@ public interface ISaleDbContext
     
     DbSet<TEntity> Set<TEntity>()
         where TEntity : class;
+    DatabaseFacade Database { get; }
+
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         where TEntity : class;

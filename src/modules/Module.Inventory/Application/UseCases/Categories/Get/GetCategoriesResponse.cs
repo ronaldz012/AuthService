@@ -1,6 +1,6 @@
 using Common.Utilities;
 
-namespace Module.Inventory.Application.UseCases.Categories.GetCategories;
+namespace Module.Inventory.Application.UseCases.Categories.Get;
 
 public class GetCategoriesResponse
 {

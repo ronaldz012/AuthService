@@ -1,10 +1,9 @@
-using System.Api.Filters;
 using System.Api.Result;
-using Inventory.Contracts.Dtos.Receptions;
-using Inventory.UseCases.Receptions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Module.Inventory.Application.UseCases.Receptions;
+using Module.Inventory.Application.UseCases.Receptions.Create;
+using Module.Inventory.Application.UseCases.Receptions.Get;
 
 namespace System.Api.Controllers.Inventory
 {

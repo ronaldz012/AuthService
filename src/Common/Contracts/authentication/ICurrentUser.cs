@@ -1,6 +1,7 @@
-using module.Auth.dtos.permissions;
+using Common.Contracts.authentication.dtos;
+using Common.permissions;
 
-namespace module.Auth.interfaces;
+namespace Common.Contracts.authentication;
 
 public interface ICurrentUser
 {

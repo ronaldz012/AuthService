@@ -1,11 +1,11 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Data;
 using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.ProductVariants;
+namespace Module.Inventory.Application.UseCases.ProductVariants.Delete;
 
-public class DeleteProductVariantUc(InvDbContext context, ICurrentUser currentUser)
+public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentUser)
 {
    public async Task<Result<bool>> Execute(Guid id)
     {

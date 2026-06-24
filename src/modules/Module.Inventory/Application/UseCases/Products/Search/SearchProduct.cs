@@ -1,12 +1,10 @@
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Products;
-using Inventory.Data.Entities.Products;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.Products;
+namespace Module.Inventory.Application.UseCases.Products.Search;
 
-public class SearchProduct(InvDbContext context)
+public class SearchProduct(IInvDbContext context)
 {
     public async Task<Result<List<ProductDto>>> Execute(string query)
     {

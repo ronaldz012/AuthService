@@ -1,6 +1,6 @@
 using Common.Utilities;
 
-namespace Inventory.Contracts.interfaces;
+namespace Common.Contracts.inventory;
 
 public interface IInventoryIntegrationService
 {

@@ -1,24 +1,23 @@
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Brands;
-using Inventory.Data.Entities.Products;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Products;
 
-namespace Inventory.UseCases.Brands;
+namespace Module.Inventory.Application.UseCases.Brands.GetBrands;
 
-public class GetBrands(InvDbContext context)
+public class GetBrands(IInvDbContext context)
 {
-    public async Task<Result<PagedResultDto<BrandDto>>> Execute(QueryBrandDto query)
+    public async Task<Result<PagedResultDto<ListBrandResponse>>> Execute(QueryBrandDto query)
     {
         IQueryable<Brand> queryable =context.Brands;
         var (queryFiltered , totalCount) = queryable.ApplyFilters(query);
-        var items = await queryFiltered.Select(x => new BrandDto()
+        var items = await queryFiltered.Select(x => new ListBrandResponse()
         {
             Id = x.Id,
             Name = x.Name,
         }).ToListAsync();
 
-        return new PagedResultDto<BrandDto>()
+        return new PagedResultDto<ListBrandResponse>()
         {
             TotalCount = totalCount,
             Items = items,

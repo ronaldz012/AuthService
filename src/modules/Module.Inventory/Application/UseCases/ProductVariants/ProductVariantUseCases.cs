@@ -1,7 +1,12 @@
 
-using Inventory.UseCases.Receptions;
+using Module.Inventory.Application.UseCases.ProductVariants.Create;
+using Module.Inventory.Application.UseCases.ProductVariants.Delete;
+using Module.Inventory.Application.UseCases.ProductVariants.GetById;
+using Module.Inventory.Application.UseCases.ProductVariants.GetBySku;
+using Module.Inventory.Application.UseCases.ProductVariants.PatchStock;
+using Module.Inventory.Application.UseCases.ProductVariants.Update;
 
-namespace Inventory.UseCases.ProductVariants;
+namespace Module.Inventory.Application.UseCases.ProductVariants;
 
 public record ProductVariantUseCases(
     GetProductVariantDetails GetProductVariantDetails
@@ -9,5 +14,4 @@ public record ProductVariantUseCases(
     , CorrectProductVariantStock CorrectProductVariantStock
     ,GetProductVariantByCode  GetProductVariantByCode
     ,CreateProductVariantUc CreateProductVariantUc
-    ,DeleteProductVariantUc DeleteProductVariantUc
-    ,ListStockMovementsUc ListStockMovementsUc);
+    ,DeleteProductVariantUc DeleteProductVariantUc);

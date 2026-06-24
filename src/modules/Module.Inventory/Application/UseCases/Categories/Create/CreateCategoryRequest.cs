@@ -1,4 +1,4 @@
-namespace Module.Inventory.Application.UseCases.Categories.CreateCategory;
+namespace Module.Inventory.Application.UseCases.Categories.Create;
 
 public class CreateCategoryRequest
 {

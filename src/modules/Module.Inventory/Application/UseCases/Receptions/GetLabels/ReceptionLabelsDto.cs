@@ -1,7 +1,6 @@
+using Module.Inventory.Domain.Products;
 
-using Inventory.Data.Entities.Products;
-
-namespace Inventory.Contracts.Dtos.Receptions;
+namespace Module.Inventory.Application.UseCases.Receptions.GetLabels;
 
 public class ReceptionLabelsDto
 {

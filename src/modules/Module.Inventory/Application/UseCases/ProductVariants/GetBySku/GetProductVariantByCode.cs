@@ -1,12 +1,11 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Products;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.ProductVariants;
+namespace Module.Inventory.Application.UseCases.ProductVariants.GetBySku;
 
-public class GetProductVariantByCode(InvDbContext context, ICurrentUser currentUser)
+public class GetProductVariantByCode(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<ProductVariantBySkuDto>> Execute(string skuRequested)
     {

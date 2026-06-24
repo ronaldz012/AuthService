@@ -1,4 +1,4 @@
-namespace sales.Contracts.dtos;
+namespace Module.Sales.Application.UseCases.Registers.Open;
 public class OpenCashRegisterDto
 {
     public Guid BranchId { get; set; }

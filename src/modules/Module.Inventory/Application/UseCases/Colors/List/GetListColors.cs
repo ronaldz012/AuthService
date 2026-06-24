@@ -2,7 +2,7 @@ using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 
-namespace Module.Inventory.Application.UseCases.Colors.ListColors;
+namespace Module.Inventory.Application.UseCases.Colors.List;
 
 public class GetListColors(IInvDbContext context)
 {

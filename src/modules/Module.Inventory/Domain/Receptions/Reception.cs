@@ -1,8 +1,8 @@
 using Common.Domain;
-using Module.Inventory.Entities.Products;
-using Module.Inventory.Entities.Shared.Base;
+using Module.Inventory.Domain.Products;
+using Module.Inventory.Domain.Shared.Base;
 
-namespace Module.Inventory.Entities.Receptions;
+namespace Module.Inventory.Domain.Receptions;
 
 public class StockReception : Params, IMustHaveTenant
 {

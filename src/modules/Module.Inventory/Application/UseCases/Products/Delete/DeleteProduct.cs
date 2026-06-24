@@ -1,12 +1,11 @@
-using System.Security.Cryptography.X509Certificates;
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.Products;
+namespace Module.Inventory.Application.UseCases.Products.Delete;
 
-public class DeleteProduct(InvDbContext context, ICurrentUser currentUser)
+public class DeleteProduct(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<bool>> Execute(Guid id)
     {

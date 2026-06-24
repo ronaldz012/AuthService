@@ -1,15 +1,16 @@
 using Common.Contracts.authentication;
 using Common.Domain;
-using Inventory.Data.Entities.Inventory;
-using Inventory.Data.Entities.Organization;
-using Inventory.Data.Entities.Products;
-using Inventory.Data.Entities.Receptions;
-using Inventory.Data.Entities.Transfers;
 using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Domain.Organization;
+using Module.Inventory.Domain.Products;
+using Module.Inventory.Domain.Receptions;
+using Module.Inventory.Domain.Transfers;
 
-namespace Inventory.Data;
+namespace Module.Inventory.Infrastructure;
 
-public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext tenantContext ) : DbContext(options)
+public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext tenantContext ) : DbContext(options), IInvDbContext
 {
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductVariant> ProductVariants { get; set; }

@@ -1,7 +1,7 @@
 ﻿using Common.Domain;
-using Module.Inventory.Entities.Shared.Base;
+using Module.Inventory.Domain.Shared.Base;
 
-namespace Module.Inventory.Entities.Organization;
+namespace Module.Inventory.Domain.Organization;
 
 public class Provider : Params, IMustHaveTenant
 {

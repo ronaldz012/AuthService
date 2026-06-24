@@ -1,7 +1,9 @@
 
-namespace sales.Module.Entities;
+using Common.Domain;
 
-public class SaleItem
+namespace Module.Sales.Domain;
+
+public class SaleItem : IMustHaveTenant
 {
     public Guid Id { get; set; } 
     public Guid TenantId { get; set; }

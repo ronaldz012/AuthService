@@ -1,12 +1,9 @@
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Products;
-using Inventory.Contracts.Dtos.ProductVariants;
-using Inventory.Contracts.Mapping;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.ProductVariants;
+namespace Module.Inventory.Application.UseCases.ProductVariants.Update;
 
-public class UpdateProductVariant(InvDbContext context)
+public class UpdateProductVariant(IInvDbContext context)
 {
     public async Task<Result<bool>> Execute(UpdateProductVariantDto dto, Guid id)
     {
@@ -15,7 +12,8 @@ public class UpdateProductVariant(InvDbContext context)
         if (productVariant is null)
             return new Error("NOT_FOUND", "product variant not found");
         
-        productVariant.MapTo(dto);
+        productVariant.Description = dto.Description ?? productVariant.Description;
+        productVariant.Price = dto.Price ?? productVariant.Price;
         await context.SaveChangesAsync();
         return true;
     }

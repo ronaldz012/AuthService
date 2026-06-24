@@ -1,13 +1,12 @@
-
 using Common.Contracts.authentication;
-using Microsoft.EntityFrameworkCore;
 using Common.Domain;
-using Common.Services;
-using sales.Module.Entities;
+using Microsoft.EntityFrameworkCore;
+using Module.Sales.Application.Abstraction;
+using Module.Sales.Domain;
 
-namespace sales.Module.Data;
+namespace Module.Sales.Infrastructure.Persistence;
 
-public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantContext tenantContext) : DbContext(options)
+public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantContext tenantContext) : DbContext(options), ISalesDbContext
 {
     public DbSet<Sale> Sales { get; set; }
     public DbSet<SaleItem> SaleItems { get; set; }

@@ -1,9 +1,11 @@
 using System.Api.Filters;
 using System.Api.Result;
-using Inventory.Contracts.Dtos.Transfers;
-using Inventory.UseCases.Transfers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Inventory.Application.UseCases.Transfers;
+using Module.Inventory.Application.UseCases.Transfers.Create;
+using Module.Inventory.Application.UseCases.Transfers.Get;
+using Module.Inventory.Application.UseCases.Transfers.Resolve;
 
 namespace System.Api.Controllers.Inventory
 {

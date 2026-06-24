@@ -1,12 +1,11 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Receptions;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.Receptions;
+namespace Module.Inventory.Application.UseCases.Receptions.GetById;
 
-public class GetReception(InvDbContext context, ICurrentUser currentUser)
+public class GetReception(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<StockReceptionDetailDto>> Execute(Guid id)
     {

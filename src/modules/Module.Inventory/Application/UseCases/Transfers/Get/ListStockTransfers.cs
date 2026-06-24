@@ -1,14 +1,13 @@
 using Common.Contracts.authentication;
 using Common.Contracts.branches;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Transfers;
-using Inventory.Data.Entities.Transfers;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Transfers;
 
-namespace Inventory.UseCases.Transfers;
+namespace Module.Inventory.Application.UseCases.Transfers.Get;
 
-public class ListStockTransfers(InvDbContext context, IUserIntegrationService userIntegrationService, ICurrentUser currentUser, IBranchService branchService)
+public class ListStockTransfers(IInvDbContext context, IUserIntegrationService userIntegrationService, ICurrentUser currentUser, IBranchService branchService)
 {
     public async Task<Result<PagedResultDto<ListStockTransferDto>>> Execute(StockTransferQueryDto queryDto)
     {

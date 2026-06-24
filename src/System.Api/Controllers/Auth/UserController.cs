@@ -1,9 +1,10 @@
 
 using System.Api.Result;
-using Auth.Contracts.Dtos.Users;
-using Auth.UseCases.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.UseCases.Users;
+using Module.Auth.Application.UseCases.Users.CreateUser;
+using Module.Auth.Application.UseCases.Users.GetAllUsers;
 
 namespace System.Api.Controllers.Auth
 {
@@ -20,7 +21,7 @@ namespace System.Api.Controllers.Auth
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto request)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             return await userUserCases.CreateUser.Execute(request).ToValueOrProblemDetails();
         }

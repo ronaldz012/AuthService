@@ -1,18 +1,17 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.ProductVariants;
-using Inventory.Data;
-using Inventory.Data.Entities.Products;
-using Inventory.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Products;
 using Npgsql;
 
-namespace Inventory.UseCases.ProductVariants;
+namespace Module.Inventory.Application.UseCases.ProductVariants.Create;
 
-public class CreateProductVariantUc(InvDbContext context, ITenantContext tenantContext)
+public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenantContext)
 {
     public async Task<Result<List<ProductVariantCreatedDto>>> Execute(Guid productId, List<CreateProductVariantDto> dto)
     {
+        if (dto == null) throw new ArgumentNullException(nameof(dto));
         // ── Validar lista no vacía ────────────────────────────────────────
         if (dto.Count == 0)
             return new Error("BAD_REQUEST", "The variant list cannot be empty.");

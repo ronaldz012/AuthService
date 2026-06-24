@@ -1,14 +1,12 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.ProductVariants;
-using Inventory.Data.Entities.Inventory;
-using Inventory.Data.Entities.Products;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Inventory;
 
-namespace Inventory.UseCases.ProductVariants;
+namespace Module.Inventory.Application.UseCases.ProductVariants.PatchStock;
 
-public class CorrectProductVariantStock(InvDbContext context, ICurrentUser currentUser)
+public class CorrectProductVariantStock(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<bool>> Execute(UpdateProductVariantStockDto request, Guid id)
     {

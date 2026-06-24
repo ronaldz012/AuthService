@@ -1,9 +1,13 @@
 using System.Security.Cryptography;
 using System.Text;
 using Common.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Module.Auth.Application.Abstraction;
+using Module.Auth.Domain;
+using Module.Auth.Infrastructure.Authentication.EmailTemplates;
 
-namespace module.Auth.Infrastructure.Authentication;
+namespace Module.Auth.Infrastructure.Authentication;
 
 public class EmailVerificationService(IAuthDbContext dbContext,
                                     IOptions<AuthenticationSettings> authenticationSettings,

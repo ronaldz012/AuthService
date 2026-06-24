@@ -1,6 +1,6 @@
 using Module.Sales.Domain;
 
-namespace sales.Contracts.dtos;
+namespace Module.Sales.Application.UseCases.Sales.Create;
 
 public class CreateSaleDto
 {

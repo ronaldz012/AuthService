@@ -1,5 +1,3 @@
-using System;
-
-namespace Inventory.Contracts.Dtos.Transfers;
+namespace Module.Inventory.Domain.Transfers;
 
 public enum TransferDirection { Inbound, Outbound }

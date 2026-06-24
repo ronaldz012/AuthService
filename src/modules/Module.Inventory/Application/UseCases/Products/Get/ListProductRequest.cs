@@ -3,7 +3,7 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Products.Get;
 
-public class ListProductDto
+public class ListProductRequest
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;

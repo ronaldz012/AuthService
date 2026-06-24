@@ -1,18 +1,21 @@
 using System.Security.Claims;
+using Common.Contracts.authentication;
 using Microsoft.Extensions.Options;
-using Common.Data;
 using Common.Services;
 using Microsoft.EntityFrameworkCore;
-using shared.Module.Data;
+using Module.Auth.Infrastructure.persistence;
 
 namespace System.Api.Middlewares;
 
 public class TenantMiddleware(RequestDelegate next) 
 {
-    public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext, SharedDbContext sharedDbContext)
+    public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext, AuthDbContext authDbContext)
     {
-        if (context.Request.Path.StartsWithSegments("/api/system"))
-        {
+        var path = context.Request.Path;
+        if (path.StartsWithSegments("/api/system") || 
+            path.StartsWithSegments("/scalar") || 
+            path.StartsWithSegments("/openapi")) 
+        {        
             await next(context);
             return;
         }
@@ -36,7 +39,7 @@ public class TenantMiddleware(RequestDelegate next)
             if (string.IsNullOrEmpty(host)) 
                 host = context.Request.Host.Host.Split('.')[0];
 
-            var tenant = await sharedDbContext.Tenants
+            var tenant = await authDbContext.Tenants
                 .Where(t => t.IsActive)
                 .FirstOrDefaultAsync(x => x.DisplayName.ToLower() == host.ToLower());
 

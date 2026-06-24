@@ -1,7 +1,7 @@
 using Common.Domain;
-using Module.Inventory.Entities.Products;
+using Module.Inventory.Domain.Products;
 
-namespace Module.Inventory.Entities.Transfers;
+namespace Module.Inventory.Domain.Transfers;
 
 public class StockTransferItem: IMustHaveTenant
 {

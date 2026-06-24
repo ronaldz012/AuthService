@@ -1,12 +1,12 @@
+using Common.Contracts.inventory;
 using Common.Utilities;
-using Inventory.Contracts.interfaces;
-using Inventory.Data.Entities.Inventory;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Inventory;
 
-namespace Inventory.UseCases;
+namespace Module.Inventory.Infrastructure;
 
-public class InventoryIntegrationService(InvDbContext context) : IInventoryIntegrationService
+public class InventoryIntegrationService(IInvDbContext context) : IInventoryIntegrationService
 {
     public async Task<Result<List<ProductVariantStockDto>>> GetVariantsWithStock(
         List<Guid> variantIds, Guid branchId)

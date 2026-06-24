@@ -4,7 +4,7 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Brands.CreateBrand;
 
-public class CreateBrand(IInvDbContext context)
+public class CreateBrandUc(IInvDbContext context)
 {
     public async Task<Result<BrandResponse>> Execute(CreateBrandRequest request)
     {

@@ -1,6 +1,6 @@
 using Common.Utilities;
 
-namespace Module.Inventory.Application.UseCases.Colors.ListColors;
+namespace Module.Inventory.Application.UseCases.Colors.List;
 
 public class ListColorResponse
 {

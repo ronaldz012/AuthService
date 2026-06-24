@@ -1,11 +1,9 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Data.Entities.Transfers;
-using Inventory.Data;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Transfers;
 
-namespace Inventory.UseCases.Transfers;
+namespace Module.Inventory.Application.UseCases.Transfers.Cancel;
 
 public class CancelStockTransfer(IInvDbContext context, ICurrentUser currentUser)
 {

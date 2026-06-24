@@ -1,8 +1,9 @@
-using System.Api.Result;
-using Inventory.Contracts.Dtos.Categories;
-using Inventory.UseCases.Categories;
+using System.Api.Result; 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Inventory.Application.UseCases.Categories;
+using Module.Inventory.Application.UseCases.Categories.Create;
+using Module.Inventory.Application.UseCases.Categories.Get;
 
 namespace System.Api.Controllers.Inventory
 {
@@ -13,7 +14,7 @@ namespace System.Api.Controllers.Inventory
     public class CategoryController(CategoryUseCases categoryUseCases) : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto dto)
+        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest dto)
         {
             return await categoryUseCases.CreateCategory.Execute(dto).ToValueOrProblemDetails();
         }

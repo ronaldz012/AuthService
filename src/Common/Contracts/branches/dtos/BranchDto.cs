@@ -1,6 +1,6 @@
-namespace module.Auth.dtos.branches;
+namespace Common.Contracts.branches.dtos;
 
-public class BranchResponse
+public class BranchDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;

@@ -1,9 +1,10 @@
 using System.Api.Result;
-using Inventory.Contracts.Dtos;
-using Inventory.UseCases.Colors;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Module.Inventory.Application.UseCases.Colors;
+using Module.Inventory.Application.UseCases.Colors.Create;
+using Module.Inventory.Application.UseCases.Colors.List;
 
 namespace System.Api.Controllers.Inventory
 {
@@ -19,9 +20,9 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateColorDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateColorDto colorNameDto)
         {
-            return await useCases.createColor.Execute(dto).ToValueOrProblemDetails();
+            return await useCases.createColor.Execute(colorNameDto.Name).ToValueOrProblemDetails();
         }
     }
 }

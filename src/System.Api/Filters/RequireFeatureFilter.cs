@@ -1,6 +1,6 @@
-using Auth.Contracts.Dtos.permissions;
-using Auth.Contracts.Dtos.Users;
-using Auth.Contracts.Interfaces;
+using Common.Contracts.authentication;
+using Common.Contracts.authentication.dtos;
+using Common.permissions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -36,14 +36,13 @@ public class RequireFeatureFilter(
 
         if (multiBranch)
         {
-            // Estadísticas: TODAS las branches activas deben tener el permiso
             hasPermission = activeBranches.All(b =>
-                b.Features.Any(m => m.Route == moduleRoute && HasPerm(m, permission)));
+                b.Features.Any(m => m.ModuleName == moduleRoute ));
         }
         else
         {
             hasPermission = activeBranches.All(b =>
-                b.Features.Any(m => m.Route == moduleRoute && HasPerm(m, permission)));
+                b.Features.Any(m => m.ModuleName == moduleRoute ));
         }
 
         if (!hasPermission)
@@ -62,13 +61,13 @@ public class RequireFeatureFilter(
         }
     }
 
-    private static bool HasPerm(FeaturePermissionsDeductedDto m, string permission) =>
-        permission switch
-        {
-            "read"   => m.CanRead,
-            "create" => m.CanCreate,
-            "update" => m.CanUpdate,
-            "delete" => m.CanDelete,
-            _        => false
-        };
+    // private static bool HasPerm(FeaturePermissionsDeductedDto m, string permission) =>
+    //     permission switch
+    //     {
+    //         "read"   => m.CanRead,
+    //         "create" => m.CanCreate,
+    //         "update" => m.CanUpdate,
+    //         "delete" => m.CanDelete,
+    //         _        => false
+    //     };
 }

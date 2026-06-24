@@ -1,4 +1,4 @@
-namespace Inventory.Contracts.Dtos.ProductVariants;
+namespace Module.Inventory.Application.UseCases.ProductVariants.GetById;
 
 public class ProductVariantDetailsDto
 {

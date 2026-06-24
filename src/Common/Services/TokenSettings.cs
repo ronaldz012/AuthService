@@ -1,7 +1,7 @@
 
 
 
-namespace Auth.Infrastructure.Authentication;
+namespace Common.Services;
 
 public class TokenSettings
 {

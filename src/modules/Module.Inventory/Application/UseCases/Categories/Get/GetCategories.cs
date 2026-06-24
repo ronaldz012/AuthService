@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Products;
 
-namespace Module.Inventory.Application.UseCases.Categories.GetCategories;
+namespace Module.Inventory.Application.UseCases.Categories.Get;
 
 
 public class GetCategories(IInvDbContext context)

@@ -1,17 +1,15 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Products;
-using Inventory.Data;
-using Inventory.Data.Entities.Products;
-using Inventory.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Products;
 using Npgsql;
 
-namespace Inventory.UseCases.Products;
+namespace Module.Inventory.Application.UseCases.Products.Create;
 
-public class CreateProductUc(InvDbContext context, ITenantContext tenantContext)
+public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext)
 {
-    public async Task<Result<ProductCreatedDto>> Execute(CreateProductDto request)
+    public async Task<Result<ProductCreatedDto>> Execute(CreateProductRequest request)
     {
         // ── Validaciones previas ──────────────────────────────────────────
         var brand = await context.Brands.FindAsync(request.BrandId);

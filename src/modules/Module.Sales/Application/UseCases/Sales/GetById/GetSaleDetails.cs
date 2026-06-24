@@ -1,14 +1,12 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Microsoft.EntityFrameworkCore;
-using sales.Contracts.dtos;
-using sales.Module.Data;
+using Module.Sales.Application.Abstraction;
 
-namespace sales.UseCases.UseCases;
+namespace Module.Sales.Application.UseCases.Sales.GetById;
 
 
 
-public class GetSaleDetail(SalesDbContext context, ICurrentUser currentUser)
+public class GetSaleDetail(ISalesDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<SaleDetailDto>> Execute(int saleId)
     {

@@ -1,6 +1,6 @@
-using sales.Module.Entities;
+using Module.Sales.Domain;
 
-namespace sales.Contracts.dtos;
+namespace Module.Sales.Application.UseCases.Sales.GetById;
 
 
 

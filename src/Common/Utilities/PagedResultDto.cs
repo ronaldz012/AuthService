@@ -1,6 +1,4 @@
-using System;
-
-namespace Common.Extensions;
+namespace Common.Utilities;
 
 public class PagedResultDto<T>
 {

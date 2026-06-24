@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Inventory.Data.Entities.Products;
+using Module.Inventory.Domain.Products;
 
-namespace Inventory.Contracts.Dtos.Products;
+namespace Module.Inventory.Application.UseCases.Products.Update;
 
 public class UpdateProductDto
 {

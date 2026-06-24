@@ -1,16 +1,14 @@
 using Common.Contracts.authentication;
-using Inventory.Contracts.Dtos.Products;
-using Inventory.Data.Entities.Products;
-using Microsoft.EntityFrameworkCore;
-using Common.Services;
 using Common.Utilities;
-using Inventory.Data;
+using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Products;
 
-namespace Inventory.UseCases.Products;
+namespace Module.Inventory.Application.UseCases.Products.Get;
 
-public class ListProducts(InvDbContext context, ICurrentUser currentUser)
+public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
 {
-    public async Task<Result<PagedResultDto<ListProductDto>>> Execute(ProductQueryDto queryDto)
+    public async Task<Result<PagedResultDto<ListProductRequest>>> Execute(ProductQueryDto queryDto)
     {
         IQueryable<Product> query = context.Products;
         if (!string.IsNullOrEmpty(queryDto.Filter))
@@ -32,7 +30,7 @@ public class ListProducts(InvDbContext context, ICurrentUser currentUser)
         //if(queryDto.LowStock.HasValue) PARA IMPLEMENTAR::::
         
         var (filteredQuery, totalCount) = query.ApplyFilters(queryDto);
-        var items = await filteredQuery.Select(p => new ListProductDto()
+        var items = await filteredQuery.Select(p => new ListProductRequest()
         {
             Id = p.Id,
             Name = p.Name,
@@ -47,7 +45,7 @@ public class ListProducts(InvDbContext context, ICurrentUser currentUser)
                 .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
                 .Sum(bi => bi.Stock),
         }).ToListAsync();
-        return new PagedResultDto<ListProductDto>()
+        return new PagedResultDto<ListProductRequest>()
         {
             TotalCount = totalCount,
             Items = items,

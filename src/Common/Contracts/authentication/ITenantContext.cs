@@ -1,4 +1,4 @@
-namespace Common.Data;
+namespace Common.Contracts.authentication;
 
 public interface ITenantContext
 {

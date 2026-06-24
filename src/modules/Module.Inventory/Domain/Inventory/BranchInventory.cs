@@ -1,8 +1,8 @@
 using Common.Domain;
-using Module.Inventory.Entities.Products;
-using Module.Inventory.Entities.Shared.Base;
+using Module.Inventory.Domain.Products;
+using Module.Inventory.Domain.Shared.Base;
 
-namespace Module.Inventory.Entities.Inventory;
+namespace Module.Inventory.Domain.Inventory;
 
 public class BranchInventory : Params, IMustHaveTenant
 {

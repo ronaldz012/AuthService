@@ -1,9 +1,10 @@
 using System.Api.Result;
-using Inventory.Contracts.Dtos.Brands;
-using Inventory.UseCases.Brands;
+
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Module.Inventory.Application.UseCases.Brands;
+using Module.Inventory.Application.UseCases.Brands.CreateBrand;
+using Module.Inventory.Application.UseCases.Brands.GetBrands;
 
 namespace System.Api.Controllers.Inventory
 {
@@ -14,13 +15,13 @@ namespace System.Api.Controllers.Inventory
     public class BrandController(BrandUseCases service) : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> CreateBrand([FromBody] CreateBrandDto dto)
+        public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequest dto)
         {
             return await service.CreateBrand.Execute(dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBrands([FromQuery] QueryBrandDto query)
+        public async Task<IActionResult> GetBrands([FromQuery]  QueryBrandDto query)
         {
             return await  service.GetBrands.Execute(query).ToValueOrProblemDetails();
         }

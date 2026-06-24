@@ -1,7 +1,6 @@
 using Common.Utilities;
-using Inventory.Data.Entities.Transfers;
-
-namespace Inventory.Contracts.Dtos.Transfers;
+using Module.Inventory.Domain.Transfers;
+namespace Module.Inventory.Application.UseCases.Transfers.Get;
 
 public class ListStockTransferDto
 {

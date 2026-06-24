@@ -1,8 +1,6 @@
-using System;
-using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Common.Result;
+namespace Common.Utilities;
 /// <summary>
 /// Representa el resultado de una operación que puede tener éxito o fallar.
 /// Implementa el patrón Railway Oriented Programming (ROP).

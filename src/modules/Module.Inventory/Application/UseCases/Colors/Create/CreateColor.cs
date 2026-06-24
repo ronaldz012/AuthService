@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Products;
 
-namespace Module.Inventory.Application.UseCases.Colors.CreateColor;
+namespace Module.Inventory.Application.UseCases.Colors.Create;
 
 public class CreateColor(IInvDbContext context, ICurrentUser currentUser)
 {

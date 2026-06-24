@@ -2,7 +2,7 @@ using Common.Utilities;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Products;
 
-namespace Module.Inventory.Application.UseCases.Categories.CreateCategory;
+namespace Module.Inventory.Application.UseCases.Categories.Create;
 
 public class CreateCategory(IInvDbContext context)
 {

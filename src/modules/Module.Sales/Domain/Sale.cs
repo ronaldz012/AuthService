@@ -1,6 +1,6 @@
 using Common.Domain;
 
-namespace sales.Module.Entities;
+namespace Module.Sales.Domain;
 
 public class Sale : IMustHaveTenant
 {

@@ -1,8 +1,8 @@
 using Common.Utilities;
 
-namespace Inventory.Contracts.Dtos.Brands;
+namespace Module.Inventory.Application.UseCases.Brands.GetBrands;
 
-public class ListBrandRequest
+public class ListBrandResponse
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;

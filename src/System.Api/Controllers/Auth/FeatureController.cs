@@ -3,7 +3,7 @@ using System.Api.Result;
 using Microsoft.AspNetCore.Mvc;
 using Module.Auth.Application.UseCases.Features;
 
-namespace System.Api.Controllers.System
+namespace System.Api.Controllers.Auth
 {
     [Route("api/system/[controller]")]
     [ApiController]

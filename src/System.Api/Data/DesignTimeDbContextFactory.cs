@@ -1,6 +1,6 @@
+using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Common.Data;
 
 namespace System.Api.Data;
 

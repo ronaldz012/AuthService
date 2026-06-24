@@ -1,13 +1,12 @@
 using Common.Contracts.authentication;
+using Common.Contracts.inventory;
 using Common.Utilities;
-using Inventory.Contracts.interfaces;
-using sales.Contracts.dtos;
-using sales.Module.Data;
-using sales.Module.Entities;
+using Module.Sales.Application.Abstraction;
+using Module.Sales.Domain;
 
-namespace sales.UseCases.UseCases;
+namespace Module.Sales.Application.UseCases.Sales.Create;
 
-public class CreateSale(SalesDbContext context, ICurrentUser currentUser, IInventoryIntegrationService inventoryService)
+public class CreateSale(ISalesDbContext context, ICurrentUser currentUser, IInventoryIntegrationService inventoryService)
 {
     public async Task<Result<bool>> Execute(CreateSaleDto dto)
     {

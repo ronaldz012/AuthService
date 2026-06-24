@@ -1,7 +1,7 @@
+using Common.Contracts.authentication.dtos;
 using Common.Utilities;
-using module.Auth.dtos.Users;
 
-namespace module.Auth.interfaces;
+namespace Common.Contracts.authentication;
 
 public interface IUserIntegrationService
 {

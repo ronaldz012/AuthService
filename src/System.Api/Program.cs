@@ -1,115 +1,71 @@
-using System.Api.Data;
-using System.Api.Filters;
 using System.Api.Middlewares;
-using System.Api.Migration;
 using System.Api.Result;
 using System.Text;
-using Auth.Data;
-using Auth.Infrastructure;
-using Auth.Infrastructure.Authentication;
-using Auth.UseCases;
-using Branches.module;
-using Branches.module.Data;
-using Inventory.Infrastructure;
-using Inventory.Infrastructure.Notifications;
-using Inventory.UseCases;
+using Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using sales.Module.Data;
-using sales.UseCases;
-using Common;
-using Common.Data;
-using Common.Services;
-using Inventory.Data;
+using Common.Contracts.authentication;
+using Module.Auth;
+using Module.Auth.Infrastructure.persistence;
+using Module.Inventory;
+using Module.Inventory.Infrastructure;
+using Module.Sales;
+using Module.Sales.Infrastructure.Persistence;
 using Npgsql;
-using shared.Module.Data;
-using shared.Module.UseCases;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddOpenApi(options =>
 {
-  c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sales API", Version = "v1" });
-
-  // ── Security definition: Bearer + Branch IDs ─────────────────
-  c.AddSecurityDefinition("BearerWithBranch", new OpenApiSecurityScheme
+  options.AddDocumentTransformer((document, context, cancellationToken) =>
   {
-    Type = SecuritySchemeType.ApiKey,   // "ApiKey" permite campo libre
-    In = ParameterLocation.Header,
-    Name = "Authorization",             // header real que se envía
-    Description =
-          "**JWT** — ingrese: `Bearer <token>`\n\n" +
-          "**X-Branch-Id** — IDs de sucursal separados por coma (ej: `1,2,3`)\n\n" +
-          "Formato combinado en este campo → `Bearer <token> | branches: 1,2,3`\n\n" +
-          "> El UI enviará el valor tal cual; use el campo de abajo para los branch IDs."
-  });
-
-  // ── Definición separada para X-Branch-Id ────────────────────
-  c.AddSecurityDefinition("BranchId", new OpenApiSecurityScheme
-  {
-    Type = SecuritySchemeType.ApiKey,
-    In = ParameterLocation.Header,
-    Name = "X-Branch-Id",
-    Description = "IDs de sucursal separados por coma. Ejemplo: `1,2,3`"
-  });
-
-  c.AddSecurityDefinition("SystemApiKey", new OpenApiSecurityScheme
-  {
-    Type = SecuritySchemeType.ApiKey,
-    In = ParameterLocation.Header,
-    Name = "X-Api-Key",
-    Description = "API Key requerida para endpoints de sistema (ej. migraciones)."
-  });
-  // ── Ambos requeridos globalmente ─────────────────────────────
-  c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    document.Info = new()
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id   = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        },
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id   = "BranchId"
-                }
-            },
-            Array.Empty<string>()
-        }
+      Title = "Sales API",
+      Version = "v1"
+    };
+
+    // 1. Definir el esquema de seguridad para el Token JWT
+    document.Components ??= new Microsoft.OpenApi.Models.OpenApiComponents();
+    document.Components.SecuritySchemes.Add("Bearer", new()
+    {
+      Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+      Scheme = "Bearer",
+      BearerFormat = "JWT",
+      Description = "Introduce tu token JWT sin la palabra 'Bearer'"
     });
 
-  // ── Bearer estándar (para el candado verde) ──────────────────
-  c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-  {
-    Description =
-          "JWT Authorization header usando el esquema Bearer.\n\n" +
-          "Ingrese **Bearer** [espacio] y luego su token.\n\n" +
-          "Ejemplo: `Bearer eyJhbGci...`",
-    Name = "Authorization",
-    In = ParameterLocation.Header,
-    Type = SecuritySchemeType.ApiKey,
-    Scheme = "Bearer"
+    // 2. Definir el esquema de seguridad para el X-Branch-Id
+    document.Components.SecuritySchemes.Add("BranchId", new()
+    {
+      Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+      In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+      Name = "X-Branch-Id",
+      Description = "IDs de sucursal separados por coma (ej: 1,2,3)"
+    });
+
+    // 3. Aplicar ambos de forma global a todos los endpoints
+    var requirement = new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+      {
+        new() { Reference = new() { Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme, Id = "Bearer" } },
+        Array.Empty<string>()
+      },
+      {
+        new() { Reference = new() { Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme, Id = "BranchId" } },
+        Array.Empty<string>()
+      }
+    };
+    document.SecurityRequirements.Add(requirement);
+
+    return Task.CompletedTask;
   });
-  
-  // Register Operation Filter to only require ApiKey where [ApiKey] is used
-  c.OperationFilter<System.Api.Filters.ApiKeyOperationFilter>();
 });
 
 builder.Services.AddHttpContextAccessor();
@@ -125,7 +81,6 @@ builder.Services.AddAuthentication(options =>
 {
   options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
   options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
-  // Solo para desarrollo - callback URL
   options.CallbackPath = "/api/ExternalAuth/google-login-complete";
 }
 
@@ -143,10 +98,10 @@ builder.Services.AddAuthentication(options =>
     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["TokenSettings:SecretKey"]!))
   };
 });
-
-builder.Services.AddDbContext<SharedDbContext>((sp, options) =>
+builder.Services.AddCommon(builder.Configuration);
+builder.Services.AddDbContext<AuthDbContext>((sp, options) =>
 {
-  var connection = builder.Configuration.GetConnectionString("SharedConnection");
+  var connection = builder.Configuration.GetConnectionString("DefaultConnection");
   options.UseNpgsql(connection,
     x => x.MigrationsHistoryTable("__EFMigrationsHistory_shared", null));
 });
@@ -156,23 +111,6 @@ var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnec
 
 builder.Services.AddScoped<ITenantContext, TenantContext>();
 
-builder.Services.AddDbContext<AuthDbContext>((sp, options) =>
-{
-  var tenant = sp.GetRequiredService<ITenantContext>();
-  var connString = BuildConnectionString(defaultConnection, tenant.DatabaseName);
-    
-  options.UseNpgsql(connString,
-    x => x.MigrationsHistoryTable("__EFMigrationsHistory_auth", tenant.Schema));
-});
-
-builder.Services.AddDbContext<BranchDbContext>((sp, options) =>
-{
-  var tenant = sp.GetRequiredService<ITenantContext>();
-  var connString = BuildConnectionString(defaultConnection, tenant.DatabaseName);
-    
-  options.UseNpgsql(connString,
-    x => x.MigrationsHistoryTable("__EFMigrationsHistory_branches", tenant.Schema));
-});
 
 builder.Services.AddDbContext<InvDbContext>((sp, options) =>
 {
@@ -191,6 +129,11 @@ builder.Services.AddDbContext<SalesDbContext>((sp, options) =>
   options.UseNpgsql(connString,
     x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", tenant.Schema));
 });
+
+// Register module Auth services (scoped, use IAuthDbContext mapping inside the module)
+builder.Services.AuthDependencyInjection(builder.Configuration);
+builder.Services.AddInventory();
+builder.Services.AddSales();
 
 // Helper local — o lo mueves a TenantDbConnectionFactory si prefieres
 static string BuildConnectionString(string baseConnection, string? databaseName)
@@ -216,19 +159,8 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
   options.SuppressModelStateInvalidFilter = true;
 });
 builder.Services.AddMemoryCache();
-builder.Services.AddAuthData()
-                .AddUseCases()
-                .AddInfrastructure(builder.Configuration)
-                .AddCommon(builder.Configuration)
-                .AddBranch(builder.Configuration)
-                .AddInventory()
-                .AddSales()
-                .AddShared();
 //EXTRAER en un DI
 builder.Services.AddSignalR();
-builder.Services.AddScoped<InventorySignalRStockNotifier>();   // tu notifier
-builder.Services.AddScoped<MigrationService>();
-builder.Services.AddScoped<TenantMigrationOrchestrator>();
 //
 builder.Services.AddCors(options =>
 {
@@ -246,17 +178,26 @@ app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-  app.UseSwagger();
-  app.UseSwaggerUI();
-}
-app.MapHub<NotificationHub>("/hubs/notifications");
+
+//app.MapHub<NotificationHub>("/hubs/notifications");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantMiddleware>();
 app.UseMiddleware<BranchMiddleware>();
+
+if (app.Environment.IsDevelopment())
+{
+  app.MapOpenApi(); // Mapea el JSON (/openapi/v1.json)
+    
+  app.MapScalarApiReference(options =>
+  {
+    options
+      .WithTitle("Sales API")
+      .WithTheme(ScalarTheme.Purple)
+      .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+  });
+}
 app.MapControllers();
 app.Run();
 

@@ -1,4 +1,4 @@
-﻿namespace Module.Inventory.Entities.Shared.Base;
+﻿namespace Module.Inventory.Domain.Shared.Base;
 
 public class Params
 {

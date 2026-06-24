@@ -1,4 +1,4 @@
-namespace Inventory.Contracts.Dtos.Transfers;
+namespace Module.Inventory.Application.UseCases.Transfers.Create;
 
 public class CreateStockTransferDto
 {

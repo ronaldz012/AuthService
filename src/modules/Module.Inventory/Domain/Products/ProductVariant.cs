@@ -1,10 +1,10 @@
 ﻿using Common.Domain;
-using Module.Inventory.Entities.Inventory;
-using Module.Inventory.Entities.Receptions;
-using Module.Inventory.Entities.Shared.Base;
-using Module.Inventory.Entities.Transfers;
+using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Domain.Receptions;
+using Module.Inventory.Domain.Shared.Base;
+using Module.Inventory.Domain.Transfers;
 
-namespace Module.Inventory.Entities.Products;
+namespace Module.Inventory.Domain.Products;
 
 public class ProductVariant: Params, IMustHaveTenant
 {

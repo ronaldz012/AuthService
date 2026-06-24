@@ -1,4 +1,4 @@
-using Auth.Contracts.Interfaces;
+using Common.Contracts.authentication;
 
 namespace System.Api.Middlewares;
 

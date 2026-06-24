@@ -1,26 +1,28 @@
 using System.Api.Result;
-using Branches.Contracts;
-using Branches.Contracts.Dtos;
+using Common.Contracts.branches;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.UseCases.Branches;
+using Module.Auth.Application.UseCases.Branches.CreateBranch;
+using Module.Auth.Application.UseCases.Branches.GetBranches;
 
 namespace System.Api.Controllers.Branch
 {
     [Route("api/[controller]")]
     [ApiController]
     [Tags("Branch")]
-    public class BranchController (IBranchService branchService): ControllerBase
+    public class BranchController (BranchesUseCases features): ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> CreateBranch([FromBody]CreateBranchDto request)
+        public async Task<IActionResult> CreateBranch([FromBody]CreateBranchRequest request)
         { 
-            return await branchService.CreateBranch(request).ToValueOrProblemDetails();
+            return await features.CreateBranch.Execute(request).ToValueOrProblemDetails();
         }
 
         [HttpGet]
         public async Task<IActionResult> GetBranches()
         {
-            return await branchService.GetAllBranches().ToValueOrProblemDetails();
+            return await features.ListBranches.Execute().ToValueOrProblemDetails();
         }
     }
 }

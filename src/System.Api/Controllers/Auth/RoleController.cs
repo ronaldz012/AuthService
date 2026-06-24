@@ -1,9 +1,8 @@
 using System.Api.Result;
-using Auth.Contracts.Dtos.Roles;
-using Auth.UseCases.Roles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.UseCases.Roles;
 
 namespace System.Api.Controllers.Auth
 {

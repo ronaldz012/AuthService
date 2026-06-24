@@ -1,12 +1,9 @@
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Products;
-using Inventory.Data.Entities.Products;
-using Inventory.Contracts.Mapping;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.Products;
+namespace Module.Inventory.Application.UseCases.Products.Update;
 
-public class UpdateProduct(InvDbContext context)
+public class UpdateProduct(IInvDbContext context)
 {
     public async Task<Result<bool>> Execute(UpdateProductDto dto, Guid id)
     {
@@ -14,7 +11,10 @@ public class UpdateProduct(InvDbContext context)
         if(product == null) return 
             new Error("NOT_FOUND", "Product not found");
         
-        product.MapFrom(dto);
+        product.Name = dto.Name ?? product.Name;
+        product.Description = dto.Description ?? product.Description;
+        product.Gender = dto.Gender ?? product.Gender;
+        product.CategoryId = dto.CategoryId ?? product.CategoryId;
         await context.SaveChangesAsync();
         return true;
 

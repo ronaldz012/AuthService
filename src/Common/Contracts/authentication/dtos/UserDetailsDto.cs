@@ -1,4 +1,4 @@
-namespace module.Auth.dtos.Users;
+namespace Common.Contracts.authentication.dtos;
 
 public class UserDetailsDto
 {

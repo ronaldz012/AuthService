@@ -1,11 +1,10 @@
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Receptions;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.Receptions;
+namespace Module.Inventory.Application.UseCases.Receptions.GetLabels;
 
-public class ReceptionLabels(InvDbContext context)
+public class ReceptionLabels(IInvDbContext context)
 {
     public async Task<Result<ReceptionLabelsDto>> Execute(Guid receptionId)
     {

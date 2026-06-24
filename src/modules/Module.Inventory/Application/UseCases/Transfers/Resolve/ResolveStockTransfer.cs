@@ -1,15 +1,13 @@
 using Common.Contracts.authentication;
-using Inventory.Contracts.Dtos.Transfers;
-using Inventory.Data.Entities.Inventory;
-using Inventory.Data.Entities.Transfers;
-using Microsoft.EntityFrameworkCore;
-using Common.Services;
 using Common.Utilities;
-using Inventory.Data;
+using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Domain.Transfers;
 
-namespace Inventory.UseCases.Transfers;
+namespace Module.Inventory.Application.UseCases.Transfers.Resolve;
 
-public class ResolveStockTransfer(InvDbContext context, ICurrentUser currentUser)
+public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<bool>> Execute(Guid transferId, ResolveStockTransferDto dto)
     {

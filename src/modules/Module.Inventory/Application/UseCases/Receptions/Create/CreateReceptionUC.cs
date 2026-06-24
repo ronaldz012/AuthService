@@ -1,15 +1,14 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Receptions;
-using Inventory.Data.Entities.Inventory;
-using Inventory.Data.Entities.Receptions;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Domain.Receptions;
 
-namespace Inventory.UseCases.Receptions;
+namespace Module.Inventory.Application.UseCases.Receptions.Create;
 
 public class CreateReceptionUc(
-    InvDbContext context,
+    IInvDbContext context,
     ICurrentUser currentUser)
 {
     public async Task<Result<StockReceptionResultDto>> Execute(CreateStockReceptionDto dto)

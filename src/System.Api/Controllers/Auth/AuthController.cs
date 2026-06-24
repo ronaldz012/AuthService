@@ -1,11 +1,11 @@
 using System.Api.Result;
-using Auth.Contracts.Dtos.Users;
-using Auth.UseCases.Autentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.Extensions.Options;
 using Common.Services;
+using Module.Auth.Application.UseCases.Autentication;
+using Module.Auth.Application.UseCases.Autentication.Login;
+using Module.Auth.Application.UseCases.Users;
 
 namespace System.Api.Controllers.Auth
 {
@@ -25,7 +25,7 @@ namespace System.Api.Controllers.Auth
         }
         [HttpPost("Login")]
         public async Task<IActionResult> Login(
-            [FromBody] LoginDto dto, 
+            [FromBody] LoginRequest dto, 
             [FromHeader(Name = "X-Forwarded-Host")] string? tenantHost = null)
         {
             return await autenticationUseCases.Login.Execute(dto)
@@ -59,12 +59,12 @@ namespace System.Api.Controllers.Auth
         {
             return await autenticationUseCases.CompletePublicRegister.Execute(dto).ToValueOrProblemDetails();
         }
-        [HttpPost("Google")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GoogleAuth([FromBody] string token)
-        {
-            return await autenticationUseCases.AuthenticateWithGoogle.Execute(token).ToValueOrProblemDetails();
-        }
+        // [HttpPost("Google")]
+        // [AllowAnonymous]
+        // public async Task<IActionResult> GoogleAuth([FromBody] string token)
+        // {
+        //     return await autenticationUseCases.AuthenticateWithGoogle.Execute(token).ToValueOrProblemDetails();
+        // }
     }
 }
  

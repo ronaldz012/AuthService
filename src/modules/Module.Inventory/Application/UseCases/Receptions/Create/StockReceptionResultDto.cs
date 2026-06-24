@@ -1,4 +1,4 @@
-namespace Inventory.Contracts.Dtos.Receptions;
+namespace Module.Inventory.Application.UseCases.Receptions.Create;
 
 public class StockReceptionResultDto
 {

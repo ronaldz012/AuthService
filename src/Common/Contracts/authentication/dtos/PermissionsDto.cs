@@ -1,4 +1,6 @@
-namespace Common.permissions;
+using Common.permissions;
+
+namespace Common.Contracts.authentication.dtos;
 
 public class PermissionsDto
 {
@@ -12,8 +14,6 @@ public class PermissionsDto
 public class FeaturePermissionsDeductedDto
 {
     public int Id { get; set; }
-    public bool CanCreate { get; set; } = false;
-    public bool CanRead { get; set; } = false;
-    public bool CanUpdate { get; set; } = false;
-    public bool CanDelete { get; set; } = false;
+    public string ModuleName { get; set; } = string.Empty;
+    public List<string> Permissions { get; set; } = [];
 }

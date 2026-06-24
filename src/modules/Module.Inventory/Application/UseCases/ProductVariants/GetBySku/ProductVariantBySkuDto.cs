@@ -1,6 +1,6 @@
-using Inventory.Data.Entities.Products;
+using Module.Inventory.Domain.Products;
 
-namespace Inventory.Contracts.Dtos.Products;
+namespace Module.Inventory.Application.UseCases.ProductVariants.GetBySku;
 
 public class ProductVariantBySkuDto
 {

@@ -1,4 +1,4 @@
-namespace Inventory.Contracts.Dtos.Products;
+namespace Module.Inventory.Application.UseCases.Products.Create;
 
 public class ProductCreatedDto
 {

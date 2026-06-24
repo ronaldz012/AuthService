@@ -1,5 +1,6 @@
 using Common.Contracts.inventory;
 using Microsoft.Extensions.DependencyInjection;
+using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Brands;
 using Module.Inventory.Application.UseCases.Brands.CreateBrand;
 using Module.Inventory.Application.UseCases.Brands.GetBrands;
@@ -38,7 +39,7 @@ using Module.Inventory.Infrastructure;
 
 namespace Module.Inventory;
 
-public  static class DependencyInjectionInv
+public  static class InvDependencyInjection
 {
     public static IServiceCollection AddInventory(this IServiceCollection services)
     {
@@ -87,6 +88,7 @@ public  static class DependencyInjectionInv
             .AddScoped<GetListColors>();
 
         services.AddScoped<IInventoryIntegrationService, InventoryIntegrationService>();
+        services.AddScoped<IInvDbContext>(provider => provider.GetRequiredService<InvDbContext>());
         
 
         return services;

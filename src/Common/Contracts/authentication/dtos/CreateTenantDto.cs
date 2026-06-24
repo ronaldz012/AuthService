@@ -1,4 +1,6 @@
-namespace module.Auth.dtos;
+
+
+namespace Common.Contracts.authentication.dtos;
 
 public record CreateTenantDto(
     string DisplayName, 

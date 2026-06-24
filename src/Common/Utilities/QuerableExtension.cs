@@ -1,8 +1,7 @@
-using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Common.Extensions;
+namespace Common.Utilities;
 
 public static class QueryableExtensions
 {

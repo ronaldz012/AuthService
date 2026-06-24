@@ -1,8 +1,8 @@
 using Common.Domain;
-using Module.Inventory.Entities.Inventory;
-using Module.Inventory.Entities.Shared.Base;
+using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Domain.Shared.Base;
 
-namespace Module.Inventory.Entities.Transfers;
+namespace Module.Inventory.Domain.Transfers;
 
 public class StockTransfer : Params, IMustHaveTenant
 {

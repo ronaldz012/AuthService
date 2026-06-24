@@ -1,7 +1,7 @@
 ﻿using Common.Domain;
-using Module.Inventory.Entities.Shared.Base;
+using Module.Inventory.Domain.Shared.Base;
 
-namespace Module.Inventory.Entities.Products; 
+namespace Module.Inventory.Domain.Products; 
 
 public class Product:Params, IMustHaveTenant
 {

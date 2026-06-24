@@ -1,12 +1,11 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Products;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.Products;
+namespace Module.Inventory.Application.UseCases.Products.GetById;
 
-public class ProductDetails(InvDbContext context, ICurrentUser currentUser)
+public class ProductDetails(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<ProductDetailDto>> Execute(Guid productId)
     {

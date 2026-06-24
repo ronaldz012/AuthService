@@ -1,39 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.20" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.16.5" />
 
-  <ItemGroup>
-    <ProjectReference Include="../modules/auth/Auth.Data/Auth.Data.csproj" />
-    <ProjectReference Include="../modules/auth/Auth.Infrastructure/Auth.Infrastructure.csproj" />
-    <ProjectReference Include="../modules/auth/Auth.UseCases/Auth.UseCases.csproj" />
-    <ProjectReference Include="..\Common\Common.csproj" />
-    <ProjectReference Include="..\modules\branches\Branches.Contracts\Branches.Contracts.csproj" />
-    <ProjectReference Include="..\modules\branches\Branches.module\Branches.module.csproj" />
-    <ProjectReference Include="..\modules\inventory\Inventory.Contracts\Inventory.Contracts.csproj" />
-    <ProjectReference Include="..\modules\inventory\Inventory.Data\Inventory.Data.csproj" />
-    <ProjectReference Include="..\modules\inventory\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />
-    <ProjectReference Include="..\modules\inventory\Inventory.UseCases\Inventory.UseCases.csproj" />
-    <ProjectReference Include="..\modules\sales\sales.Contracts\sales.Contracts.csproj" />
-    <ProjectReference Include="..\modules\sales\sales.Data\sales.Data.csproj" />
-    <ProjectReference Include="..\modules\sales\sales.UseCases\sales.UseCases.csproj" />
-    <ProjectReference Include="..\modules\shared\shared.Module\shared.Module.csproj" />
-  </ItemGroup>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Common\Common.csproj" />
+        <ProjectReference Include="..\modules\Module.Auth\Module.Auth.csproj" />
+        <ProjectReference Include="..\modules\Module.Inventory\Module.Inventory.csproj" />
+        <ProjectReference Include="..\modules\Module.Sales\Module.Sales.csproj" />
+    </ItemGroup>
 
 </Project>

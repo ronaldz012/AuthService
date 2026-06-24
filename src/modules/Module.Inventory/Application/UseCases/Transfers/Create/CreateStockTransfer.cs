@@ -1,14 +1,12 @@
 using Common.Contracts.authentication;
-using Inventory.Contracts.Dtos.Transfers;
-using Inventory.Data.Entities.Transfers;
-using Microsoft.EntityFrameworkCore;
-using Common.Services;
 using Common.Utilities;
-using Inventory.Data;
+using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Transfers;
 
-namespace Inventory.UseCases.Transfers;
+namespace Module.Inventory.Application.UseCases.Transfers.Create;
 
-public class CreateStockTransfer(InvDbContext context, ICurrentUser currentUser)
+public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<bool>> Execute(CreateStockTransferDto dto)
     {

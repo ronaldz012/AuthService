@@ -1,7 +1,7 @@
 using Common.Utilities;
-using Inventory.Data.Entities.Receptions;
+using Module.Inventory.Domain.Receptions;
 
-namespace Inventory.Contracts.Dtos.Receptions;
+namespace Module.Inventory.Application.UseCases.Receptions.Get;
 
 public class StockReceptionListDto
 {

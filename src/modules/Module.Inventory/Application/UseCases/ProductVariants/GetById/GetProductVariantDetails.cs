@@ -1,12 +1,10 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Products;
 using Microsoft.EntityFrameworkCore;
-using Inventory.Data;
-using Inventory.Contracts.Dtos.ProductVariants;
+using Module.Inventory.Application.Abstraction;
 
-namespace Inventory.UseCases.ProductVariants;
-public class GetProductVariantDetails(InvDbContext context, ICurrentUser currentUser)
+namespace Module.Inventory.Application.UseCases.ProductVariants.GetById;
+public class GetProductVariantDetails(IInvDbContext context, ICurrentUser currentUser)
 {
 public async Task<Result<ProductVariantDetailsDto>> Execute(Guid id)
 {

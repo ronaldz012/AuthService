@@ -1,14 +1,12 @@
 using Common.Contracts.authentication;
-using Inventory.Contracts.Dtos.Receptions;
-using Inventory.Data.Entities.Receptions;
-using Microsoft.EntityFrameworkCore;
-using Common.Services;
 using Common.Utilities;
-using Inventory.Data;
+using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Receptions;
 
-namespace Inventory.UseCases.Receptions;
+namespace Module.Inventory.Application.UseCases.Receptions.Get;
 
-public class ListReceptions(InvDbContext context, ICurrentUser currentUser)
+public class ListReceptions(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<PagedResultDto<StockReceptionListDto>>> Execute(ReceptionQueryDto queryDto)
     {

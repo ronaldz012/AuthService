@@ -1,12 +1,11 @@
 using Common.Contracts.authentication;
 using Common.Contracts.branches;
 using Common.Utilities;
-using Inventory.Contracts.Dtos.Transfers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Inventory.Data;
+using Module.Inventory.Domain.Transfers;
+using Module.Inventory.Infrastructure;
 
-namespace Inventory.UseCases.Transfers;
+namespace Module.Inventory.Application.UseCases.Transfers.GetById;
 
 public class StockTransferDetails(InvDbContext context, IBranchService branchService, IUserIntegrationService userService, ICurrentUser currentUser)
 {
