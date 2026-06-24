@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Module.Auth</RootNamespace>
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Common\Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.28" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.IdentityModel.Tokens">
+        <HintPath>..\..\..\..\..\..\..\.nuget\packages\microsoft.identitymodel.tokens\8.14.0\lib\net8.0\Microsoft.IdentityModel.Tokens.dll</HintPath>
+      </Reference>
+      <Reference Include="System.IdentityModel.Tokens.Jwt">
+        <HintPath>..\..\..\..\..\..\..\.nuget\packages\system.identitymodel.tokens.jwt\8.14.0\lib\net8.0\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>
