@@ -54,8 +54,8 @@ public class UserPermissionsCacheService(
                 Roles      = [],
                 Features   = allFeatures.Select(f => new FeaturePermissionsDeductedDto
                 {
-                    Id          = f.Id,
-                    ModuleName  = f.Name, 
+                    Key          = f.Key,
+                    ModuleName  = f.Key, 
                     Permissions = ["*"] // Acceso total para Admin
                 }).ToList()
             }).ToList();
@@ -78,8 +78,8 @@ public class UserPermissionsCacheService(
                 // Mapeo directo uno a uno de las características asignadas a ese rol único
                 Features = ubr.Role.RoleFeaturePermissions.Select(rfp => new FeaturePermissionsDeductedDto
                 {
-                    Id          = rfp.Feature.Id,
-                    ModuleName  = rfp.Feature.Name,
+                    Key          = rfp.Feature.Key,
+                    ModuleName  = rfp.Feature.Key,
                     Permissions = rfp.Permissions // Pasamos tu nuevo array de strings directamente
                 }).ToList()
             }).ToList();

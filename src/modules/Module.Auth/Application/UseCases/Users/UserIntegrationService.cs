@@ -32,27 +32,6 @@ public class UserIntegrationService(IAuthDbContext context, ITokenGenerator toke
             LastName = x.LastName,
         }).ToList();
     }
-
-    public async Task<Result<Guid>> CreateTenantAdminAsync(string email, string password)
-    {
-            if (await context.Users.AnyAsync(u => u.Email == email))
-                return new Error("CONFLICT", "El email ya está registrado.");
-
-
-            var user = new User
-            {
-                Email        = email,
-                Username     = email, // o separar si tienes username
-                PasswordHash = "",
-                IsAdmin      = true,       // ← flag de admin
-                Status       = UserStatus.Active,
-            };
-
-            context.Users.Add(user);
-            await context.SaveChangesAsync(); // usa el schema del tenantContext ya seteado
-
-            return user.Id;
-        
-    }
+    
     
 }

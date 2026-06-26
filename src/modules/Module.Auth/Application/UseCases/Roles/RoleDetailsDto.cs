@@ -11,6 +11,6 @@ public class RoleDetailsDto
 
 public class FeaturePermissionsDto
 {
-    public int FeatureId { get; set; }
+    public string FeatureKey { get; set; } = string.Empty;
     public List<string> Permissions { get; set; } = new List<string>();
 }

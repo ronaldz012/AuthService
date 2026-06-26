@@ -5,7 +5,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Module.Auth.Infrastructure.persistence.Migrations
+namespace Module.Auth.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -23,7 +23,8 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<bool>(type: "boolean", nullable: false),
                     BranchCode = table.Column<string>(type: "text", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: false)
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,12 +32,24 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Databases",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Schema = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Databases", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Features",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
+                    Key = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Route = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Icon = table.Column<string>(type: "text", nullable: false),
@@ -46,7 +59,25 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Features", x => x.Id);
+                    table.PrimaryKey("PK_Features", x => x.Key);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Plans",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    MaxUsers = table.Column<int>(type: "integer", nullable: false),
+                    MaxBranches = table.Column<int>(type: "integer", nullable: false),
+                    MaxExtraRoles = table.Column<int>(type: "integer", nullable: false),
+                    DefaultRolesTemplate = table.Column<string>(type: "jsonb", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Plans", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -57,7 +88,6 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    IsAdmin = table.Column<bool>(type: "boolean", nullable: false),
                     Public = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -75,10 +105,10 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    IsAdmin = table.Column<bool>(type: "boolean", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Ci = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
                     Nationality = table.Column<string>(type: "text", nullable: false),
@@ -107,22 +137,28 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     RoleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    FeatureId = table.Column<int>(type: "integer", nullable: false),
+                    FeatureKey = table.Column<string>(type: "character varying(100)", nullable: false),
                     Permissions = table.Column<List<string>>(type: "text[]", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<int>(type: "integer", nullable: true)
+                    UpdatedBy = table.Column<int>(type: "integer", nullable: true),
+                    FeatureKey1 = table.Column<string>(type: "character varying(100)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RoleFeaturePermissions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RoleFeaturePermissions_Features_FeatureId",
-                        column: x => x.FeatureId,
+                        name: "FK_RoleFeaturePermissions_Features_FeatureKey",
+                        column: x => x.FeatureKey,
                         principalTable: "Features",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Key",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RoleFeaturePermissions_Features_FeatureKey1",
+                        column: x => x.FeatureKey1,
+                        principalTable: "Features",
+                        principalColumn: "Key");
                     table.ForeignKey(
                         name: "FK_RoleFeaturePermissions_Roles_RoleId",
                         column: x => x.RoleId,
@@ -163,17 +199,28 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Schema = table.Column<string>(type: "text", nullable: false),
                     DisplayName = table.Column<string>(type: "text", nullable: false),
-                    DatabaseName = table.Column<string>(type: "text", nullable: true),
-                    ConnectionString = table.Column<string>(type: "text", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false)
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DataBaseId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PlanId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tenants", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tenants_Databases_DataBaseId",
+                        column: x => x.DataBaseId,
+                        principalTable: "Databases",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Tenants_Plans_PlanId",
+                        column: x => x.PlanId,
+                        principalTable: "Plans",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Tenants_Users_OwnerId",
                         column: x => x.OwnerId,
@@ -224,14 +271,20 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RoleFeaturePermissions_FeatureId",
+                name: "IX_RoleFeaturePermissions_FeatureKey",
                 table: "RoleFeaturePermissions",
-                column: "FeatureId");
+                column: "FeatureKey");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RoleFeaturePermissions_RoleId",
+                name: "IX_RoleFeaturePermissions_FeatureKey1",
                 table: "RoleFeaturePermissions",
-                column: "RoleId");
+                column: "FeatureKey1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RoleFeaturePermissions_RoleId_FeatureKey",
+                table: "RoleFeaturePermissions",
+                columns: new[] { "RoleId", "FeatureKey" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Roles_TenantId_Name",
@@ -240,9 +293,19 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Tenants_DataBaseId",
+                table: "Tenants",
+                column: "DataBaseId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tenants_OwnerId",
                 table: "Tenants",
                 column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tenants_PlanId",
+                table: "Tenants",
+                column: "PlanId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserBranchRoles_RoleId",
@@ -278,6 +341,12 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Features");
+
+            migrationBuilder.DropTable(
+                name: "Databases");
+
+            migrationBuilder.DropTable(
+                name: "Plans");
 
             migrationBuilder.DropTable(
                 name: "Branches");

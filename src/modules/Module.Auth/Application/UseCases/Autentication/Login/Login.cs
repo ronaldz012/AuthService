@@ -40,7 +40,7 @@ public class Login(
             };
         }
 
-        var isAdmin = user.IsAdmin;
+        var isAdmin = user.Type is UserType.TenantAdmin or UserType.Owner;
         var userBranchesCache = await permissionsCache.GetAsync(user.Id, isAdmin);
 
         List<PermissionsByModuleDto> branches = userBranchesCache.Select(b => new PermissionsByModuleDto
@@ -55,7 +55,7 @@ public class Login(
                     Name = gModule.Key.ModuleName,
                     Features = gModule.Select(f => new FeaturePermissionByModuleDto
                     {
-                        Id = f.Id,
+                        key = f.Key,
                         Name = f.ModuleName,
                         Permission = f.Permissions
                     }).ToList()

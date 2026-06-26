@@ -14,7 +14,7 @@ public class AddRole(IAuthDbContext dbContext )
             Description = dto.Description,
             RoleFeaturePermissions = dto.RoleModulePermissions.Select( f =>new RoleFeaturePermission()
             {
-                FeatureId = f.FeatureId,
+                FeatureKey = f.FeatureKey,
                 Permissions = f.Permissions
             }).ToList()
         };

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Module.Auth.Domain;
 
 namespace Module.Auth.Application.Abstraction;
@@ -7,6 +8,8 @@ namespace Module.Auth.Application.Abstraction;
 public interface IAuthDbContext
 {
     DbSet<Feature> Features { get; }
+    DbSet<TenantDataBase> TenantDatabases { get; }
+    DbSet<Plan> Plans { get; }
     DbSet<Tenant> Tenants { get; }
     DbSet<User> Users { get; }
     DbSet<EmailVerificationCode> EmailVerificationCodes { get; }
@@ -17,6 +20,7 @@ public interface IAuthDbContext
 
     DbSet<TEntity> Set<TEntity>()
         where TEntity : class;
+    DatabaseFacade Database { get; }
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         where TEntity : class;

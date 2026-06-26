@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Module.Auth.Infrastructure.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Module.Auth.Infrastructure.persistence.Migrations
+namespace Module.Auth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
     partial class AuthDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +18,7 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -31,6 +32,9 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     b.Property<string>("BranchCode")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -101,16 +105,18 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
 
             modelBuilder.Entity("Module.Auth.Domain.Feature", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -121,10 +127,6 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     b.Property<int>("Module")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Route")
                         .IsRequired()
                         .HasColumnType("text");
@@ -132,9 +134,40 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.HasKey("Key");
 
                     b.ToTable("Features");
+                });
+
+            modelBuilder.Entity("Module.Auth.Domain.Plan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MaxBranches")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxExtraRoles")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxUsers")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Plans");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.Role", b =>
@@ -158,9 +191,6 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -189,10 +219,14 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("FeatureId")
-                        .HasColumnType("integer");
+                    b.Property<string>("FeatureKey")
+                        .IsRequired()
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<List<string>>("Permissions")
+                    b.Property<string>("FeatureKey1")
+                        .HasColumnType("character varying(100)");
+
+                    b.PrimitiveCollection<List<string>>("Permissions")
                         .IsRequired()
                         .HasColumnType("text[]");
 
@@ -210,9 +244,12 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FeatureId");
+                    b.HasIndex("FeatureKey");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("FeatureKey1");
+
+                    b.HasIndex("RoleId", "FeatureKey")
+                        .IsUnique();
 
                     b.ToTable("RoleFeaturePermissions");
                 });
@@ -223,14 +260,11 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ConnectionString")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DatabaseName")
-                        .HasColumnType("text");
+                    b.Property<Guid>("DataBaseId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
@@ -242,15 +276,41 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DataBaseId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("PlanId");
+
+                    b.ToTable("Tenants");
+                });
+
+            modelBuilder.Entity("Module.Auth.Domain.TenantDataBase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Schema")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("Tenants");
+                    b.ToTable("TenantDatabases");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.User", b =>
@@ -292,13 +352,11 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("GoogleId")
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastActive")
                         .HasColumnType("timestamp with time zone");
@@ -321,6 +379,9 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -387,13 +448,115 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Module.Auth.Domain.Feature", b =>
+                {
+                    b.OwnsMany("Module.Auth.Domain.FeatureAction", "AvailableActions", b1 =>
+                        {
+                            b1.Property<string>("FeatureKey")
+                                .HasColumnType("character varying(100)");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("Description")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("DisplayName")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Key")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("FeatureKey", "__synthesizedOrdinal");
+
+                            b1.ToTable("Features");
+
+                            b1.ToJson("AvailableActions");
+
+                            b1.WithOwner()
+                                .HasForeignKey("FeatureKey");
+                        });
+
+                    b.Navigation("AvailableActions");
+                });
+
+            modelBuilder.Entity("Module.Auth.Domain.Plan", b =>
+                {
+                    b.OwnsMany("Module.Auth.Domain.DefaultRoleTemplate", "DefaultRolesTemplate", b1 =>
+                        {
+                            b1.Property<Guid>("PlanId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<string>("Description")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("text");
+
+                            b1.HasKey("PlanId", "__synthesizedOrdinal");
+
+                            b1.ToTable("Plans");
+
+                            b1.ToJson("DefaultRolesTemplate");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PlanId");
+
+                            b1.OwnsMany("Module.Auth.Domain.DefaultRolePermissionTemplate", "Permissions", b2 =>
+                                {
+                                    b2.Property<Guid>("DefaultRoleTemplatePlanId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<int>("DefaultRoleTemplate__synthesizedOrdinal")
+                                        .HasColumnType("integer");
+
+                                    b2.Property<int>("__synthesizedOrdinal")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("integer");
+
+                                    b2.PrimitiveCollection<List<string>>("Actions")
+                                        .IsRequired()
+                                        .HasColumnType("text[]");
+
+                                    b2.Property<string>("FeatureKey")
+                                        .IsRequired()
+                                        .HasColumnType("text");
+
+                                    b2.HasKey("DefaultRoleTemplatePlanId", "DefaultRoleTemplate__synthesizedOrdinal", "__synthesizedOrdinal");
+
+                                    b2.ToTable("Plans");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("DefaultRoleTemplatePlanId", "DefaultRoleTemplate__synthesizedOrdinal");
+                                });
+
+                            b1.Navigation("Permissions");
+                        });
+
+                    b.Navigation("DefaultRolesTemplate");
+                });
+
             modelBuilder.Entity("Module.Auth.Domain.RoleFeaturePermission", b =>
                 {
                     b.HasOne("Module.Auth.Domain.Feature", "Feature")
                         .WithMany()
-                        .HasForeignKey("FeatureId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("FeatureKey")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Module.Auth.Domain.Feature", null)
+                        .WithMany("RoleFeaturePermissions")
+                        .HasForeignKey("FeatureKey1");
 
                     b.HasOne("Module.Auth.Domain.Role", "Role")
                         .WithMany("RoleFeaturePermissions")
@@ -408,13 +571,29 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
 
             modelBuilder.Entity("Module.Auth.Domain.Tenant", b =>
                 {
+                    b.HasOne("Module.Auth.Domain.TenantDataBase", "TenantDataBase")
+                        .WithMany("Tenants")
+                        .HasForeignKey("DataBaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Module.Auth.Domain.User", "OwnerUser")
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Module.Auth.Domain.Plan", "Plan")
+                        .WithMany()
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("OwnerUser");
+
+                    b.Navigation("Plan");
+
+                    b.Navigation("TenantDataBase");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.UserBranchRole", b =>
@@ -449,11 +628,21 @@ namespace Module.Auth.Infrastructure.persistence.Migrations
                     b.Navigation("UserBranchRoles");
                 });
 
+            modelBuilder.Entity("Module.Auth.Domain.Feature", b =>
+                {
+                    b.Navigation("RoleFeaturePermissions");
+                });
+
             modelBuilder.Entity("Module.Auth.Domain.Role", b =>
                 {
                     b.Navigation("RoleFeaturePermissions");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Module.Auth.Domain.TenantDataBase", b =>
+                {
+                    b.Navigation("Tenants");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.User", b =>

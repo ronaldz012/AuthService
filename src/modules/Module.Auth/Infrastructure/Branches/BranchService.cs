@@ -6,7 +6,7 @@ using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Domain;
 
-namespace Module.Auth.Infrastructure.branches;
+namespace Module.Auth.Infrastructure.Branches;
 
 public class BranchService(IAuthDbContext context) : IBranchService
 {

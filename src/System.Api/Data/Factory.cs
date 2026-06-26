@@ -1,6 +1,6 @@
 using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
-using Module.Auth.Infrastructure.persistence;
+using Module.Auth.Infrastructure.Persistence;
 using Module.Inventory.Infrastructure;
 using Module.Sales.Infrastructure.Persistence;
 

@@ -9,11 +9,12 @@ public class User
     public Guid Id { get; set; }
     [StringLength(100)]
     public string Username { get; set; } = string.Empty;
-    public bool IsAdmin { get; set; } = false;  // ← aquí
+    public UserType Type { get; set; } = UserType.Standard;
 
     public string PasswordHash { get; set; } = string.Empty;
     [StringLength(100)]
     public string Email { get; set; } = string.Empty;
+    [StringLength(100)]
     public string FirstName { get; set; } = string.Empty;
     [StringLength(100)]
     public string LastName { get; set; } = string.Empty;
@@ -47,7 +48,8 @@ public enum UserStatus
     Active = 1,
     Suspended = 2,
     Inactive = 3,
-    PendingRoleSelecting =4
+    PendingRoleSelecting =4,
+    PendingConfiguration = 5
 }
 
 public enum AuthProvider
@@ -57,3 +59,9 @@ public enum AuthProvider
     Facebook = 2,
     Microsoft = 3
 }   
+public enum UserType
+{
+    Standard = 0,     
+    TenantAdmin = 1,  
+    Owner = 2
+}

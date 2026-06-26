@@ -10,13 +10,13 @@ public class ListFeatures(IAuthDbContext dbContext)
     {
         var query = dbContext.Features.AsQueryable();
         if (!string.IsNullOrEmpty(queryDto.Filter))
-            query = query.Where(m => m.Name.Contains(queryDto.Filter ?? string.Empty));
+            query = query.Where(m => m.Key.Contains(queryDto.Filter ?? string.Empty));
 
         (query, var totalCount) = query.ApplyFilters(queryDto);
         var result = await query.Select(x => new FeatureDto
         {
-            Id = x.Id,
-            Name = x.Name,
+    
+            Name = x.Key,
             Description = x.Description,
             Icon = x.Icon,
         }).ToListAsync();

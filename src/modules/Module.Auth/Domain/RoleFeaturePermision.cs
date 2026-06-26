@@ -7,7 +7,7 @@ public class RoleFeaturePermission : IMustHaveTenant
 {
     public Guid Id { get; set; }
     public Guid RoleId { get; set; }
-    public int FeatureId { get; set; }
+    public string FeatureKey { get; set; } = string.Empty;
     public List<string> Permissions { get; set; } = new List<string>();
     public Guid TenantId { get; set; }
 

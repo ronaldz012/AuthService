@@ -10,6 +10,6 @@ public class CreateRoleDto
 
 public class RoleFeaturePermissionDto
 {
-    public int FeatureId { get; set; }
+    public string FeatureKey { get; set; } = string.Empty;
     public List<string> Permissions { get; set; } = new List<string>();
 }

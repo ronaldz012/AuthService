@@ -3,7 +3,7 @@ using Common.Contracts.authentication;
 using Microsoft.Extensions.Options;
 using Common.Services;
 using Microsoft.EntityFrameworkCore;
-using Module.Auth.Infrastructure.persistence;
+using Module.Auth.Infrastructure.Persistence;
 
 namespace System.Api.Middlewares;
 
@@ -45,9 +45,9 @@ public class TenantMiddleware(RequestDelegate next)
 
             if (tenant != null)
             {
-                schema       = tenant.Schema;
+                // schema       = tenant.Schema;
                 tenantId     = tenant.Id;
-                databaseName = tenant.DatabaseName; // null si usa DB default
+                // databaseName = tenant.DatabaseName; // null si usa DB default
             }
         }
 

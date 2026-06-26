@@ -8,8 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Common.Contracts.authentication;
+using Common.Contracts.Seeder;
 using Module.Auth;
-using Module.Auth.Infrastructure.persistence;
+using Module.Auth.Infrastructure.Persistence;
 using Module.Inventory;
 using Module.Inventory.Infrastructure;
 using Module.Sales;
@@ -174,6 +175,12 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+  
+  var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+  await seeder.SeedAllAsync();
+}
 app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 

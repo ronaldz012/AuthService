@@ -23,7 +23,7 @@ public class GetRole(IAuthDbContext dbContext )
             Description = role.Description,
             FeaturePermissions = role.RoleFeaturePermissions.Select(x => new FeaturePermissionsDto()
             {
-                FeatureId = x.FeatureId,
+                FeatureKey = x.FeatureKey,
                 Permissions = x.Permissions
             }).ToList()
         };

@@ -1,4 +1,5 @@
 using System;
+using Common.Contracts.Seeder;
 using Common.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,8 @@ public static class CommonDependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         IConfigurationSection tokenSettingsSection = configuration.GetSection(SmtpSettings.SectionName);
         services.Configure<SmtpSettings>(tokenSettingsSection);
+        services.AddScoped<DatabaseSeeder>();
         return services;
+
     }
 }

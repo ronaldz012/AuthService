@@ -13,7 +13,7 @@ public class PermissionsDto
 
 public class FeaturePermissionsDeductedDto
 {
-    public int Id { get; set; }
+    public string Key { get; set; } = string.Empty;
     public string ModuleName { get; set; } = string.Empty;
     public List<string> Permissions { get; set; } = [];
 }

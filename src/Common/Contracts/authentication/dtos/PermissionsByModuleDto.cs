@@ -21,7 +21,7 @@ public class PermissiónByModuleDto
 
 public class FeaturePermissionByModuleDto
 {
-    public int Id { get; set; }
+    public string key { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string route {get; set; } = string.Empty;
     public string icon {get; set; } = string.Empty;

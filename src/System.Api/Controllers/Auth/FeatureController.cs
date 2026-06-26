@@ -18,10 +18,10 @@ namespace System.Api.Controllers.Auth
             .ToValueOrProblemDetails();
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetFeature(int id)
+        [HttpGet("{key}")]
+        public async Task<IActionResult> GetFeature(string key)
         {
-            return await featureUseCases.GetFeature.Execute(id)
+            return await featureUseCases.GetFeature.Execute(key)
             .ToValueOrProblemDetails();
         }
         [HttpGet]

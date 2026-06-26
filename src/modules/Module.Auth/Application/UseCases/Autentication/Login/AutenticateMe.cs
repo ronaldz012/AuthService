@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Common;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Users.GetAllUsers;
+using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Autentication.Login;
 
@@ -22,7 +23,7 @@ public class AutenticateMe(
         if (user == null)
             return new Error("NOT_FOUND", "User Not Found");
 
-        var isAdmin = user.IsAdmin;
+        var isAdmin = user.Type is UserType.TenantAdmin or UserType.Owner;
         List<PermissionsDto> userBranchesCache = await permissionsCache.GetAsync(user.Id, isAdmin);
 
 
@@ -43,7 +44,7 @@ public class AutenticateMe(
             
                     Features = gModule.Select(f => new FeaturePermissionByModuleDto
                     {
-                        Id = f.Id,
+                        key = f.Key,
                         Permission = f.Permissions,
                     }).ToList()
                 }).ToList()

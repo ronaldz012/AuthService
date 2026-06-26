@@ -1,5 +1,6 @@
 using Common.Contracts.authentication;
 using Common.Contracts.branches;
+using Common.Contracts.Seeder;
 using Common.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,8 +20,9 @@ using Module.Auth.Application.UseCases.Users.GetAllUsers;
 using Module.Auth.Application.UseCases.Users.Pending;
 using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Infrastructure.Authentication.EmailTemplates;
-using Module.Auth.Infrastructure.branches;
-using Module.Auth.Infrastructure.persistence;
+using Module.Auth.Infrastructure.Branches;
+using Module.Auth.Infrastructure.Persistence;
+using Module.Auth.Infrastructure.Seeder;
 using SmtpSettings = Common.Services.SmtpSettings;
 
 namespace Module.Auth;
@@ -85,6 +87,11 @@ public static class SharedDependencyInjection
          services.AddScoped<ICurrentUser, CurrentUserService>()
              .AddScoped<IUserIntegrationService, UserIntegrationService>();
          services.AddScoped<IUserPermissionsCacheService, UserPermissionsCacheService>();
+         
+         services.AddScoped<IDataSeeder, DataBaseSeeder>()
+             .AddScoped<IDataSeeder, FeatureSeeder>()
+             .AddScoped<IDataSeeder, PlanSeeder>();
+             
 
          
          return services;
