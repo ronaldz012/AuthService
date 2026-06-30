@@ -10,6 +10,7 @@ public class User
     [StringLength(100)]
     public string Username { get; set; } = string.Empty;
     public UserType Type { get; set; } = UserType.Standard;
+    public bool IsAdmin => Type is UserType.TenantAdmin or UserType.Owner;
 
     public string PasswordHash { get; set; } = string.Empty;
     [StringLength(100)]

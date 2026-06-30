@@ -43,11 +43,9 @@ public class Login(
             };
         }
 
-        var isAdmin = user.Type is UserType.TenantAdmin or UserType.Owner;
-        
         tenantContext.TenantId = user.TenantId;
         
-        List<PermissionsDto> flatPermissions = await permissionsCache.GetAsync(user.Id, user.TenantId, isAdmin);
+        List<PermissionsDto> flatPermissions = await permissionsCache.GetAsync(user.Id, user.TenantId, user.IsAdmin);
         
         var branches = new List<PermissionsByModuleDto>();
 
@@ -81,7 +79,7 @@ public class Login(
             user.Id,
             user.TenantId,
             tenantContext.Schema ?? "",
-            isAdmin);
+            user.IsAdmin);
         
         permissionsCache.Set(user.Id ,flatPermissions);
 
