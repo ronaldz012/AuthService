@@ -7,6 +7,7 @@ namespace Module.Auth.Infrastructure.Persistence;
 
 public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantContext tenantContext) : DbContext(options), IAuthDbContext
 {
+    
     private readonly Guid? _tenantId = tenantContext.TenantId;
 
     public DbSet<Tenant> Tenants { get; set; }

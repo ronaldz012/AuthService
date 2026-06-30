@@ -18,8 +18,6 @@ public interface IAuthDbContext
     DbSet<UserBranchRole> UserBranchRoles { get; }
     DbSet<RoleFeaturePermission> RoleFeaturePermissions { get; }
 
-    DbSet<TEntity> Set<TEntity>()
-        where TEntity : class;
     DatabaseFacade Database { get; }
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
