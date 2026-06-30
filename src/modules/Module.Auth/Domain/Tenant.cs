@@ -16,5 +16,20 @@ public class Tenant
     public TenantDataBase TenantDataBase { get; set; } = null!;
     
     public ICollection<Branch> Branches { get; set; } = new List<Branch>();
+
+    public static Tenant Create(Guid id, string displayName, Guid databaseId, Guid planId, User ownerUser)
+    {
+        return new Tenant
+        {
+            Id = id,
+            DisplayName = displayName,
+            IsActive = true,
+            DataBaseId = databaseId,
+            PlanId = planId,
+            OwnerId = ownerUser.Id,
+            OwnerUser = ownerUser,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
 }
 

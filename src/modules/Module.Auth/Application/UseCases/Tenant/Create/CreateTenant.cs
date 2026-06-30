@@ -26,17 +26,8 @@ public class CreateTenant(IAuthDbContext context)
             var ownerUserId = Guid.NewGuid();
             var mainBranchId = Guid.NewGuid();
 
-            var tenant = new Tenant
-            {
-                Id = tenantId,
-                DisplayName = request.DisplayName,
-                IsActive = true,
-                DataBaseId = db.Id,
-                PlanId = plan.Id,
-                OwnerId = ownerUserId,
-                OwnerUser = User.CreateOwner(ownerUserId, tenantId, request.OwnerEmail, request.OwnerUserName),
-                CreatedAt = DateTime.UtcNow
-            };
+            var ownerUser = User.CreateOwner(ownerUserId, tenantId, request.OwnerEmail, request.OwnerUserName);
+            var tenant = Tenant.Create(tenantId, request.DisplayName, db.Id, plan.Id, ownerUser);
             context.Tenants.Add(tenant);
 
             var mainBranch = Branch.Create(mainBranchId, tenantId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber);
