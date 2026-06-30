@@ -9,6 +9,7 @@ public class Plan
     public int MaxUsers { get; set; }
     public int MaxBranches { get; set; }
     public int MaxExtraRoles { get; set; }
+    public  List<string> AllowedFeatureKeys { get; set; } = new List<string>();
     public List<DefaultRoleTemplate> DefaultRolesTemplate { get; set; } = [];
 }
 

@@ -16,4 +16,6 @@ public class Branch: IMustHaveTenant
     public Guid TenantId { get; set; }
     public DateTime CreatedAt { get; set; }
     public ICollection<UserBranchRole> UserBranchRoles { get; set; } = new List<UserBranchRole>();
+
+    public Tenant Tenant { get; set; } = null!;
 }

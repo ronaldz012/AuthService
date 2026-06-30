@@ -32,14 +32,6 @@ namespace System.Api.Controllers.Auth
                                                     .ToValueOrProblemDetails();
         }
 
-        [Authorize]
-        [HttpGet("me")]
-        public async Task<IActionResult> Me()
-        {
-            return await autenticationUseCases.AutenticateMe.Execute()
-                .ToValueOrProblemDetails();
-            
-        }
         /// <summary>
         /// this will Active the user
         /// </summary>

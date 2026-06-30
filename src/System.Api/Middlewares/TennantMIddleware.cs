@@ -39,16 +39,8 @@ public class TenantMiddleware(RequestDelegate next)
             if (string.IsNullOrEmpty(host)) 
                 host = context.Request.Host.Host.Split('.')[0];
 
-            var tenant = await authDbContext.Tenants
-                .Where(t => t.IsActive)
-                .FirstOrDefaultAsync(x => x.DisplayName.ToLower() == host.ToLower());
-
-            if (tenant != null)
-            {
-                // schema       = tenant.Schema;
-                tenantId     = tenant.Id;
-                // databaseName = tenant.DatabaseName; // null si usa DB default
-            }
+            await next(context);
+            return;
         }
 
         if (tenantId == null || string.IsNullOrEmpty(schema))

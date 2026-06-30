@@ -10,7 +10,7 @@ public class CreateTenant(IAuthDbContext context)
     public async Task<Result<string>> ExecuteAsync(CreateTenantRequest request)
     {
         
-        var db = await context.TenantDatabases.FirstOrDefaultAsync(x => x.Name == request.DatabaseId);
+        var db = await context.TenantDatabases.FirstOrDefaultAsync(x => x.Id == request.DatabaseId);
         if (db == null)
             return new Error("NOT_FOUND", $"Database {request.DatabaseId} not found");
         var displayNameExists = await context.Tenants.AnyAsync(x => x.DisplayName == request.DisplayName);

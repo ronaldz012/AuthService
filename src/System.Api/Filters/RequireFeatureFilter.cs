@@ -1,73 +1,82 @@
 using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
-using Common.permissions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Logging;
+using Module.Auth.Application.Abstraction; // Ajusta según dónde esté tu IUserPermissionsCacheService
 
 namespace System.Api.Filters;
 
 public class RequireFeatureFilter(
-    string moduleRoute,
+    string feature,
     string permission,
-    bool multiBranch,         // ← nuevo
+    bool multiBranch,
     ICurrentUser currentUser,
+    ITenantContext tenantContext,
+    IUserPermissionsCacheService permissionsCache, 
     ILogger<RequireFeatureFilter> logger) : IAsyncAuthorizationFilter
 {
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        var branches = await currentUser.GetBranchesAsync();
-        var activeBranches = branches
-            .Where(b => currentUser.BranchIds.Contains(b.BranchId))
-            .ToList();
+        if (currentUser.IsAdmin) return;
 
         if (!multiBranch && currentUser.BranchIds.Count > 1)
         {
-            // Single-branch endpoint: no acepta múltiples IDs
             context.Result = new ObjectResult(new
             {
-                StatusCode = 400,
-                Message = "Este endpoint solo acepta una sucursal.",
+                StatusCode = StatusCodes.Status400BadRequest,
+                Message = "Este endpoint solo acepta una sucursal activa.",
                 Details = "Envíe un único ID en el header 'X-Branch-Id'."
-            }) { StatusCode = 400 };
+            }) { StatusCode = StatusCodes.Status400BadRequest };
             return;
         }
 
-        bool hasPermission;
+        if (!currentUser.BranchIds.Any())
+        {
+            context.Result = new ObjectResult(new
+            {
+                StatusCode = StatusCodes.Status400BadRequest,
+                Message = "No se especificó ninguna sucursal.",
+                Details = "Debe enviar el header 'X-Branch-Id' con un ID válido."
+            }) { StatusCode = StatusCodes.Status400BadRequest };
+            return;
+        }
 
-        if (multiBranch)
+        var allUserBranches = await permissionsCache.GetAsync(currentUser.UserId,tenantContext.TenantId!.Value, currentUser.IsAdmin);
+
+        var requestedBranches = allUserBranches
+            .Where(b => currentUser.BranchIds.Contains(b.BranchId))
+            .ToList();
+
+        if (requestedBranches.Count != currentUser.BranchIds.Count)
         {
-            hasPermission = activeBranches.All(b =>
-                b.Features.Any(m => m.ModuleName == moduleRoute ));
+            context.Result = new ObjectResult(new
+            {
+                StatusCode = StatusCodes.Status403Forbidden,
+                Message = "Acceso denegado a una o más sucursales solicitadas."
+            }) { StatusCode = StatusCodes.Status403Forbidden };
+            return;
         }
-        else
-        {
-            hasPermission = activeBranches.All(b =>
-                b.Features.Any(m => m.ModuleName == moduleRoute ));
-        }
+
+
+        bool hasPermission = requestedBranches.All(branch =>
+            branch.Features.Any(f => 
+                f.Key == feature && 
+                f.Permissions.Contains(permission)));
 
         if (!hasPermission)
         {
             logger.LogWarning(
-                "Usuario {UserId} sin permiso '{Permission}' en módulo '{Module}'. Branches: {Branches}",
-                currentUser.UserId, permission, moduleRoute,
-                string.Join(", ", currentUser.BranchIds));
+                "Usuario {UserId} fue rechazado. Falta el permiso '{Permission}' en la Feature '{Feature}' para las Branches: {Branches}",
+                currentUser.UserId, permission, feature, string.Join(", ", currentUser.BranchIds));
 
             context.Result = new ObjectResult(new
             {
-                StatusCode = 403,
-                Message = $"No tiene permiso '{permission}' en el módulo '{moduleRoute}'.",
-            }) { StatusCode = 403 };
-            context.HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+                StatusCode = StatusCodes.Status403Forbidden,
+                Message = $"No tiene el permiso necesario para realizar esta acción.",
+                Details = $"Se requiere la acción '{permission}' en la sección '{feature}'."
+            }) { StatusCode = StatusCodes.Status403Forbidden };
         }
     }
-
-    // private static bool HasPerm(FeaturePermissionsDeductedDto m, string permission) =>
-    //     permission switch
-    //     {
-    //         "read"   => m.CanRead,
-    //         "create" => m.CanCreate,
-    //         "update" => m.CanUpdate,
-    //         "delete" => m.CanDelete,
-    //         _        => false
-    //     };
 }

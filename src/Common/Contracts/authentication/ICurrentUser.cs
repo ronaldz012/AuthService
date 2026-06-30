@@ -6,12 +6,12 @@ namespace Common.Contracts.authentication;
 public interface ICurrentUser
 {
     Guid UserId { get; }
+    Guid TenantId { get; }
+    Guid BranchId { get; } 
+    IReadOnlyList<Guid> BranchIds { get; } 
+    
     string Username { get; }
     bool IsAdmin { get; }
-    string? Token { get; }
     bool IsAuthenticated { get; }
-    IReadOnlyList<Guid> BranchIds { get; }
-    Task<Dictionary<Guid, string>> GetBranchNamesAsync();
-    bool HasBranch(Guid branchId);
-    Task<List<PermissionsDto>> GetBranchesAsync();
+    string? Token { get; }
 }

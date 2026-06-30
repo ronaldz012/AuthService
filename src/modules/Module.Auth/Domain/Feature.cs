@@ -5,6 +5,7 @@ public class Feature
 {
     public string Key { get; set; } = string.Empty; 
     public string Route { get; set; } = string.Empty;
+    public bool IsMenu { get; set; } = false;
     public string DisplayName { get; set; } = string.Empty; 
     public string Description { get; set; } = string.Empty;
     public string Icon { get; set; } = string.Empty;

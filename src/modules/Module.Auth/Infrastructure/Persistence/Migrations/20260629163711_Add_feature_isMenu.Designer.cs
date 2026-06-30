@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Module.Auth.Infrastructure.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Module.Auth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    partial class AuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260629163711_Add_feature_isMenu")]
+    partial class Add_feature_isMenu
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,8 +58,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
 
                     b.ToTable("Branches");
                 });
@@ -149,10 +150,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.PrimitiveCollection<List<string>>("AllowedFeatureKeys")
-                        .IsRequired()
-                        .HasColumnType("text[]");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -446,17 +443,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.ToTable("UserBranchRoles");
                 });
 
-            modelBuilder.Entity("Module.Auth.Domain.Branch", b =>
-                {
-                    b.HasOne("Module.Auth.Domain.Tenant", "Tenant")
-                        .WithMany("Branches")
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tenant");
-                });
-
             modelBuilder.Entity("Module.Auth.Domain.EmailVerificationCode", b =>
                 {
                     b.HasOne("Module.Auth.Domain.User", "User")
@@ -658,11 +644,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("RoleFeaturePermissions");
 
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("Module.Auth.Domain.Tenant", b =>
-                {
-                    b.Navigation("Branches");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.TenantDataBase", b =>

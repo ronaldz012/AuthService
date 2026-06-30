@@ -10,7 +10,6 @@ public class ProductDetails(IInvDbContext context, ICurrentUser currentUser)
     public async Task<Result<ProductDetailDto>> Execute(Guid productId)
     {
         var currentBranch = currentUser.BranchIds[0];
-        var branchNames = await currentUser.GetBranchNamesAsync();
 
         var result = await context.Products.Select(p => new ProductDetailDto
         {

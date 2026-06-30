@@ -14,6 +14,12 @@ using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Application.UseCases.Branches.GetBranches;
 using Module.Auth.Application.UseCases.Features;
 using Module.Auth.Application.UseCases.Roles;
+using Module.Auth.Application.UseCases.Tenant;
+using Module.Auth.Application.UseCases.Tenant.CompleteTenant;
+using Module.Auth.Application.UseCases.Tenant.Create;
+using Module.Auth.Application.UseCases.TenantDatabases;
+using Module.Auth.Application.UseCases.TenantDatabases.Get;
+using Module.Auth.Application.UseCases.TenantDatabases.GetById;
 using Module.Auth.Application.UseCases.Users;
 using Module.Auth.Application.UseCases.Users.CreateUser;
 using Module.Auth.Application.UseCases.Users.GetAllUsers;
@@ -21,6 +27,7 @@ using Module.Auth.Application.UseCases.Users.Pending;
 using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Infrastructure.Authentication.EmailTemplates;
 using Module.Auth.Infrastructure.Branches;
+using Module.Auth.Infrastructure.Databases;
 using Module.Auth.Infrastructure.Persistence;
 using Module.Auth.Infrastructure.Seeder;
 using SmtpSettings = Common.Services.SmtpSettings;
@@ -51,13 +58,20 @@ public static class SharedDependencyInjection
              .AddScoped<RegisterUser>()
              .AddScoped<RegisterDefaultUser>()
              .AddScoped<Login>()
-             .AddScoped<AutenticateMe>()
              .AddScoped<CompletePublicRegister>()
              .AddScoped<VerifyUser>();
          
          services.AddScoped<UserUserCases>()
                  .AddScoped<GetAllUsers>()
                  .AddScoped<CreateUser>();
+
+         services.AddScoped<TenantDatabaseUseCases>()
+             .AddScoped<GetTenantDatabases>()
+             .AddScoped<GetTenantDatabaseDetails>();
+
+         services.AddScoped<TenantUseCases>()
+             .AddScoped<CreateTenant>()
+             .AddScoped<CompleteTenant>();            
 
          
          //OTHERS
@@ -87,8 +101,10 @@ public static class SharedDependencyInjection
          services.AddScoped<ICurrentUser, CurrentUserService>()
              .AddScoped<IUserIntegrationService, UserIntegrationService>();
          services.AddScoped<IUserPermissionsCacheService, UserPermissionsCacheService>();
+
+         services.AddScoped<IDbConnectionTester, DbConnectionTester>();
          
-         services.AddScoped<IDataSeeder, DataBaseSeeder>()
+         services.AddScoped<IDataSeeder, TenantDataBaseSeeder>()
              .AddScoped<IDataSeeder, FeatureSeeder>()
              .AddScoped<IDataSeeder, PlanSeeder>();
              

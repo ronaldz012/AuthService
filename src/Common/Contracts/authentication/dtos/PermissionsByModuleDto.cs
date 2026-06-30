@@ -6,24 +6,23 @@ public class PermissionsByModuleDto
 {
     public Guid BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
-    public List<RoleDto> Roles { get; set; } = [];
+    public string Role { get; set; } = string.Empty;
     public List<PermissiónByModuleDto> Modules { get; set; } = [];
 }
 
 public class PermissiónByModuleDto
 {
     public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
     public string Route { get; set; } = string.Empty;
-    public string Icon { get; set; } = string.Empty;
     public List<FeaturePermissionByModuleDto> Features {get; set; } = [];
 }
 
 public class FeaturePermissionByModuleDto
 {
     public string key { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
     public string route {get; set; } = string.Empty;
     public string icon {get; set; } = string.Empty;
+    public bool IsMenu { get; set; } // 👈 Vital para que el Frontend decida si lo pinta en el Sidebar
     public List<string> Permission { get; set; } = [];
 }

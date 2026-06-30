@@ -2,6 +2,7 @@ using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.Common;
 using Module.Auth.Application.UseCases.Users.GetAllUsers;
@@ -13,12 +14,14 @@ public class Login(
     IAuthDbContext dbContext,
     ITenantContext tenantContext,
     IUserPermissionsCacheService permissionsCache,
-    ITokenGenerator tokenGenerator) 
+    ITokenGenerator tokenGenerator,
+    ILogger<Login> logger) 
 {
     public async Task<Result<SuccessLoginResponse>> Execute(LoginRequest request)
     {
-        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-        
+        var user = await dbContext.Users
+            .FirstOrDefaultAsync(u => u.Email == request.Email);
+
         if (user == null)
             return new Error("VALIDATION_ERROR", "Correo electrónico o contraseña incorrectos.");
 
@@ -41,36 +44,48 @@ public class Login(
         }
 
         var isAdmin = user.Type is UserType.TenantAdmin or UserType.Owner;
-        var userBranchesCache = await permissionsCache.GetAsync(user.Id, isAdmin);
+        
+        tenantContext.TenantId = user.TenantId;
+        
+        List<PermissionsDto> flatPermissions = await permissionsCache.GetAsync(user.Id, user.TenantId, isAdmin);
+        
+        var branches = new List<PermissionsByModuleDto>();
 
-        List<PermissionsByModuleDto> branches = userBranchesCache.Select(b => new PermissionsByModuleDto
+        Console.WriteLine("############: " + flatPermissions.First().BranchName);
+        var branchesResponse = flatPermissions.Select(b => new PermissionsByModuleDto
         {
             BranchId = b.BranchId,
             BranchName = b.BranchName,
-            Roles = b.Roles,
+            Role = b.RoleName,
+    
             Modules = b.Features
-                .GroupBy(f => new { f.ModuleName })
-                .Select(gModule => new PermissiónByModuleDto
+                .GroupBy(f => f.ModuleName) 
+                .Select(moduleGroup => new PermissiónByModuleDto
                 {
-                    Name = gModule.Key.ModuleName,
-                    Features = gModule.Select(f => new FeaturePermissionByModuleDto
+                    Name = moduleGroup.Key.ToString(),
+                    Route = $"/{moduleGroup.Key.ToString().ToLower()}",
+                    Features = moduleGroup.Select(f => new FeaturePermissionByModuleDto
                     {
                         key = f.Key,
-                        Name = f.ModuleName,
-                        Permission = f.Permissions
+                        DisplayName = f.DisplayName,
+                        route = f.Route,
+                        icon = f.Icon,
+                        Permission = f.Permissions, 
+                        IsMenu = f.IsMenu 
                     }).ToList()
                 }).ToList()
         }).ToList();
 
-        // 4. Generación de tokens usando los métodos privados
         var expirationMinutes = tokenGenerator.GetExpirationMinutes();
         var accessToken = tokenGenerator.GenerateAccessToken(
-            user.Id, 
-            tenantContext.TenantId!.Value,
-            tenantContext.Schema ?? "", 
-            isAdmin); 
-            
-        var refreshToken =tokenGenerator.GenerateRefreshToken();
+            user.Id,
+            user.TenantId,
+            tenantContext.Schema ?? "",
+            isAdmin);
+        
+        permissionsCache.Set(user.Id ,flatPermissions);
+
+        var refreshToken = tokenGenerator.GenerateRefreshToken();
 
         return new SuccessLoginResponse
         {
@@ -79,7 +94,7 @@ public class Login(
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             ExpiresIn = expirationMinutes * 60,
-            Branches = branches,
+            Branches = branchesResponse,
             User = new UserDetailResponse
             {
                 Id = user.Id,
@@ -89,6 +104,4 @@ public class Login(
             }
         };
     }
-    
-
 }

@@ -55,6 +55,9 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
             e.HasOne(t => t.Plan)
                 .WithMany()
                 .HasForeignKey(t => t.PlanId);
+            e.HasMany(t => t.Branches)
+                .WithOne(b => b.Tenant)
+                .HasForeignKey(b => b.TenantId);
         });
 
         modelBuilder.Entity<Plan>(e =>

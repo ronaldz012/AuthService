@@ -1,3 +1,4 @@
+
 namespace Common.Contracts.Seeder;
 
 public interface IDataSeeder

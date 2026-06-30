@@ -1,20 +1,38 @@
-// using System.Api.Filters;
-// using System.Api.Result;
-// using Common.Services;
-// using Microsoft.AspNetCore.Mvc;
-// using Module.Auth.dtos;
-// using Module.Auth.UseCases;
-//
-// namespace System.Api.Controllers.System;
-// [ApiController]
-// [Route("api/system/[controller]")]
-// [ApiKey]
-// [Tags("Admin | System")]
-// public class TenantController(TenantService service) : ControllerBase
-// {
-//     [HttpPost]
-//     public async Task<IActionResult> CreateNewTenant([FromBody]CreateTenantDto tenant)
-//     {
-//         return await service.CreateTenantAsync(tenant).ToValueOrProblemDetails();
-//     }
-// }
+using System.Api.Result;
+using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.UseCases.Tenant;
+using Module.Auth.Application.UseCases.Tenant.CompleteTenant;
+using Module.Auth.Application.UseCases.Tenant.Create;
+using Module.Auth.Application.UseCases.TenantDatabases;
+
+namespace System.Api.Controllers.Auth;
+[ApiController]
+[Route("api/system/[controller]")]
+[Tags("Admin | System")]
+public class TenantController(TenantDatabaseUseCases tenantDatabaseUseCases, TenantUseCases tenantUseCases) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetTenantDatabases()
+    {
+        return await tenantDatabaseUseCases.GetTenantDatabases.Execute().ToValueOrProblemDetails();
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetTenantDatabasesDetails([FromRoute] Guid id)
+    {
+        return await  tenantDatabaseUseCases.GetTenantDatabaseDetails.Execute(id).ToValueOrProblemDetails();
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> CreateTenant([FromBody] CreateTenantRequest request)
+    {
+        return await tenantUseCases.CreateTenant.ExecuteAsync(request).ToValueOrProblemDetails();
+    }
+
+    [HttpPost("complete")]
+    public async Task<IActionResult> CompleteTenant([FromBody] CompleteTenantRequest request)
+    {
+        return await tenantUseCases.CompleteTenant.ExecuteAsync(request).ToValueOrProblemDetails();
+    }
+}

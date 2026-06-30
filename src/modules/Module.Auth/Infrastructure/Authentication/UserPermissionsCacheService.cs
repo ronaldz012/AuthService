@@ -1,91 +1,81 @@
 using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
-using Common.permissions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Module.Auth.Application.Abstraction;
+using Module.Auth.Domain;
 
 namespace Module.Auth.Infrastructure.Authentication;
 
 public class UserPermissionsCacheService(
     IMemoryCache cache,
-    IAuthDbContext context) : IUserPermissionsCacheService
+    IAuthDbContext context,
+    ILogger<UserPermissionsCacheService> logger) : IUserPermissionsCacheService
 {
     private static readonly MemoryCacheEntryOptions Opts =
         new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
 
-    private static string Key(Guid userId) => $"user_branches:{userId}";
+    private static string Key(Guid userId) => $"user_permissions:{userId}";
 
-    public async Task<List<PermissionsDto>> GetAsync(Guid userId, bool isAdmin)
+    public async Task<List<PermissionsDto>> GetAsync(Guid userId, Guid tenantId, bool isAdmin)
     {
-        // 1. Retornar del caché si existe
-        if (cache.TryGetValue(Key(userId), out List<PermissionsDto>? cached) && cached is not null)
-            return cached;
+        // if (cache.TryGetValue(Key(userId), out List<PermissionsDto>? cached) && cached is not null)
+        //     return cached;
 
-        // 2. Consulta Centralizada
-        var user = await context.Users
-            .AsSplitQuery()
-            .Include(u => u.UserBranchRoles)
-                .ThenInclude(ubr => ubr.Branch)
-            .Include(u => u.UserBranchRoles)
-                .ThenInclude(ubr => ubr.Role)
-                    .ThenInclude(r => r.RoleFeaturePermissions)
-                        .ThenInclude(rfp => rfp.Feature)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null || !user.UserBranchRoles.Any()) return [];
-
-        var userBranchRoles = user.UserBranchRoles;
         List<PermissionsDto> branches;
 
         if (isAdmin)
         {
-            var allFeatures = await context.Features.ToListAsync();
-            
-            var userBranches = userBranchRoles
-                .Select(ubr => ubr.Branch)
-                .DistinctBy(b => b.Id)
-                .ToList();
 
-            branches = userBranches.Select(branch => new PermissionsDto
+            var tenantData = await context.Tenants.IgnoreQueryFilters()
+                .Include(t => t.Plan)
+                .Include(t => t.Branches)
+                .FirstOrDefaultAsync(t => t.Id == tenantId);
+
+
+            var planFeatures = await context.Features
+                .Where(f => tenantData!.Plan.AllowedFeatureKeys.Contains(f.Key))
+                .ToListAsync();
+
+            branches = tenantData!.Branches.Select(branch => new PermissionsDto
             {
-                BranchId   = branch.Id,
+                BranchId = branch.Id,
                 BranchName = branch.Name,
-                Roles      = [],
-                Features   = allFeatures.Select(f => new FeaturePermissionsDeductedDto
+                RoleName = "Admin", 
+                Features = planFeatures.Select(f => new FeaturePermissionsDto
                 {
-                    Key          = f.Key,
-                    ModuleName  = f.Key, 
-                    Permissions = ["*"] // Acceso total para Admin
+                    Key = f.Key,
+                    DisplayName = f.DisplayName,
+                    Route = f.Route,
+                    Icon = f.Icon,
+                    IsMenu = f.IsMenu,
+                    ModuleName = f.Module.ToString(),
+                    Permissions = ["*"] 
                 }).ToList()
             }).ToList();
         }
         else
         {
-            // 3. Extracción directa y limpia (1 Rol por Branch garantizado)
-            branches = userBranchRoles.Select(ubr => new PermissionsDto
-            {
-                BranchId   = ubr.Branch.Id,
-                BranchName = ubr.Branch.Name,
-                
-                // Solo hay un rol por registro, mapeamos directo a la lista
-                Roles = [new RoleDto 
-                { 
-                    Id   = ubr.Role.Id, 
-                    Name = ubr.Role.Name 
-                }],
-                
-                // Mapeo directo uno a uno de las características asignadas a ese rol único
-                Features = ubr.Role.RoleFeaturePermissions.Select(rfp => new FeaturePermissionsDeductedDto
+            branches = await context.UserBranchRoles
+                .AsSplitQuery()
+                .Where(ubr => ubr.UserId == userId)
+                .Select(ubr => new PermissionsDto
                 {
-                    Key          = rfp.Feature.Key,
-                    ModuleName  = rfp.Feature.Key,
-                    Permissions = rfp.Permissions // Pasamos tu nuevo array de strings directamente
-                }).ToList()
-            }).ToList();
+                    BranchId = ubr.BranchId,
+                    BranchName = ubr.Branch.Name,
+                    RoleName = ubr.Role.Name,
+                    Features = ubr.Role.RoleFeaturePermissions.Select(rfp => new FeaturePermissionsDto
+                    {
+                        Key = rfp.FeatureKey,
+                        IsMenu = rfp.Feature.IsMenu,
+                        DisplayName =  rfp.Feature.DisplayName,
+                        ModuleName = rfp.Feature.Module.ToString(),
+                        Permissions = rfp.Permissions
+                    }).ToList()
+                }).ToListAsync();
         }
 
-        // 4. Guardar en caché y retornar
         cache.Set(Key(userId), branches, Opts);
         return branches;
     }

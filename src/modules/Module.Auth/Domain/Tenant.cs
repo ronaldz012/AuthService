@@ -14,5 +14,7 @@ public class Tenant
  
     public User OwnerUser { get; set; } = null!;
     public TenantDataBase TenantDataBase { get; set; } = null!;
+    
+    public ICollection<Branch> Branches { get; set; } = new List<Branch>();
 }
 

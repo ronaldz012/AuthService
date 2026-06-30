@@ -25,6 +25,7 @@ public class PlanSeeder(IAuthDbContext context) : IDataSeeder
             MaxUsers      = 5,
             MaxBranches   = 3,
             MaxExtraRoles = 1,
+            AllowedFeatureKeys = ["products", "receptions","transfers","pos","sales"],
             DefaultRolesTemplate =
             [
                 new DefaultRoleTemplate

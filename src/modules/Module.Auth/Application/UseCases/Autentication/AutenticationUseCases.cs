@@ -8,6 +8,5 @@ namespace Module.Auth.Application.UseCases.Autentication;
 public record AutenticationUseCases(RegisterDefaultUser RegisterDefaultUser,
                             RegisterUser RegisterUser,
                             Module.Auth.Application.UseCases.Autentication.Login.Login Login,
-                             AutenticateMe AutenticateMe,
                              VerifyUser VerifyUser,
                              CompletePublicRegister CompletePublicRegister);

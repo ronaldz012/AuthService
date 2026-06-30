@@ -12,7 +12,7 @@ public class JwtTokenGenerator(IConfiguration configuration) : ITokenGenerator
 {
     public string GenerateAccessToken(Guid userId, Guid tenantId, string schema, bool isAdmin)
     {
-        var keyString = configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing in config.");
+        var keyString = configuration["TokenSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Key is missing in config.");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -25,8 +25,8 @@ public class JwtTokenGenerator(IConfiguration configuration) : ITokenGenerator
         };
 
         var token = new JwtSecurityToken(
-            issuer: configuration["Jwt:Issuer"],
-            audience: configuration["Jwt:Audience"],
+            issuer: configuration["TokenSettings:Issuer"],
+            audience: configuration["TokenSettings:Audience"],
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(GetExpirationMinutes()),
             signingCredentials: creds
@@ -45,6 +45,6 @@ public class JwtTokenGenerator(IConfiguration configuration) : ITokenGenerator
 
     public int GetExpirationMinutes()
     {
-        return int.TryParse(configuration["Jwt:ExpirationMinutes"], out var exp) ? exp : 60;
+        return int.TryParse(configuration["TokenSettings:ExpirationMinutes"], out var exp) ? exp : 60;
     }
 }
