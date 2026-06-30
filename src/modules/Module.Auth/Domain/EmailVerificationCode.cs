@@ -22,4 +22,19 @@ namespace Module.Auth.Domain;
         public int Attempts { get; set; } = 0;
         public VerificationCodePurpose Purpose { get; set; }
         public User User { get; set; } = default!;
+
+        public static EmailVerificationCode CreateForAccountSetup(Guid tenantId, Guid userId, string email)
+        {
+            return new EmailVerificationCode
+            {
+                TenantId = tenantId,
+                UserId = userId,
+                Email = email,
+                Code = Guid.NewGuid().ToString("N"),
+                SentAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddHours(48),
+                Purpose = VerificationCodePurpose.AccountVerification,
+                IsUsed = false
+            };
+        }
     }

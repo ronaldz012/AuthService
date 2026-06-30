@@ -40,7 +40,22 @@ public class User
 
     // Navigation property
     public ICollection<EmailVerificationCode> EmailVerificationCodes { get; set; } = [];
-    public ICollection<UserBranchRole> UserBranchRoles { get; set; } = [];  
+    public ICollection<UserBranchRole> UserBranchRoles { get; set; } = [];
+
+    public static User CreateOwner(Guid id, Guid tenantId, string email, string username)
+    {
+        return new User
+        {
+            Id = id,
+            TenantId = tenantId,
+            Email = email,
+            Username = username,
+            PasswordHash = string.Empty,
+            Status = UserStatus.PendingVerification,
+            CreatedAt = DateTime.UtcNow,
+            Type = UserType.Owner,
+        };
+    }
 }
 
 public enum UserStatus

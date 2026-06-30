@@ -18,4 +18,17 @@ public class Branch: IMustHaveTenant
     public ICollection<UserBranchRole> UserBranchRoles { get; set; } = new List<UserBranchRole>();
 
     public Tenant Tenant { get; set; } = null!;
+
+    public static Branch Create(Guid id, Guid tenantId, string name, string place, string phoneNumber)
+    {
+        return new Branch
+        {
+            Id = id,
+            TenantId = tenantId,
+            Name = name,
+            Place = place,
+            PhoneNumber = phoneNumber,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
 }

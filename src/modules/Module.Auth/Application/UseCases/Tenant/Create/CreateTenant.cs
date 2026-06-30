@@ -9,7 +9,6 @@ public class CreateTenant(IAuthDbContext context)
 {
     public async Task<Result<string>> ExecuteAsync(CreateTenantRequest request)
     {
-        
         var db = await context.TenantDatabases.FirstOrDefaultAsync(x => x.Id == request.DatabaseId);
         if (db == null)
             return new Error("NOT_FOUND", $"Database {request.DatabaseId} not found");
@@ -26,6 +25,7 @@ public class CreateTenant(IAuthDbContext context)
             var tenantId = Guid.NewGuid();
             var ownerUserId = Guid.NewGuid();
             var mainBranchId = Guid.NewGuid();
+
             var tenant = new Tenant
             {
                 Id = tenantId,
@@ -34,75 +34,32 @@ public class CreateTenant(IAuthDbContext context)
                 DataBaseId = db.Id,
                 PlanId = plan.Id,
                 OwnerId = ownerUserId,
-                OwnerUser = new User
-                {
-                    Id = ownerUserId,
-                    TenantId = tenantId,
-                    Email = request.OwnerEmail,
-                    Username = request.OwnerUserName,
-                    PasswordHash = string.Empty,
-                    Status = UserStatus.PendingVerification, 
-                    CreatedAt = DateTime.UtcNow,
-                    Type = UserType.Owner,
-                }
-            };
-            context.Tenants.Add(tenant);
-            
-            var mainBranch = new Branch
-            {
-                Id = mainBranchId,
-                TenantId = tenantId,
-                Place = request.BranchPlace,
-                PhoneNumber =  request.BranchPhoneNumber,
-                Name = request.BranchName,
+                OwnerUser = User.CreateOwner(ownerUserId, tenantId, request.OwnerEmail, request.OwnerUserName),
                 CreatedAt = DateTime.UtcNow
             };
+            context.Tenants.Add(tenant);
+
+            var mainBranch = Branch.Create(mainBranchId, tenantId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber);
             context.Branches.Add(mainBranch);
-            
-            
+
             foreach (var roleTemplate in plan.DefaultRolesTemplate)
             {
-                var newRole = new Role
-                {
-                    TenantId = tenantId,
-                    Name = roleTemplate.Name,
-                    Description = roleTemplate.Description,
-                    CreatedAt = DateTime.UtcNow,
-                    RoleFeaturePermissions = roleTemplate.Permissions.Select(permTemplate => new RoleFeaturePermission
-                    {
-                        FeatureKey = permTemplate.FeatureKey, 
-                        Permissions = permTemplate.Actions, 
-                        TenantId = tenantId,
-                        CreatedAt = DateTime.UtcNow
-                    }).ToList()
-                };
-                context.Roles.Add(newRole);
+                var role = Role.CreateFromTemplate(tenantId, roleTemplate);
+                context.Roles.Add(role);
             }
-            
-            
-            var verificationCode = new EmailVerificationCode
-            {
-                TenantId = tenantId,
-                UserId = ownerUserId,
-                Email = request.OwnerEmail,
-                Code = Guid.NewGuid().ToString("N"),
-                ExpiresAt = DateTime.UtcNow.AddHours(48),
-                Purpose = VerificationCodePurpose.AccountVerification,
-                IsUsed = false
-            };
+
+            var verificationCode = EmailVerificationCode.CreateForAccountSetup(tenantId, ownerUserId, request.OwnerEmail);
             context.EmailVerificationCodes.Add(verificationCode);
+
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
 
             return verificationCode.Code;
-            
         }
-        catch 
+        catch
         {
             await transaction.RollbackAsync();
             throw;
-            
         }
-
     }
 }
