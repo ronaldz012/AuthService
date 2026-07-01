@@ -6,7 +6,7 @@ namespace Module.Auth.Application.UseCases.Branches.CreateBranch;
 
 public class CreateBranch(IAuthDbContext context)
 {
-    public async Task<Result<BranchResponse>> Execute(CreateBranchRequest request)
+    public async Task<Result<BranchCreatedResponse>> Execute(CreateBranchRequest request)
     {
         var newBranch = new Branch
         {
@@ -17,7 +17,7 @@ public class CreateBranch(IAuthDbContext context)
         };
         context.Branches.Add(newBranch);
         await context.SaveChangesAsync();
-        return new BranchResponse{
+        return new BranchCreatedResponse{
             
             Id = newBranch.Id,
             Name = newBranch.Name,

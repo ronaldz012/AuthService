@@ -1,12 +1,5 @@
-using Common.Contracts.authentication;
-using Common.Utilities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Tenant.CompleteTenant;
 using Module.Auth.Domain;
-using Module.Auth.Infrastructure.Authentication;
-using Module.Auth.Infrastructure.Persistence;
 
 namespace Test.Auth;
 
@@ -15,7 +8,7 @@ public class CompleteTenantTests
     [Fact]
     public async Task ExecuteAsync_ShouldReturnError_WhenTokenNotFound()
     {
-        using var dbContext = CreateDbContext();
+        using var dbContext = TestAuthDbContextFactory.Create();
         var sut = new CompleteTenant(dbContext);
 
         var request = new CompleteTenantRequest("invalid-token", "Password123!");
@@ -33,7 +26,7 @@ public class CompleteTenantTests
         var userId = Guid.NewGuid();
         var code = "valid-token-123";
 
-        using var dbContext = CreateDbContext();
+        using var dbContext = TestAuthDbContextFactory.Create();
 
         dbContext.EmailVerificationCodes.Add(new EmailVerificationCode
         {
@@ -77,12 +70,4 @@ public class CompleteTenantTests
         Assert.True(updatedCode.IsUsed);
     }
 
-    private static AuthDbContext CreateDbContext()
-    {
-        var options = new DbContextOptionsBuilder<AuthDbContext>()
-            .UseInMemoryDatabase($"CompleteTenantTest_{Guid.NewGuid()}")
-            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .Options;
-        return new AuthDbContext(options, new TenantContext());
-    }
 }

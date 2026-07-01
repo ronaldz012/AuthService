@@ -1,6 +1,8 @@
+using Common.Domain;
+
 namespace Module.Auth.Domain;
 
-public class UserBranchRole
+public class UserBranchRole : IMustHaveTenant
 {
     public Guid UserId { get; set; }
     public Guid RoleId { get; set; }

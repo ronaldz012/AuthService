@@ -1,12 +1,8 @@
 using Common.Contracts.authentication;
-using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Tenant.Create;
 using Module.Auth.Domain;
-using Module.Auth.Infrastructure.Authentication;
-using Module.Auth.Infrastructure.Persistence;
 
 namespace Test.Auth;
 
@@ -15,8 +11,9 @@ public class CreateTenantTests
     [Fact]
     public async Task ExecuteAsync_ShouldReturnError_WhenDatabaseNotFound()
     {
-        using var dbContext = CreateDbContext();
-        var sut = CreateSut(dbContext);
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext();
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
+        var sut = CreateSut(dbContext, tenantContext);
 
         var request = new CreateTenantRequest(
             "Test Tenant", "owner@test.com", Guid.NewGuid(),
@@ -32,7 +29,8 @@ public class CreateTenantTests
     [Fact]
     public async Task ExecuteAsync_ShouldReturnError_WhenDisplayNameAlreadyExists()
     {
-        using var dbContext = CreateDbContext();
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext();
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
 
         var databaseId = Guid.NewGuid();
         dbContext.TenantDatabases.Add(new TenantDataBase { Id = databaseId, Name = "TestDB", Description = "Test database", Schema = "test" });
@@ -50,7 +48,7 @@ public class CreateTenantTests
         });
         await dbContext.SaveChangesAsync();
 
-        var sut = CreateSut(dbContext);
+        var sut = CreateSut(dbContext, tenantContext);
 
         var request = new CreateTenantRequest(
             "Existing Tenant", "owner@test.com", databaseId,
@@ -67,13 +65,14 @@ public class CreateTenantTests
     [Fact]
     public async Task ExecuteAsync_ShouldReturnError_WhenPlanNotFound()
     {
-        using var dbContext = CreateDbContext();
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext();
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
 
         var databaseId = Guid.NewGuid();
         dbContext.TenantDatabases.Add(new TenantDataBase { Id = databaseId, Name = "TestDB", Description = "Test database", Schema = "test" });
         await dbContext.SaveChangesAsync();
 
-        var sut = CreateSut(dbContext);
+        var sut = CreateSut(dbContext, tenantContext);
 
         var request = new CreateTenantRequest(
             "New Tenant", "owner@test.com", databaseId,
@@ -89,7 +88,8 @@ public class CreateTenantTests
     [Fact]
     public async Task ExecuteAsync_ShouldReturnSuccess_WhenAllInputsAreValid()
     {
-        using var dbContext = CreateDbContext();
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext();
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
 
         var databaseId = Guid.NewGuid();
         dbContext.TenantDatabases.Add(new TenantDataBase { Id = databaseId, Name = "TestDB", Description = "Test database", Schema = "test" });
@@ -118,7 +118,7 @@ public class CreateTenantTests
         });
         await dbContext.SaveChangesAsync();
 
-        var sut = CreateSut(dbContext);
+        var sut = CreateSut(dbContext, tenantContext);
 
         var request = new CreateTenantRequest(
             "New Tenant", "owner@test.com", databaseId,
@@ -154,17 +154,8 @@ public class CreateTenantTests
         Assert.Equal(result.Value, savedCode.Code);
     }
 
-    private static AuthDbContext CreateDbContext()
+    private static CreateTenant CreateSut(IAuthDbContext dbContext, ITenantContext tenantContext)
     {
-        var options = new DbContextOptionsBuilder<AuthDbContext>()
-            .UseInMemoryDatabase($"AuthTest_{Guid.NewGuid()}")
-            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .Options;
-        return new AuthDbContext(options, new TenantContext());
-    }
-
-    private static CreateTenant CreateSut(IAuthDbContext dbContext)
-    {
-        return new CreateTenant(dbContext);
+        return new CreateTenant(dbContext, tenantContext);
     }
 }

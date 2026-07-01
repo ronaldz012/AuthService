@@ -6,9 +6,9 @@ namespace Module.Auth.Application.UseCases.Branches.GetBranches;
 
 public class GetBranches(IAuthDbContext context)
 {
-    public async Task<Result<List<BranchResponse>>> Execute()
+    public async Task<Result<List<BranchCreatedResponse>>> Execute()
     {
-        return await context.Branches.Select(x => new BranchResponse()
+        return await context.Branches.Select(x => new BranchCreatedResponse()
         {
             Id = x.Id,
             Name = x.Name,

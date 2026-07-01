@@ -1,4 +1,5 @@
 using Common.Contracts.authentication;
+using Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
@@ -9,6 +10,25 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
 {
     
     private readonly Guid? _tenantId = tenantContext.TenantId;
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var currentTenantId = tenantContext.TenantId
+            ?? throw new InvalidOperationException("Tenant is not set");
+
+        var entries = ChangeTracker.Entries<IMustHaveTenant>()
+            .Where(e => e.State is EntityState.Added or EntityState.Modified);
+
+        foreach (var entry in entries)
+        {
+            if (entry.State == EntityState.Added)
+                entry.Entity.TenantId = currentTenantId;
+            else if (entry.State == EntityState.Modified)
+                entry.Property(x => x.TenantId).IsModified = false;
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
 
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<Plan> Plans { get; set; } // <- Agregado para gestionar los planes

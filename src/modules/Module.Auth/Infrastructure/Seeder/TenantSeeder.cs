@@ -1,3 +1,4 @@
+using Common.Contracts.authentication;
 using Common.Contracts.Seeder;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
@@ -5,7 +6,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Infrastructure.Seeder;
 
-public class TenantSeeder(IAuthDbContext context) : IDataSeeder
+public class TenantSeeder(IAuthDbContext context, ITenantContext tenantContext) : IDataSeeder
 {
     public int Order => 4;
 
@@ -20,12 +21,13 @@ public class TenantSeeder(IAuthDbContext context) : IDataSeeder
         var ownerUserId = Guid.NewGuid();
         var mainBranchId = Guid.NewGuid();
 
+        tenantContext.TenantId = tenantId;
+
         var passwordHash = BCrypt.Net.BCrypt.HashPassword("1234");
 
         var ownerUser = new User
         {
             Id = ownerUserId,
-            TenantId = tenantId,
             Email = "admin@drivecore.com",
             Username = "admin",
             PasswordHash = passwordHash,
@@ -37,12 +39,12 @@ public class TenantSeeder(IAuthDbContext context) : IDataSeeder
         var tenant = Tenant.Create(tenantId, "default", db.Id, plan.Id, ownerUser);
         context.Tenants.Add(tenant);
 
-        var mainBranch = Branch.Create(mainBranchId, tenantId, "Main Branch", "Default location", "000000000");
+        var mainBranch = Branch.Create(mainBranchId, "Main Branch", "Default location", "000000000");
         context.Branches.Add(mainBranch);
 
         foreach (var roleTemplate in plan.DefaultRolesTemplate)
         {
-            var role = Role.CreateFromTemplate(tenantId, roleTemplate);
+            var role = Role.CreateFromTemplate(roleTemplate);
             context.Roles.Add(role);
         }
 

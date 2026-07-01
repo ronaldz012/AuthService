@@ -1,6 +1,6 @@
 namespace Module.Auth.Application.UseCases.Branches;
 
-public class BranchResponse
+public class GetBranchResponse
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;

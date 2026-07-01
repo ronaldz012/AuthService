@@ -1,3 +1,4 @@
+using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 
 namespace Module.Auth.Application.UseCases.Tenant.Create;
@@ -5,7 +6,7 @@ namespace Module.Auth.Application.UseCases.Tenant.Create;
 using global::Common.Utilities;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
-public class CreateTenant(IAuthDbContext context)
+public class CreateTenant(IAuthDbContext context, ITenantContext tenantContext)
 {
     public async Task<Result<string>> ExecuteAsync(CreateTenantRequest request)
     {
@@ -26,20 +27,22 @@ public class CreateTenant(IAuthDbContext context)
             var ownerUserId = Guid.NewGuid();
             var mainBranchId = Guid.NewGuid();
 
-            var ownerUser = User.CreateOwner(ownerUserId, tenantId, request.OwnerEmail, request.OwnerUserName);
+            tenantContext.TenantId = tenantId;
+
+            var ownerUser = User.CreateOwner(ownerUserId, request.OwnerEmail, request.OwnerUserName);
             var tenant = Tenant.Create(tenantId, request.DisplayName, db.Id, plan.Id, ownerUser);
             context.Tenants.Add(tenant);
 
-            var mainBranch = Branch.Create(mainBranchId, tenantId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber);
+            var mainBranch = Branch.Create(mainBranchId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber);
             context.Branches.Add(mainBranch);
 
             foreach (var roleTemplate in plan.DefaultRolesTemplate)
             {
-                var role = Role.CreateFromTemplate(tenantId, roleTemplate);
+                var role = Role.CreateFromTemplate(roleTemplate);
                 context.Roles.Add(role);
             }
 
-            var verificationCode = EmailVerificationCode.CreateForAccountSetup(tenantId, ownerUserId, request.OwnerEmail);
+            var verificationCode = EmailVerificationCode.CreateForAccountSetup(ownerUserId, request.OwnerEmail);
             context.EmailVerificationCodes.Add(verificationCode);
 
             await context.SaveChangesAsync();

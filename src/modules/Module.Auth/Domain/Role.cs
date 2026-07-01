@@ -20,12 +20,11 @@ public class Role :  IMustHaveTenant
     public ICollection<UserBranchRole> UserRoles { get; set; } = default!;
     public ICollection<RoleFeaturePermission> RoleFeaturePermissions { get; set; } = default!;
 
-    public static Role CreateFromTemplate(Guid tenantId, DefaultRoleTemplate template)
+    public static Role CreateFromTemplate(DefaultRoleTemplate template)
     {
         return new Role
         {
             Id = Guid.NewGuid(),
-            TenantId = tenantId,
             Name = template.Name,
             Description = template.Description,
             CreatedAt = DateTime.UtcNow,
@@ -33,7 +32,6 @@ public class Role :  IMustHaveTenant
             {
                 FeatureKey = permTemplate.FeatureKey,
                 Permissions = permTemplate.Actions,
-                TenantId = tenantId,
                 CreatedAt = DateTime.UtcNow
             }).ToList()
         };

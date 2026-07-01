@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using Common.Domain;
 using Module.Auth.Domain;
 
 namespace Module.Auth.Domain;
 
-public class User
+public class User : IMustHaveTenant
 {
     [Key]
     public Guid Id { get; set; }
@@ -42,12 +43,11 @@ public class User
     public ICollection<EmailVerificationCode> EmailVerificationCodes { get; set; } = [];
     public ICollection<UserBranchRole> UserBranchRoles { get; set; } = [];
 
-    public static User CreateOwner(Guid id, Guid tenantId, string email, string username)
+    public static User CreateOwner(Guid id, string email, string username)
     {
         return new User
         {
             Id = id,
-            TenantId = tenantId,
             Email = email,
             Username = username,
             PasswordHash = string.Empty,

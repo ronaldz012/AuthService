@@ -19,12 +19,11 @@ public class Branch: IMustHaveTenant
 
     public Tenant Tenant { get; set; } = null!;
 
-    public static Branch Create(Guid id, Guid tenantId, string name, string place, string phoneNumber)
+    public static Branch Create(Guid id, string name, string place, string phoneNumber)
     {
         return new Branch
         {
             Id = id,
-            TenantId = tenantId,
             Name = name,
             Place = place,
             PhoneNumber = phoneNumber,

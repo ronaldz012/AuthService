@@ -1,15 +1,11 @@
 using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
-using Common.Utilities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.Common;
 using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Domain;
-using Module.Auth.Infrastructure.Persistence;
 
 namespace Test.Auth;
 
@@ -18,8 +14,9 @@ public class LoginTests
     [Fact]
     public async Task Execute_ShouldReturnError_WhenUserNotFound()
     {
-        using var dbContext = CreateDbContext();
-        var sut = CreateSut(dbContext);
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext();
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
+        var sut = CreateSut(dbContext, tenantContext);
 
         var request = new LoginRequest { Email = "nonexistent@test.com", Password = "password123" };
         var result = await sut.Execute(request);
@@ -35,7 +32,8 @@ public class LoginTests
         var userId = Guid.NewGuid();
         var tenantId = Guid.NewGuid();
 
-        using var dbContext = CreateDbContext();
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext(tenantId);
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
         dbContext.Users.Add(new User
         {
             Id = userId,
@@ -75,7 +73,7 @@ public class LoginTests
                 }
             });
 
-        var sut = CreateSut(dbContext, permissionsCacheMock.Object);
+        var sut = CreateSut(dbContext, tenantContext, permissionsCacheMock.Object);
 
         var request = new LoginRequest { Email = "active@test.com", Password = "Password123!" };
         var result = await sut.Execute(request);
@@ -86,18 +84,9 @@ public class LoginTests
         Assert.Equal("fake-access-token", result.Value.AccessToken);
     }
 
-    private static AuthDbContext CreateDbContext()
-    {
-        var options = new DbContextOptionsBuilder<AuthDbContext>()
-            .UseInMemoryDatabase($"AuthTest_{Guid.NewGuid()}")
-            .Options;
-        return new AuthDbContext(options, new TenantContext());
-    }
-
-    private static Login CreateSut(IAuthDbContext dbContext,
+    private static Login CreateSut(IAuthDbContext dbContext, ITenantContext tenantContext,
         IUserPermissionsCacheService? permissionsCache = null)
     {
-        var tenantContext = new TenantContext();
         permissionsCache ??= new Mock<IUserPermissionsCacheService>().Object;
         var tokenGeneratorMock = new Mock<ITokenGenerator>();
         tokenGeneratorMock

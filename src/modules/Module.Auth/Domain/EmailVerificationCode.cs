@@ -1,3 +1,4 @@
+using Common.Domain;
 using Module.Auth.Domain;
 
 namespace Module.Auth.Domain;
@@ -9,7 +10,7 @@ namespace Module.Auth.Domain;
         EmailChange,        
     }
 
-    public class EmailVerificationCode
+    public class EmailVerificationCode : IMustHaveTenant
     {
         public int Id { get; set; }
         public Guid UserId { get; set; }
@@ -23,11 +24,10 @@ namespace Module.Auth.Domain;
         public VerificationCodePurpose Purpose { get; set; }
         public User User { get; set; } = default!;
 
-        public static EmailVerificationCode CreateForAccountSetup(Guid tenantId, Guid userId, string email)
+        public static EmailVerificationCode CreateForAccountSetup(Guid userId, string email)
         {
             return new EmailVerificationCode
             {
-                TenantId = tenantId,
                 UserId = userId,
                 Email = email,
                 Code = Guid.NewGuid().ToString("N"),
