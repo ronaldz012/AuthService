@@ -9,6 +9,7 @@ using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Autentication;
 using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Application.UseCases.Autentication.PublicLogin;
+using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Application.UseCases.Autentication.VerifiUser;
 using Module.Auth.Application.UseCases.Branches;
 using Module.Auth.Application.UseCases.Branches.CreateBranch;
@@ -16,7 +17,6 @@ using Module.Auth.Application.UseCases.Branches.GetBranches;
 using Module.Auth.Application.UseCases.Features;
 using Module.Auth.Application.UseCases.Roles;
 using Module.Auth.Application.UseCases.Tenant;
-using Module.Auth.Application.UseCases.Tenant.CompleteTenant;
 using Module.Auth.Application.UseCases.Tenant.Create;
 using Module.Auth.Application.UseCases.TenantDatabases;
 using Module.Auth.Application.UseCases.TenantDatabases.Get;
@@ -64,7 +64,8 @@ public static class SharedDependencyInjection
              .AddScoped<RegisterDefaultUser>()
              .AddScoped<Login>()
              .AddScoped<CompletePublicRegister>()
-             .AddScoped<VerifyUser>();
+             .AddScoped<VerifyUser>()
+             .AddScoped<SetupUserPassword>();
          
          services.AddScoped<UserUserCases>()
                  .AddScoped<GetAllUsers>()
@@ -75,8 +76,7 @@ public static class SharedDependencyInjection
              .AddScoped<GetTenantDatabaseDetails>();
 
          services.AddScoped<TenantUseCases>()
-             .AddScoped<CreateTenant>()
-             .AddScoped<CompleteTenant>();            
+             .AddScoped<CreateTenant>() ;            
 
          
          //OTHERS

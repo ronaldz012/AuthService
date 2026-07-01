@@ -28,7 +28,7 @@ public class Login(
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return new Error("VALIDATION_ERROR", "Correo electrónico o contraseña incorrectos.");
 
-        if (user.Status == UserStatus.PendingVerification)
+        if (user.Status is UserStatus.PendingVerification or UserStatus.PendingPasswordSetup)
         {
             return new SuccessLoginResponse
             {

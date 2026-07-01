@@ -59,7 +59,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .HasForeignKey(ubr => ubr.UserId)
                 .OnDelete(DeleteBehavior.Restrict); 
 
-            e.HasQueryFilter(u => u.DeletedAt == null);
+            e.HasQueryFilter(u => u.DeletedAt == null && u.TenantId == _tenantId);
         });
             
         modelBuilder.Entity<Tenant>(e =>

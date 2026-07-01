@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Common.Services;
 using Module.Auth.Application.UseCases.Autentication;
 using Module.Auth.Application.UseCases.Autentication.Login;
+using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Application.UseCases.Users;
 
 namespace System.Api.Controllers.Auth
@@ -57,6 +58,12 @@ namespace System.Api.Controllers.Auth
         // {
         //     return await autenticationUseCases.AuthenticateWithGoogle.Execute(token).ToValueOrProblemDetails();
         // }
+        
+        [HttpPost("complete")]
+        public async Task<IActionResult> CompleteTenant([FromBody] SetupUserPasswordRequest request)
+        {
+            return await autenticationUseCases.SetupUserPassword.ExecuteAsync(request).ToValueOrProblemDetails();
+        }
     }
 }
  

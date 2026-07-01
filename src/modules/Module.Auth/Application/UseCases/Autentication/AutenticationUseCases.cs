@@ -9,4 +9,5 @@ public record AutenticationUseCases(RegisterDefaultUser RegisterDefaultUser,
                             RegisterUser RegisterUser,
                             Module.Auth.Application.UseCases.Autentication.Login.Login Login,
                              VerifyUser VerifyUser,
-                             CompletePublicRegister CompletePublicRegister);
+                             CompletePublicRegister CompletePublicRegister,
+                            SetupUserPassword.SetupUserPassword SetupUserPassword);

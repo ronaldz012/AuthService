@@ -1,7 +1,7 @@
 using System.Api.Result;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Application.UseCases.Tenant;
-using Module.Auth.Application.UseCases.Tenant.CompleteTenant;
 using Module.Auth.Application.UseCases.Tenant.Create;
 using Module.Auth.Application.UseCases.TenantDatabases;
 
@@ -29,10 +29,5 @@ public class TenantController(TenantDatabaseUseCases tenantDatabaseUseCases, Ten
     {
         return await tenantUseCases.CreateTenant.ExecuteAsync(request).ToValueOrProblemDetails();
     }
-
-    [HttpPost("complete")]
-    public async Task<IActionResult> CompleteTenant([FromBody] CompleteTenantRequest request)
-    {
-        return await tenantUseCases.CompleteTenant.ExecuteAsync(request).ToValueOrProblemDetails();
-    }
+    
 }

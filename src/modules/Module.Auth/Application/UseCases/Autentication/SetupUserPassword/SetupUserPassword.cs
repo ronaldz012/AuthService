@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
 
-namespace Module.Auth.Application.UseCases.Tenant.CompleteTenant;
+namespace Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 
-public class CompleteTenant(IAuthDbContext  context)
+public class SetupUserPassword(IAuthDbContext  context)
 {
-    public async Task<Result<bool>> ExecuteAsync(CompleteTenantRequest request)
+    public async Task<Result<bool>> ExecuteAsync(SetupUserPasswordRequest request)
     {
         // 1. Buscar el código de verificación e incluir al usuario dueño
         var verificationCode = await context.EmailVerificationCodes

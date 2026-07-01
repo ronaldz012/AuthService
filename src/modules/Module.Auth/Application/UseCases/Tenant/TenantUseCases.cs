@@ -1,5 +1,6 @@
+using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Application.UseCases.Tenant.Create;
 
 namespace Module.Auth.Application.UseCases.Tenant;
 
-public record TenantUseCases(CreateTenant CreateTenant, CompleteTenant.CompleteTenant  CompleteTenant );
+public record TenantUseCases(CreateTenant CreateTenant);

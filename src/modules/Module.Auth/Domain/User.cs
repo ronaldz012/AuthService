@@ -51,9 +51,22 @@ public class User : IMustHaveTenant
             Email = email,
             Username = username,
             PasswordHash = string.Empty,
-            Status = UserStatus.PendingVerification,
+            Status = UserStatus.PendingPasswordSetup,
             CreatedAt = DateTime.UtcNow,
             Type = UserType.Owner,
+        };
+    }
+
+    public static User CreateStandard(string email, string username)
+    {
+        return new User
+        {
+            Email = email,
+            Username = username,
+            PasswordHash = string.Empty,
+            Status = UserStatus.PendingPasswordSetup,
+            CreatedAt = DateTime.UtcNow,
+            Type = UserType.Standard,
         };
     }
 }
@@ -64,8 +77,9 @@ public enum UserStatus
     Active = 1,
     Suspended = 2,
     Inactive = 3,
-    PendingRoleSelecting =4,
-    PendingConfiguration = 5
+    PendingRoleSelecting = 4,
+    PendingConfiguration = 5,
+    PendingPasswordSetup = 6,
 }
 
 public enum AuthProvider

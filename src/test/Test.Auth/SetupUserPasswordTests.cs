@@ -1,17 +1,17 @@
-using Module.Auth.Application.UseCases.Tenant.CompleteTenant;
+using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Domain;
 
 namespace Test.Auth;
 
-public class CompleteTenantTests
+public class SetupUserPasswordTests
 {
     [Fact]
     public async Task ExecuteAsync_ShouldReturnError_WhenTokenNotFound()
     {
         using var dbContext = TestAuthDbContextFactory.Create();
-        var sut = new CompleteTenant(dbContext);
+        var sut = new SetupUserPassword(dbContext);
 
-        var request = new CompleteTenantRequest("invalid-token", "Password123!");
+        var request = new SetupUserPasswordRequest("invalid-token", "Password123!");
         var result = await sut.ExecuteAsync(request);
 
         Assert.False(result.IsSuccess);
@@ -47,15 +47,15 @@ public class CompleteTenantTests
             Email = "owner@test.com",
             Username = "owner",
             PasswordHash = string.Empty,
-            Status = UserStatus.PendingVerification,
+            Status = UserStatus.PendingPasswordSetup,
             Type = UserType.Owner,
         });
 
         await dbContext.SaveChangesAsync();
 
-        var sut = new CompleteTenant(dbContext);
+        var sut = new SetupUserPassword(dbContext);
 
-        var request = new CompleteTenantRequest(code, "NewPassword123!");
+        var request = new SetupUserPasswordRequest(code, "NewPassword123!");
         var result = await sut.ExecuteAsync(request);
 
         Assert.True(result.IsSuccess);
