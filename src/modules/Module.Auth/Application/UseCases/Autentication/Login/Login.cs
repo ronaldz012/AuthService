@@ -78,7 +78,6 @@ public class Login(
         var accessToken = tokenGenerator.GenerateAccessToken(
             user.Id,
             user.TenantId,
-            tenantContext.Schema ?? "",
             user.IsAdmin);
         
         permissionsCache.Set(user.Id ,flatPermissions);

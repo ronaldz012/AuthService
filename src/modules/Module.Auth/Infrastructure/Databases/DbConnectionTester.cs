@@ -9,9 +9,9 @@ public class DbConnectionTester(IConfiguration configuration) : IDbConnectionTes
 {
     public async Task<Result<bool>> TestConnectionAsync(string databaseName, string? schema = null)
     {
-        var baseConnectionString = configuration.GetConnectionString("SharedConnection");
+        var baseConnectionString = configuration.GetConnectionString("TenantConnection");
         if (string.IsNullOrEmpty(baseConnectionString))
-            return new Error("NOT_FOUND", "Connection string 'SharedConnection' not found");
+            return new Error("NOT_FOUND", "Connection string 'TenantConnection' not found");
 
         var builder = new NpgsqlConnectionStringBuilder(baseConnectionString) { Database = databaseName };
         if (!string.IsNullOrEmpty(schema)) builder.SearchPath = schema;

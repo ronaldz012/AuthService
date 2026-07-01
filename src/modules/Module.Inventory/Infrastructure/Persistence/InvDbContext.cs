@@ -136,12 +136,8 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
     
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Obtenemos el TenantId actual desde el servicio de contexto
         var currentTenantId = tenantContext.TenantId ?? throw new InvalidOperationException("Tenant is not set") ;
 
-        // Buscamos todas las entidades que:
-        // 1. Están siendo agregadas (Added) o modificadas (Modified)
-        // 2. Implementan la interfaz ITenantEntity
         var entries = ChangeTracker.Entries<IMustHaveTenant>()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
@@ -149,12 +145,10 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
         {
             if (entry.State == EntityState.Added)
             {
-                // Asignamos el TenantId automáticamente al crear
                 entry.Entity.TenantId = currentTenantId;
             }
             else if (entry.State == EntityState.Modified)
             {
-                // Opcional: Evitar que se cambie el TenantId en ediciones
                 entry.Property(x => x.TenantId).IsModified = false;
             }
         }

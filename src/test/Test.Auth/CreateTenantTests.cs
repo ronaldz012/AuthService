@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Tenant.Create;
 using Module.Auth.Domain;
+using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Infrastructure.Persistence;
 
 namespace Test.Auth;

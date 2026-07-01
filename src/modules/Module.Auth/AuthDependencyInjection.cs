@@ -2,6 +2,7 @@ using Common.Contracts.authentication;
 using Common.Contracts.branches;
 using Common.Contracts.Seeder;
 using Common.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Module.Auth.Application.Abstraction;
@@ -106,10 +107,18 @@ public static class SharedDependencyInjection
          
          services.AddScoped<IDataSeeder, TenantDataBaseSeeder>()
              .AddScoped<IDataSeeder, FeatureSeeder>()
-             .AddScoped<IDataSeeder, PlanSeeder>();
-             
+             .AddScoped<IDataSeeder, PlanSeeder>()
+             .AddScoped<IDataSeeder, TenantSeeder>();
 
-         
+        services.AddScoped<ITenantContext, TenantContext>();
+
+        services.AddDbContext<AuthDbContext>((sp, options) =>
+        {
+            var connection = configuration.GetConnectionString("DefaultConnection");
+            options.UseNpgsql(connection,
+                x => x.MigrationsHistoryTable("__EFMigrationsHistory_shared", null));
+        });
+
          return services;
     }
     

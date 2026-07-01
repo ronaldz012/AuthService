@@ -4,6 +4,7 @@ using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.Common;
 using Module.Auth.Application.UseCases.Autentication.Login;
@@ -100,7 +101,7 @@ public class LoginTests
         permissionsCache ??= new Mock<IUserPermissionsCacheService>().Object;
         var tokenGeneratorMock = new Mock<ITokenGenerator>();
         tokenGeneratorMock
-            .Setup(t => t.GenerateAccessToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<bool>()))
+            .Setup(t => t.GenerateAccessToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<bool>()))
             .Returns("fake-access-token");
         tokenGeneratorMock
             .Setup(t => t.GenerateRefreshToken())

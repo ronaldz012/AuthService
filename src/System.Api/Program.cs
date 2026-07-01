@@ -4,17 +4,11 @@ using System.Text;
 using Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Common.Contracts.authentication;
 using Common.Contracts.Seeder;
 using Module.Auth;
-using Module.Auth.Infrastructure.Persistence;
 using Module.Inventory;
-using Module.Inventory.Infrastructure;
 using Module.Sales;
-using Module.Sales.Infrastructure.Persistence;
-using Npgsql;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,13 +17,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi(options =>
 {
-  options.AddDocumentTransformer((document, _, cancellationToken) =>
+  options.AddDocumentTransformer((document, context, cancellationToken) =>
   {
     document.Info = new()
     {
       Title = "Sales API",
       Version = "v1"
     };
+    document.Servers = [new() { Url = "http://localhost:5253" }];
 
     // 1. Definir el esquema de seguridad para el Token JWT
     document.Components ??= new Microsoft.OpenApi.Models.OpenApiComponents();
@@ -99,56 +94,11 @@ builder.Services.AddAuthentication(options =>
   };
 });
 builder.Services.AddCommon(builder.Configuration);
-builder.Services.AddDbContext<AuthDbContext>((sp, options) =>
-{
-  var connection = builder.Configuration.GetConnectionString("DefaultConnection");
-  options.UseNpgsql(connection,
-    x => x.MigrationsHistoryTable("__EFMigrationsHistory_shared", null));
-});
 
-
-var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection")!;
-
-builder.Services.AddScoped<ITenantContext, TenantContext>();
-
-
-builder.Services.AddDbContext<InvDbContext>((sp, options) =>
-{
-  var tenant = sp.GetRequiredService<ITenantContext>();
-  var connString = BuildConnectionString(defaultConnection, tenant.DatabaseName);
-    
-  options.UseNpgsql(connString,
-    x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", tenant.Schema));
-});
-
-  builder.Services.AddDbContext<SalesDbContext>((sp, options) =>
-  {
-    var tenant = sp.GetRequiredService<ITenantContext>();
-    var connString = BuildConnectionString(defaultConnection, tenant.DatabaseName);
-        
-    options.UseNpgsql(connString,
-      x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", tenant.Schema));
-  });
-
-  // Register module Auth services (scoped, use IAuthDbContext mapping inside the module)
   builder.Services.AuthDependencyInjection(builder.Configuration);
   builder.Services.AddInventory();
   builder.Services.AddSales();
 
-  // Helper local — o lo mueves a TenantDbConnectionFactory si prefieres
-  static string BuildConnectionString(string baseConnection, string? databaseName)
-  {
-    if (string.IsNullOrEmpty(databaseName))
-      return baseConnection;
-
-    var builder = new NpgsqlConnectionStringBuilder(baseConnection)
-    {
-      Database = databaseName
-    };
-    return builder.ConnectionString;
-  }
-
-builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddControllers(options =>
 {
   options.Filters.Add<ValidationFilter>();
@@ -181,27 +131,6 @@ using (var scope = app.Services.CreateScope())
     .GetRequiredService<DatabaseSeeder>();
   await seeder.SeedAllAsync();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();

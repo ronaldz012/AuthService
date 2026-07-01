@@ -33,6 +33,7 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                 Description = "Manage products catalog",
                 Icon        = "box",
                 Module      = Domain.Module.Inventory,
+                IsMenu = true,
                 CreatedAt   = DateTime.UtcNow,
                 AvailableActions = GetGenericCrudActions("productos")
             },
@@ -44,6 +45,7 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                 Description = "Manage stock transfers between locations",
                 Icon        = "transfer",
                 Module      = Domain.Module.Inventory,
+                IsMenu = true,
                 CreatedAt   = DateTime.UtcNow,
                 AvailableActions = GetGenericCrudActions("transferencias")
             },
@@ -55,6 +57,7 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                 Description = "Manage incoming stock receptions",
                 Icon        = "package-import",
                 Module      = Domain.Module.Inventory,
+                IsMenu = true,
                 CreatedAt   = DateTime.UtcNow,
                 AvailableActions = GetGenericCrudActions("recepciones")
             },
@@ -68,6 +71,7 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                 Description = "Process sales at point of sale",
                 Icon        = "cash-register",
                 Module      = Domain.Module.Sales,
+                IsMenu = true,
                 CreatedAt   = DateTime.UtcNow,
                 // El POS suele requerir acciones más operativas, te dejo estas de base:
                 AvailableActions = [
@@ -84,6 +88,7 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                 Description = "View and manage sales records",
                 Icon        = "receipt",
                 Module      = Domain.Module.Sales,
+                IsMenu = true,
                 CreatedAt   = DateTime.UtcNow,
                 AvailableActions = [
                     new() { Key = "read", DisplayName = "Ver Ventas", Description = "Permite listar el historial de ventas realizadas." },
