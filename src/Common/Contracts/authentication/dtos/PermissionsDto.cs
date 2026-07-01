@@ -1,4 +1,3 @@
-using Common.permissions;
 
 namespace Common.Contracts.authentication.dtos;
 

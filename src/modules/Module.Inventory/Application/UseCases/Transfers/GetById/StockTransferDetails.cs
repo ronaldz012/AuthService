@@ -4,6 +4,7 @@ using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Domain.Transfers;
 using Module.Inventory.Infrastructure;
+using Module.Inventory.Infrastructure.Persistence;
 
 namespace Module.Inventory.Application.UseCases.Transfers.GetById;
 

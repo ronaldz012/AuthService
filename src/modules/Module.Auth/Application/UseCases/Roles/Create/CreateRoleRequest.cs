@@ -1,4 +1,4 @@
-namespace Module.Auth.Application.UseCases.Roles;
+namespace Module.Auth.Application.UseCases.Roles.Create;
 
 public class CreateRoleDto
 {

@@ -1,4 +1,4 @@
-namespace Module.Auth.Application.UseCases.Branches;
+namespace Module.Auth.Application.UseCases.Branches.GetBranches;
 
 public class GetBranchResponse
 {

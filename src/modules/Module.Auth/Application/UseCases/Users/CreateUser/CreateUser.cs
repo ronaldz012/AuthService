@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
 
-
 namespace Module.Auth.Application.UseCases.Users.CreateUser;
 
 public class CreateUser(IAuthDbContext context, IBranchService branchService)

@@ -40,6 +40,7 @@ using Module.Inventory.Application.UseCases.Transfers.Get;
 using Module.Inventory.Application.UseCases.Transfers.GetById;
 using Module.Inventory.Application.UseCases.Transfers.Resolve;
 using Module.Inventory.Infrastructure;
+using Module.Inventory.Infrastructure.Persistence;
 
 namespace Module.Inventory;
 

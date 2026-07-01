@@ -32,6 +32,9 @@ using Module.Auth.Infrastructure.Databases;
 using Module.Auth.Infrastructure.Persistence;
 using Module.Auth.Infrastructure.Seeder;
 using SmtpSettings = Common.Services.SmtpSettings;
+using Module.Auth.Application.UseCases.Roles.GetById;
+using Module.Auth.Application.UseCases.Roles.Create;
+using Module.Auth.Application.UseCases.Roles.GetRoles;
 
 namespace Module.Auth;
 
@@ -52,7 +55,8 @@ public static class SharedDependencyInjection
 
          services.AddScoped<RoleUseCases>()
              .AddScoped<GetRole>()
-             .AddScoped<AddRole>();
+             .AddScoped<AddRole>()
+             .AddScoped<GetRoles>();
          
         
          services.AddScoped<AutenticationUseCases>()

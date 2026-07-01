@@ -1,3 +1,6 @@
+
+namespace System.Api.Filters;
+
 // using Common.Contracts.authentication;
 // using Microsoft.AspNetCore.Mvc;
 // using Microsoft.AspNetCore.Mvc.Filters;

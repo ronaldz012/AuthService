@@ -1,6 +1,7 @@
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
+using Module.Auth.Application.UseCases.Branches.CreateBranch;
 
 namespace Module.Auth.Application.UseCases.Branches.GetBranches;
 

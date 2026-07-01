@@ -8,7 +8,7 @@ using Module.Inventory.Domain.Products;
 using Module.Inventory.Domain.Receptions;
 using Module.Inventory.Domain.Transfers;
 
-namespace Module.Inventory.Infrastructure;
+namespace Module.Inventory.Infrastructure.Persistence;
 
 public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext tenantContext ) : DbContext(options), IInvDbContext
 {

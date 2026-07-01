@@ -2,7 +2,7 @@ using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
 
-namespace Module.Auth.Application.UseCases.Roles;
+namespace Module.Auth.Application.UseCases.Roles.GetById;
 
 public class GetRole(IAuthDbContext dbContext )
 {

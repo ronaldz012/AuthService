@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Module.Auth.Application.UseCases.Roles;
+using Module.Auth.Application.UseCases.Roles.GetById;
+using Module.Auth.Application.UseCases.Roles.Create;
 
 namespace System.Api.Controllers.Auth
 {

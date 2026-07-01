@@ -1,13 +1,10 @@
 using System.Security.Claims;
 using Common.Contracts.authentication;
-using Common.Contracts.authentication.dtos;
 using Microsoft.AspNetCore.Http;
 
 namespace Module.Auth.Infrastructure.Authentication;
 
-using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-using Common.Contracts.authentication;
+
 
 
 public class CurrentUserService : ICurrentUser

@@ -1,11 +1,12 @@
+
+
 using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Module.Auth.Application.Abstraction;
-using Module.Auth.Application.Common;
 using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Domain;
+using Moq;
 
 namespace Test.Auth;
 

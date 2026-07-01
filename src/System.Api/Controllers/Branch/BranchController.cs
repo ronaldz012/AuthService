@@ -1,5 +1,4 @@
 using System.Api.Result;
-using Common.Contracts.branches;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Auth.Application.UseCases.Branches;

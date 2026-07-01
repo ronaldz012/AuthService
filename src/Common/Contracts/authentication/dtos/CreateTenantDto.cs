@@ -1,5 +1,3 @@
-
-
 namespace Common.Contracts.authentication.dtos;
 
 public record CreateTenantDto(

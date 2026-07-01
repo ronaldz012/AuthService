@@ -1,3 +1,5 @@
+namespace System.Api.Filters;
+
 // using Microsoft.AspNetCore.OpenApi;
 // using Microsoft.OpenApi.Models;
 // using System.Reflection;

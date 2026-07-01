@@ -1,3 +1,4 @@
+
 using Common.Contracts.authentication;
 
 namespace Module.Auth.Infrastructure.Authentication;

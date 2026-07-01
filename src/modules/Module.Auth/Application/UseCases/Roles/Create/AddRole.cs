@@ -2,7 +2,7 @@ using Common.Utilities;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
 
-namespace Module.Auth.Application.UseCases.Roles;
+namespace Module.Auth.Application.UseCases.Roles.Create;
 
 public class AddRole(IAuthDbContext dbContext )
 {

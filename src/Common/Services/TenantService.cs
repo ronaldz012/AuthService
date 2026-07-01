@@ -1,7 +1,4 @@
-
-
-
-
+namespace Common.Services;
 
 // using Common.Contracts.authentication;
 // using Common.Contracts.branches;

@@ -1,5 +1,4 @@
 using Common.Contracts.authentication;
-using Common.Contracts.authentication.dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;

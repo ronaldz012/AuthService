@@ -1,4 +1,3 @@
-using Common.permissions;
 
 namespace Common.Contracts.authentication.dtos;
 
@@ -23,6 +22,6 @@ public class FeaturePermissionByModuleDto
     public string DisplayName { get; set; } = string.Empty;
     public string route {get; set; } = string.Empty;
     public string icon {get; set; } = string.Empty;
-    public bool IsMenu { get; set; } // 👈 Vital para que el Frontend decida si lo pinta en el Sidebar
+    public bool IsMenu { get; set; } 
     public List<string> Permission { get; set; } = [];
 }
