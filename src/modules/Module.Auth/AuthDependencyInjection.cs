@@ -11,6 +11,7 @@ using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Application.UseCases.Autentication.PublicLogin;
 using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Application.UseCases.Autentication.VerifiUser;
+using Module.Auth.Application.UseCases.Autentication.VerifyToken;
 using Module.Auth.Application.UseCases.Branches;
 using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Application.UseCases.Branches.GetBranches;
@@ -60,12 +61,13 @@ public static class SharedDependencyInjection
          
         
          services.AddScoped<AutenticationUseCases>()
-             .AddScoped<RegisterUser>()
-             .AddScoped<RegisterDefaultUser>()
-             .AddScoped<Login>()
-             .AddScoped<CompletePublicRegister>()
-             .AddScoped<VerifyUser>()
-             .AddScoped<SetupUserPassword>();
+              .AddScoped<RegisterUser>()
+              .AddScoped<RegisterDefaultUser>()
+              .AddScoped<Login>()
+              .AddScoped<CompletePublicRegister>()
+              .AddScoped<VerifyUser>()
+              .AddScoped<SetupUserPassword>()
+              .AddScoped<VerifyToken>();
          
          services.AddScoped<UserUserCases>()
                  .AddScoped<GetAllUsers>()

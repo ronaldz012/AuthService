@@ -42,7 +42,7 @@ public class CreateTenant(IAuthDbContext context, ITenantContext tenantContext)
                 context.Roles.Add(role);
             }
 
-            var verificationCode = EmailVerificationCode.CreateForAccountSetup(ownerUserId, request.OwnerEmail);
+            var verificationCode = EmailVerificationCode.CreateForAccountSetup(request.OwnerEmail);
             context.EmailVerificationCodes.Add(verificationCode);
 
             await context.SaveChangesAsync();

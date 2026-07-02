@@ -24,11 +24,10 @@ namespace Module.Auth.Domain;
         public VerificationCodePurpose Purpose { get; set; }
         public User User { get; set; } = default!;
 
-        public static EmailVerificationCode CreateForAccountSetup(Guid userId, string email)
+        public static EmailVerificationCode CreateForAccountSetup(string email)
         {
             return new EmailVerificationCode
             {
-                UserId = userId,
                 Email = email,
                 Code = Guid.NewGuid().ToString("N"),
                 SentAt = DateTime.UtcNow,

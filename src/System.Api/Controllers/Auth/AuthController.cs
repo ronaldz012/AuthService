@@ -64,6 +64,12 @@ namespace System.Api.Controllers.Auth
         {
             return await autenticationUseCases.SetupUserPassword.ExecuteAsync(request).ToValueOrProblemDetails();
         }
+
+        [HttpPost("verify-token")]
+        public async Task<IActionResult> VerifyToken([FromBody] string token)
+        {
+            return await autenticationUseCases.VerifyToken.ExecuteAsync(token).ToValueOrProblemDetails();
+        }
     }
 }
  

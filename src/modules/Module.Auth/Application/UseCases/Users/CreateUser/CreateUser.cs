@@ -23,7 +23,6 @@ public class CreateUser(IAuthDbContext context, IBranchService branchService, IT
         if (!branchesResult.IsSuccess) return new Error("NOT_FOUND", branchesResult.Error?.Message ?? "");
         if (!rolesResult.IsSuccess) return new Error("NOT_FOUND", rolesResult.Error?.Message ?? "");
 
-        var userId = Guid.NewGuid();
 
         var newUser = User.CreateStandard(dto.Email, dto.Username);
         newUser.UserBranchRoles = dto.BranchRoles.Select(br => new UserBranchRole
@@ -31,11 +30,10 @@ public class CreateUser(IAuthDbContext context, IBranchService branchService, IT
             BranchId = br.BranchId,
             RoleId = br.RoleId,
         }).ToList();
-
+        var verificationCode = EmailVerificationCode.CreateForAccountSetup(dto.Email);
+        newUser.EmailVerificationCodes.Add(verificationCode);
         context.Users.Add(newUser);
 
-        var verificationCode = EmailVerificationCode.CreateForAccountSetup(userId, dto.Email);
-        context.EmailVerificationCodes.Add(verificationCode);
 
         await context.SaveChangesAsync();
 
