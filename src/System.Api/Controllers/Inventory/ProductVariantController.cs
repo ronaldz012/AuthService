@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Application.UseCases.ProductVariants;
+using Module.Inventory.Application.UseCases.StockMovements;
+using Module.Inventory.Application.UseCases.StockMovements.Get;
 using Module.Inventory.Application.UseCases.ProductVariants.Create;
 using Module.Inventory.Application.UseCases.ProductVariants.PatchStock;
 using Module.Inventory.Application.UseCases.ProductVariants.Update;
@@ -13,7 +15,7 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | ProductVariants")]
     [Authorize]
-    public class ProductVariantController(ProductVariantUseCases useCases) : ControllerBase
+    public class ProductVariantController(ProductVariantUseCases useCases, StockMovementUseCases stockMovementUseCases) : ControllerBase
     {
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateProductVariant([FromRoute] Guid id,[FromBody]UpdateProductVariantDto dto)
@@ -48,13 +50,11 @@ namespace System.Api.Controllers.Inventory
         {
             return await useCases.DeleteProductVariantUc.Execute(id).ToValueOrProblemDetails();
         }
-        
-        // [HttpGet("{id:guid}/movements")]
-        // public async Task<IActionResult> GeProductVariantMovementById([FromRoute] Guid id, [FromQuery] StockMovementsQuery request)
-        // {
-        //     return await useCases.ListStockMovementsUc.Execute(id,request).ToValueOrProblemDetails();
-        // }
 
-
+        [HttpGet("{id:guid}/movements")]
+        public async Task<IActionResult> GetProductVariantMovements([FromRoute] Guid id, [FromQuery] StockMovementQueryDto query)
+        {
+            return await stockMovementUseCases.ListStockMovements.Execute(id, query).ToValueOrProblemDetails();
+        }
     }
 }

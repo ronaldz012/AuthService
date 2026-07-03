@@ -13,7 +13,7 @@ public class BranchService(IAuthDbContext context) : IBranchService
     public async Task<Result<List<BranchDto>>> GetBranchesByIds(List<Guid> ids)
     {
         var branches = await context.Branches
-            .Where(b => ids.Contains(b.Id) && b.Status)
+            .Where(b => ids.Contains(b.Id))
             .Select(b => new BranchDto
             {
                 Id = b.Id,

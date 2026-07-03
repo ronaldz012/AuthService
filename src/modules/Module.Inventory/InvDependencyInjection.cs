@@ -39,6 +39,8 @@ using Module.Inventory.Application.UseCases.Transfers.Create;
 using Module.Inventory.Application.UseCases.Transfers.Get;
 using Module.Inventory.Application.UseCases.Transfers.GetById;
 using Module.Inventory.Application.UseCases.Transfers.Resolve;
+using Module.Inventory.Application.UseCases.StockMovements;
+using Module.Inventory.Application.UseCases.StockMovements.Get;
 using Module.Inventory.Infrastructure;
 using Module.Inventory.Infrastructure.Persistence;
 
@@ -87,6 +89,9 @@ public  static class InvDependencyInjection
             .AddScoped<StockTransferDetails>()
             .AddScoped<CancelStockTransfer>()
             .AddScoped<ListStockTransfers>();
+
+        services.AddScoped<StockMovementUseCases>()
+            .AddScoped<ListStockMovements>();
 
         services.AddScoped<ColoreUseCases>()
             .AddScoped<CreateColor>()

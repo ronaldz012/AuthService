@@ -9,7 +9,6 @@ namespace Module.Auth.Infrastructure.Persistence;
 public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantContext tenantContext) : DbContext(options), IAuthDbContext
 {
     
-    private readonly Guid? _tenantId = tenantContext.TenantId;
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -59,7 +58,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .HasForeignKey(ubr => ubr.UserId)
                 .OnDelete(DeleteBehavior.Restrict); 
 
-            e.HasQueryFilter(u => u.DeletedAt == null && u.TenantId == _tenantId);
+            e.HasQueryFilter(u => u.DeletedAt == null && u.TenantId == tenantContext.TenantId);
         });
             
         modelBuilder.Entity<Tenant>(e =>
@@ -112,7 +111,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .OnDelete(DeleteBehavior.Cascade); 
 
             // Filtro Global Multitenant (¡Muy recomendado!)
-            e.HasQueryFilter(r => r.TenantId == _tenantId);
+            e.HasQueryFilter(r => r.TenantId == tenantContext.TenantId);
         });
 
         // --- CONFIGURACIÓN DE ROLE FEATURE PERMISSION ---
@@ -127,7 +126,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .OnDelete(DeleteBehavior.Restrict); 
 
 
-            e.HasQueryFilter(rfp => rfp.TenantId == _tenantId);
+            e.HasQueryFilter(rfp => rfp.TenantId == tenantContext.TenantId);
         });
 
         modelBuilder.Entity<UserBranchRole>(ubr =>
@@ -142,13 +141,13 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .WithMany(r => r.UserRoles)
                 .HasForeignKey(ur => ur.RoleId); // <- Asegúrate de especificar la FK aquí
 
-            ubr.HasQueryFilter(ur => ur.TenantId == _tenantId);
+            ubr.HasQueryFilter(ur => ur.TenantId == tenantContext.TenantId);
         });
 
         // --- CONFIGURACIÓN DE BRANCH ---
         modelBuilder.Entity<Branch>(e =>
         {
-            e.HasQueryFilter(branch => branch.TenantId == _tenantId);
+            e.HasQueryFilter(branch => branch.TenantId == tenantContext.TenantId);
         });
     }
 }
