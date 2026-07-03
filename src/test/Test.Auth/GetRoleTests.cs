@@ -1,3 +1,4 @@
+using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.UseCases.Roles.Create;
 using Module.Auth.Application.UseCases.Roles.GetById;
@@ -41,9 +42,7 @@ public class GetRoleTests
         var sut = new GetRole(dbContext);
         var result = await sut.Execute(Guid.NewGuid());
 
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.Error);
-        Assert.Equal("NOT_FOUND", result.Error.Code);
+        Assert.Equal(GetRoleErrors.RoleNotFound, result.Error);
     }
 
     [Fact]
@@ -77,8 +76,7 @@ public class GetRoleTests
             Assert.Equal("Role A", resultA.Value.Name);
 
             var resultB = await sutA.Execute(roleBId);
-            Assert.False(resultB.IsSuccess);
-            Assert.Equal("NOT_FOUND", resultB.Error.Code);
+            Assert.Equal(GetRoleErrors.RoleNotFound, resultB.Error);
         }
 
         using (var dbReadB = TestAuthDbContextFactory.Create(contextB, dbName))
@@ -89,8 +87,7 @@ public class GetRoleTests
             Assert.Equal("Role B", resultB.Value.Name);
 
             var resultA = await sutB.Execute(roleAId);
-            Assert.False(resultA.IsSuccess);
-            Assert.Equal("NOT_FOUND", resultA.Error.Code);
+            Assert.Equal(GetRoleErrors.RoleNotFound, resultA.Error);
         }
 
         using (var dbAll = TestAuthDbContextFactory.Create(contextA, dbName))

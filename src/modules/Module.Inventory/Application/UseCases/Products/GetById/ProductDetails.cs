@@ -40,7 +40,7 @@ public class ProductDetails(IInvDbContext context, ICurrentUser currentUser)
         }).FirstOrDefaultAsync(x => x.Id == productId);
 
 
-        if (result is null) return new Error("NOT_FOUND", "Product not found");
+        if (result is null) return ProductDetailsErrors.ProductNotFound;
 
         result.TotalStock = result.Variants.Sum(x => x.Stock);
         return result;

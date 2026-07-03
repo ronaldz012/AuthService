@@ -1,3 +1,4 @@
+using Common.Utilities;
 using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Domain;
 
@@ -8,15 +9,14 @@ public class SetupUserPasswordTests
     [Fact]
     public async Task ExecuteAsync_ShouldReturnError_WhenTokenNotFound()
     {
-        using var dbContext = TestAuthDbContextFactory.Create();
-        var sut = new SetupUserPassword(dbContext);
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext();
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
+        var sut = new SetupUserPassword(dbContext, tenantContext);
 
         var request = new SetupUserPasswordRequest("invalid-token", "Password123!");
         var result = await sut.ExecuteAsync(request);
 
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.Error);
-        Assert.Equal("NOT_FOUND", result.Error.Code);
+        Assert.Equal(SetupUserPasswordErrors.TokenNotFound, result.Error);
     }
 
     [Fact]
@@ -26,7 +26,8 @@ public class SetupUserPasswordTests
         var userId = Guid.NewGuid();
         var code = "valid-token-123";
 
-        using var dbContext = TestAuthDbContextFactory.Create();
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext(tenantId);
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
 
         dbContext.EmailVerificationCodes.Add(new EmailVerificationCode
         {
@@ -53,7 +54,7 @@ public class SetupUserPasswordTests
 
         await dbContext.SaveChangesAsync();
 
-        var sut = new SetupUserPassword(dbContext);
+        var sut = new SetupUserPassword(dbContext, tenantContext);
 
         var request = new SetupUserPasswordRequest(code, "NewPassword123!");
         var result = await sut.ExecuteAsync(request);
@@ -69,5 +70,4 @@ public class SetupUserPasswordTests
         Assert.NotNull(updatedCode);
         Assert.True(updatedCode.IsUsed);
     }
-
 }

@@ -21,20 +21,11 @@ public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentU
             })
             .FirstOrDefaultAsync();
 
-        // 2. Validación de existencia
         if (variantData is null)
-        {
-            return new Error("NOT_FOUND", "Product variant not found.");
-        }
+            return DeleteProductVariantErrors.VariantNotFound;
 
-        // 3. Validación de regla de negocio
         if (variantData.HasMovements)
-        {
-            return new Error(
-                "CONFLICT", 
-                "Cannot delete the product variant because it already has associated stock movements."
-            );
-        }
+            return DeleteProductVariantErrors.VariantHasMovements;
 
         // 4. Ejecutamos el método de tu modelo de dominio (Mantiene encapsulamiento)
         variantData.Entity.SoftDelete(currentUser.UserId);

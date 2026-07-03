@@ -10,7 +10,7 @@ public class UpdateProductVariant(IInvDbContext context)
         var productVariant = await context.ProductVariants.FindAsync(id);
 
         if (productVariant is null)
-            return new Error("NOT_FOUND", "product variant not found");
+            return UpdateProductVariantErrors.VariantNotFound;
         
         productVariant.Description = dto.Description ?? productVariant.Description;
         productVariant.Price = dto.Price ?? productVariant.Price;

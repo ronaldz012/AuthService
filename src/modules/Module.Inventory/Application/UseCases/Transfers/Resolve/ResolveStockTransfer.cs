@@ -18,14 +18,13 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
             .FirstOrDefaultAsync(t => t.Id == transferId);
 
         if (transfer == null)
-            return new Error("NOT_FOUND", "Transfer not found");
+            return ResolveStockTransferErrors.TransferNotFound;
 
-        // Validar que quien resuelve es la sucursal destino
         if (transfer.ToBranchId != toBranchId)
-            return new Error("FORBIDDEN", "Only the destination branch can resolve this transfer");
+            return ResolveStockTransferErrors.Forbidden;
 
         if (transfer.Status != TransferStatus.Pending)
-            return new Error("INVALID_OPERATION", $"Transfer is already {transfer.Status}");
+            return ResolveStockTransferErrors.AlreadyResolved;
 
         if (!dto.Complete)
         {
@@ -45,7 +44,7 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
             .ToList();
 
         if (insufficientStock.Count != 0)
-            return new Error("INVALID_OPERATION", "Insufficient stock in origin branch, transfer cannot be completed");
+            return ResolveStockTransferErrors.InsufficientStock;
 
         await using var transaction = await context.Database.BeginTransactionAsync();
         try

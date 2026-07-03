@@ -32,7 +32,7 @@ public async Task<Result<ProductVariantDetailsDto>> Execute(Guid id)
         .FirstOrDefaultAsync();
 
     if (result is null)
-        return new Error("NOT FOUND", "productVariantNotFount");
+        return GetProductVariantDetailsErrors.VariantNotFound;
 
     return result;
 }

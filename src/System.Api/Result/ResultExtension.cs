@@ -1,19 +1,16 @@
 using System;
+using System.Threading.Tasks;
 using Common.Utilities;
-
-namespace System.Api.Result;
-
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
+namespace System.Api.Result;
 
 /// <summary>
 /// Extensiones para convertir Result{T} en respuestas HTTP de ASP.NET Core
 /// </summary>
 public static class ResultExtensions
 {
-
-    
     /// <summary>
     /// Convierte un Result{TValue} en una respuesta HTTP apropiada:
     /// - Si IsSuccess = true: retorna 200 OK con el Value
@@ -40,8 +37,8 @@ public static class ResultExtensions
         return new ObjectResult(new ProblemDetails
         {
             Status = statusCode,
-            Title = result.Error.Code,           // Código del error
-            Detail = result.Error.Message        // Mensaje descriptivo
+            Title = result.Error.Code.ToString(), // Convierte el Enum a String (ej: "ValidationError")
+            Detail = result.Error.Message         // Mensaje descriptivo del UseCase
         })
         {
             StatusCode = statusCode
@@ -49,22 +46,29 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Mapea códigos de error personalizados a códigos de estado HTTP.
-    /// Puedes extender este switch con tus propios códigos.
+    /// Mapea los códigos del enum ErrorCode a códigos de estado HTTP de forma tipada.
     /// </summary>
-    /// <param name="errorCode">Código del error (ej: "VALIDATION_ERROR")</param>
+    /// <param name="errorCode">Código genérico del error</param>
     /// <returns>Código de estado HTTP apropiado</returns>
-    private static int MapErrorCodeToStatusCode(string errorCode)
+    private static int MapErrorCodeToStatusCode(ErrorCode errorCode)
     {
         return errorCode switch
         {
-            "VALIDATION_ERROR" => StatusCodes.Status400BadRequest,      // 400
-            "NOT_FOUND" => StatusCodes.Status404NotFound,               // 404
-            "DUPLICATE" => StatusCodes.Status409Conflict,               // 409
-            "UNAUTHORIZED" => StatusCodes.Status401Unauthorized,        // 401
-            "FORBIDDEN" => StatusCodes.Status403Forbidden,              // 403
-            "DATABASE_ERROR" => StatusCodes.Status500InternalServerError, // 500
-            _ => StatusCodes.Status500InternalServerError               // 500 por defecto
+            ErrorCode.ValidationError => StatusCodes.Status400BadRequest,
+            ErrorCode.BadRequest => StatusCodes.Status400BadRequest,
+            ErrorCode.InvalidState => StatusCodes.Status400BadRequest,
+            
+            ErrorCode.Unauthorized => StatusCodes.Status401Unauthorized,
+            ErrorCode.Forbidden => StatusCodes.Status403Forbidden,
+            ErrorCode.NotFound => StatusCodes.Status404NotFound,
+            
+            ErrorCode.Duplicate => StatusCodes.Status409Conflict,
+            ErrorCode.Conflict => StatusCodes.Status409Conflict,
+            
+            ErrorCode.DatabaseError => StatusCodes.Status500InternalServerError,
+            ErrorCode.InternalError => StatusCodes.Status500InternalServerError,
+            
+            _ => StatusCodes.Status500InternalServerError
         };
     }
 }

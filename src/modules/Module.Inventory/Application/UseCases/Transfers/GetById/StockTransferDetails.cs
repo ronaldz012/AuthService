@@ -22,7 +22,7 @@ public class StockTransferDetails(InvDbContext context, IBranchService branchSer
             .FirstOrDefaultAsync(x => x.Id == stockTransferId);
 
         if (transfer == null)
-            return new Error("NOT_FOUND", "StockTransfer not found");
+            return StockTransferDetailsErrors.TransferNotFound;
 
         List<Guid> branchIds = [transfer.FromBranchId, transfer.ToBranchId];
         List<Guid> userIds = transfer.ResolvedByUserId.HasValue
@@ -31,11 +31,11 @@ public class StockTransferDetails(InvDbContext context, IBranchService branchSer
 
         var branchesResult = await branchService.GetBranchesByIds(branchIds);
         if (!branchesResult.IsSuccess)
-            return new Error("NOT_FOUND", $"Branches not found: {branchesResult.Error.Message}");
+            return StockTransferDetailsErrors.BranchesNotFound;
 
         var usersResult = await userService.GetUsersByIds(userIds);
         if (!usersResult.IsSuccess)
-            return new Error("NOT_FOUND", "Users not found");
+            return StockTransferDetailsErrors.UsersNotFound;
 
         var branches = branchesResult.Value.ToDictionary(b => b.Id, b => b.Name);
         var users = usersResult.Value.ToDictionary(u => u.Id, u => $"{u.FirstName} {u.LastName}");

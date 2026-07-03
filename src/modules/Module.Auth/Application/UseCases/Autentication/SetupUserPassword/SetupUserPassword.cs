@@ -1,3 +1,4 @@
+using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
@@ -5,25 +6,24 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 
-public class SetupUserPassword(IAuthDbContext  context)
+public class SetupUserPassword(IAuthDbContext  context, ITenantContext tenantContext)
 {
     public async Task<Result<bool>> ExecuteAsync(SetupUserPasswordRequest request)
     {
         // 1. Buscar el código de verificación e incluir al usuario dueño
-        var verificationCode = await context.EmailVerificationCodes
+        var verificationCode = await context.EmailVerificationCodes.IgnoreQueryFilters()
+        .Include(c => c.User)
             .FirstOrDefaultAsync(c => c.Code == request.Token && !c.IsUsed);
 
         if (verificationCode == null)
-            return new Error("NOT_FOUND", "The verification token is invalid or has already been used.");
+            return SetupUserPasswordErrors.TokenNotFound;
+
+        tenantContext.TenantId = verificationCode.User.TenantId;
 
         if (verificationCode.ExpiresAt < DateTime.UtcNow)
-            return new Error("VALIDATION_ERROR", "The verification token has expired.");
+            return SetupUserPasswordErrors.TokenExpired;
 
-        var ownerUser = await context.Users
-            .FirstOrDefaultAsync(u => u.Id == verificationCode.UserId && u.TenantId == verificationCode.TenantId);
-
-        if (ownerUser == null)
-            return new Error("NOT_FOUND", "The associated owner user was not found.");
+        var ownerUser = verificationCode.User;
 
         using var transaction = await context.Database.BeginTransactionAsync();
         try

@@ -12,7 +12,7 @@ public class CreateUser(IAuthDbContext context, IBranchService branchService, IT
     public async Task<Result<string>> Execute(CreateUserRequest dto)
     {
         var validation = await context.Users.AnyAsync(u => u.Email == dto.Email || u.Username == dto.Username);
-        if (validation) return new Error("INVALID_OPERATION", "email or username taken");
+        if (validation) return CreateUserErrors.EmailOrUsernameTaken;
 
         var branchIds = dto.BranchRoles.Select(br => br.BranchId).Distinct().ToList();
         var roleIds = dto.BranchRoles.Select(br => br.RoleId).Distinct().ToList();
@@ -20,8 +20,8 @@ public class CreateUser(IAuthDbContext context, IBranchService branchService, IT
         var branchesResult = await branchService.GetBranchesByIds(branchIds);
         var rolesResult = await ValidateRoles(roleIds);
 
-        if (!branchesResult.IsSuccess) return new Error("NOT_FOUND", branchesResult.Error?.Message ?? "");
-        if (!rolesResult.IsSuccess) return new Error("NOT_FOUND", rolesResult.Error?.Message ?? "");
+        if (!branchesResult.IsSuccess) return CreateUserErrors.BranchesNotFound;
+        if (!rolesResult.IsSuccess) return CreateUserErrors.RolesNotFound;
 
 
         var newUser = User.CreateStandard(dto.Email, dto.Username);
@@ -51,7 +51,7 @@ public class CreateUser(IAuthDbContext context, IBranchService branchService, IT
 
         if (missingRoleIds.Any())
         {
-            return new Error("NOT_FOUND", $"roles not found, missing: {string.Join(", ", missingRoleIds)}");
+            return CreateUserErrors.MissingRoles;
         }
 
         return true;

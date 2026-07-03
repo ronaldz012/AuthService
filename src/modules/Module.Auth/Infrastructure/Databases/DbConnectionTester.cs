@@ -11,7 +11,7 @@ public class DbConnectionTester(IConfiguration configuration) : IDbConnectionTes
     {
         var baseConnectionString = configuration.GetConnectionString("TenantConnection");
         if (string.IsNullOrEmpty(baseConnectionString))
-            return new Error("NOT_FOUND", "Connection string 'TenantConnection' not found");
+            return DbConnectionTesterErrors.ConnectionStringNotFound;
 
         var builder = new NpgsqlConnectionStringBuilder(baseConnectionString) { Database = databaseName };
         if (!string.IsNullOrEmpty(schema)) builder.SearchPath = schema;
@@ -25,13 +25,13 @@ public class DbConnectionTester(IConfiguration configuration) : IDbConnectionTes
             string? actualSchema = await command.ExecuteScalarAsync() as string;
 
             if (string.IsNullOrEmpty(actualSchema))
-                return new Error("SCHEMA_NOT_FOUND", $"El esquema '{schema}' no existe en la base de datos.");
+                return DbConnectionTesterErrors.SchemaNotFound;
 
             return true;
         }
-        catch (Exception ex)
+        catch
         {
-            return new Error("CONNECTION_FAILED", ex.Message);
+            return DbConnectionTesterErrors.ConnectionFailed;
         }
     }
 }

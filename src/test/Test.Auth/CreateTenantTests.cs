@@ -1,4 +1,5 @@
 using Common.Contracts.authentication;
+using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Tenant.Create;
@@ -21,9 +22,7 @@ public class CreateTenantTests
 
         var result = await sut.ExecuteAsync(request);
 
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.Error);
-        Assert.Equal("NOT_FOUND", result.Error.Code);
+        Assert.Equal(CreateTenantErrors.DatabaseNotFound, result.Error);
     }
 
     [Fact]
@@ -56,10 +55,7 @@ public class CreateTenantTests
 
         var result = await sut.ExecuteAsync(request);
 
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.Error);
-        Assert.Equal("VALIDATION_ERROR", result.Error.Code);
-        Assert.Contains("already exists", result.Error.Message);
+        Assert.Equal(CreateTenantErrors.TenantAlreadyExists, result.Error);
     }
 
     [Fact]
@@ -80,9 +76,7 @@ public class CreateTenantTests
 
         var result = await sut.ExecuteAsync(request);
 
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.Error);
-        Assert.Equal("NOT_FOUND", result.Error.Code);
+        Assert.Equal(CreateTenantErrors.PlanNotFound, result.Error);
     }
 
     [Fact]

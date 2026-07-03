@@ -14,7 +14,7 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
         if (dto == null) throw new ArgumentNullException(nameof(dto));
         // ── Validar lista no vacía ────────────────────────────────────────
         if (dto.Count == 0)
-            return new Error("BAD_REQUEST", "The variant list cannot be empty.");
+            return CreateProductVariantErrors.EmptyVariantList;
 
         // ── Validar duplicados dentro del DTO ─────────────────────────────
         var hasDuplicatesInDto = dto
@@ -22,7 +22,7 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
             .Any(g => g.Count() > 1);
 
         if (hasDuplicatesInDto)
-            return new Error("BAD_REQUEST", "There are duplicate variants (same size and color) in your request.");
+            return CreateProductVariantErrors.DuplicateVariantsInRequest;
 
         // ── Validar producto ──────────────────────────────────────────────
         var product = await context.Products
@@ -30,7 +30,7 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product is null)
-            return new Error("NOT_FOUND", "Product not found.");
+            return CreateProductVariantErrors.ProductNotFound;
 
         // ── Validar y mapear colores ──────────────────────────────────────
         var colorIdsInDto = dto.Select(x => x.ColorId).Distinct().ToList();
@@ -43,7 +43,7 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
         if (colorsDictionary.Count != colorIdsInDto.Count)
         {
             var missingIds = colorIdsInDto.Where(id => !colorsDictionary.ContainsKey(id)).ToList();
-            return new Error("NOT_FOUND", $"The following Color IDs do not exist: {string.Join(", ", missingIds)}");
+            return CreateProductVariantErrors.ColorIdsNotFound;
         }
 
         // ── Validar duplicados contra base de datos ───────────────────────
@@ -65,7 +65,7 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
             .Any(ev => dtoCombinations.Any(d => d.ColorId == ev.ColorId && d.Size == ev.Size));
 
         if (alreadyExists)
-            return new Error("DUPLICATED", "One or more variants with the same size and color already exist for this product.");
+            return CreateProductVariantErrors.VariantAlreadyExists;
 
         // ── Transacción: reservar SKUs y guardar ──────────────────────────
         await using var tx = await context.Database.BeginTransactionAsync();

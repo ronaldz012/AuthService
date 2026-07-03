@@ -13,7 +13,7 @@ public class GetRole(IAuthDbContext dbContext )
             .Include(r => r.RoleFeaturePermissions)
             .FirstOrDefaultAsync();
         if (role == null)
-            return new Error("NOT_FOUND", "Role not found");
+            return GetRoleErrors.RoleNotFound;
 
         
         return new RoleDetailsDto()

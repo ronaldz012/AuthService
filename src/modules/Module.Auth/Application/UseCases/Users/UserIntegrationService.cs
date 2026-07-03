@@ -22,7 +22,7 @@ public class UserIntegrationService(IAuthDbContext context, ITokenGenerator toke
         }).ToListAsync();
         
         var missingUsersIds =userIds.Except(usersFound.Select(u => u.Id));
-        if (missingUsersIds.Any()) return new Error("NOT_FOUND", $"Users with Ids not found{missingUsersIds.ToString()}");
+        if (missingUsersIds.Any()) return UserIntegrationServiceErrors.UsersNotFound;
         return usersFound.Select(x => new UserDetailsDto()
         {
             Id = x.Id,

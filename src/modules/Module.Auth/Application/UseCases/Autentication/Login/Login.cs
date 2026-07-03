@@ -19,29 +19,15 @@ public class Login(
 {
     public async Task<Result<SuccessLoginResponse>> Execute(LoginRequest request)
     {
-        var user = await dbContext.Users
+        var user = await dbContext.Users.IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user == null)
-            return new Error("VALIDATION_ERROR", "Correo electrónico o contraseña incorrectos.");
+            return LoginErrors.UserNotFound;
 
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            return new Error("VALIDATION_ERROR", "Correo electrónico o contraseña incorrectos.");
+            return LoginErrors.InvalidPassword;
 
-        if (user.Status is UserStatus.PendingVerification or UserStatus.PendingPasswordSetup)
-        {
-            return new SuccessLoginResponse
-            {
-                Status = user.Status.ToString(),
-                User = new UserDetailResponse
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Email = user.Email
-                }
-            };
-        }
 
         tenantContext.TenantId = user.TenantId;
         
@@ -49,7 +35,6 @@ public class Login(
         
         var branches = new List<PermissionsByModuleDto>();
 
-        Console.WriteLine("############: " + flatPermissions.First().BranchName);
         var branchesResponse = flatPermissions.Select(b => new PermissionsByModuleDto
         {
             BranchId = b.BranchId,

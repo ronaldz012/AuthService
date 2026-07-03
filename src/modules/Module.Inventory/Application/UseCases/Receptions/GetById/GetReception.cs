@@ -36,7 +36,7 @@ public class GetReception(IInvDbContext context, ICurrentUser currentUser)
             })
             .FirstOrDefaultAsync();
         if(reception == null)
-            return new Error("NOT_FOUND", "Reception not found");
+            return GetReceptionErrors.ReceptionNotFound;
         
         var variantIds = reception.Items.Select(i => i.ProductVariantId).ToList();
 

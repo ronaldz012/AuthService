@@ -2,6 +2,7 @@
 
 using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
+using Common.Utilities;
 using Microsoft.Extensions.Logging;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Autentication.Login;
@@ -22,9 +23,7 @@ public class LoginTests
         var request = new LoginRequest { Email = "nonexistent@test.com", Password = "password123" };
         var result = await sut.Execute(request);
 
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.Error);
-        Assert.Equal("VALIDATION_ERROR", result.Error.Code);
+        Assert.Equal(LoginErrors.UserNotFound, result.Error);
     }
 
     [Fact]

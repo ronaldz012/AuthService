@@ -27,7 +27,7 @@ public class ReceptionLabels(IInvDbContext context)
             }).ToList()
         }).FirstOrDefaultAsync();
 
-        if (result is null) return new Error("NOT_FOUND", "reception not found");
+        if (result is null) return ReceptionLabelsErrors.ReceptionNotFound;
         
         return result;
     }

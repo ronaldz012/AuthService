@@ -14,7 +14,7 @@ public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser
 
         // Validar que no es la misma sucursal
         if (fromBranchId == dto.ToBranchId)
-            return new Error("INVALID_OPERATION", "Cannot transfer to the same branch");
+            return CreateStockTransferErrors.SameBranchTransfer;
 
         // Validar stock suficiente en origen
         var variantIds = dto.Items.Select(x => x.ProductVariantId).ToList();
@@ -24,13 +24,13 @@ public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser
 
         var missingVariants = variantIds.Except(inventories.Select(x => x.ProductVariantId)).ToList();
         if (missingVariants.Count != 0)
-            return new Error("NOT_FOUND", $"Variants not found in branch: {string.Join(", ", missingVariants)}");
+            return CreateStockTransferErrors.VariantsNotFoundInBranch;
 
         var insufficientStock = dto.Items
             .Where(item => inventories.First(inv => inv.ProductVariantId == item.ProductVariantId).Stock < item.QuantityRequested)
             .ToList();
         if (insufficientStock.Count != 0)
-            return new Error("INVALID_OPERATION", "Insufficient stock for some variants");
+            return CreateStockTransferErrors.InsufficientStock;
 
         // Crear transferencia
         var transfer = new StockTransfer

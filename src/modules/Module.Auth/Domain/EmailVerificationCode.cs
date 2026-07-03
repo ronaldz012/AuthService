@@ -23,8 +23,7 @@ namespace Module.Auth.Domain;
         public int Attempts { get; set; } = 0;
         public VerificationCodePurpose Purpose { get; set; }
         public User User { get; set; } = default!;
-
-        public static EmailVerificationCode CreateForAccountSetup(string email)
+        public static EmailVerificationCode CreateForAccountSetup(string email, Guid? userId = null)
         {
             return new EmailVerificationCode
             {
@@ -33,7 +32,9 @@ namespace Module.Auth.Domain;
                 SentAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddHours(48),
                 Purpose = VerificationCodePurpose.AccountVerification,
-                IsUsed = false
+                IsUsed = false,
+                UserId = userId ?? Guid.Empty
+
             };
         }
     }

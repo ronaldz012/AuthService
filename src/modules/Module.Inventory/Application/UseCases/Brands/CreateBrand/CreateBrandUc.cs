@@ -9,7 +9,7 @@ public class CreateBrandUc(IInvDbContext context)
     public async Task<Result<BrandResponse>> Execute(CreateBrandRequest request)
     {
         var uniquePrefix = context.Brands.Any(b => b.Prefix == request.Prefix);
-            if(uniquePrefix) return new Error("DUPLICATE", "there is already a brand with that prefix");
+            if(uniquePrefix) return CreateBrandErrors.BrandPrefixAlreadyExists;
             
         var newBrand = new Brand
         {

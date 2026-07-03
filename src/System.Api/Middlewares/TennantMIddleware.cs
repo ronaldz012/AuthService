@@ -1,15 +1,11 @@
 using System.Security.Claims;
 using Common.Contracts.authentication;
-using Microsoft.Extensions.Options;
-using Common.Services;
-using Microsoft.EntityFrameworkCore;
-using Module.Auth.Infrastructure.Persistence;
 
 namespace System.Api.Middlewares;
 
 public class TenantMiddleware(RequestDelegate next) 
 {
-    public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext, AuthDbContext authDbContext)
+    public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext, ITenantDatabaseResolver resolver)
     {
         var path = context.Request.Path;
         if (path.StartsWithSegments("/api/system") || 
@@ -26,12 +22,19 @@ public class TenantMiddleware(RequestDelegate next)
 
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            schema       = context.User.FindFirstValue("schema");
-            databaseName = context.User.FindFirstValue("databaseName"); // null si usa DB default
-            
             var tidClaim = context.User.FindFirstValue("tenantId");
             if (Guid.TryParse(tidClaim, out var guid))
                 tenantId = guid;
+
+            if (tenantId is not null)
+            {
+                var info = await resolver.GetTenantDatabaseInfo(tenantId.Value);
+                if (info is not null)
+                {
+                    schema       = info.Schema;
+                    databaseName = info.DatabaseName;
+                }
+            }
         }
         else
         {
@@ -52,7 +55,7 @@ public class TenantMiddleware(RequestDelegate next)
 
         tenantContext.Schema       = schema;
         tenantContext.TenantId     = tenantId;
-        tenantContext.DatabaseName = databaseName; // null = usa DefaultConnection tal cual
+        tenantContext.DatabaseName = databaseName;
 
         await next(context);
     }

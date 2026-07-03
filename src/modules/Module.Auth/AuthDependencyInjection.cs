@@ -110,6 +110,7 @@ public static class SharedDependencyInjection
          services.AddScoped<IUserPermissionsCacheService, UserPermissionsCacheService>();
 
          services.AddScoped<IDbConnectionTester, DbConnectionTester>();
+         services.AddScoped<ITenantDatabaseResolver, TenantDatabaseResolverService>();
          
          services.AddScoped<IDataSeeder, TenantDataBaseSeeder>()
              .AddScoped<IDataSeeder, FeatureSeeder>()

@@ -26,8 +26,7 @@ public class CreateReceptionUc(
 
         var missingIds = variantIds.Except(variants.Select(x => x.Id)).ToList();
         if (missingIds.Count != 0)
-            return new Error("NOT_FOUND",
-                $"VariantIds no encontrados: {string.Join(", ", missingIds)}");
+            return CreateReceptionErrors.VariantsNotFound;
 
         // -- 2. Construir recepción -------------------------------------------
         await using var transaction = await context.Database.BeginTransactionAsync();

@@ -12,13 +12,13 @@ public class CreateTenant(IAuthDbContext context, ITenantContext tenantContext)
     {
         var db = await context.TenantDatabases.FirstOrDefaultAsync(x => x.Id == request.DatabaseId);
         if (db == null)
-            return new Error("NOT_FOUND", $"Database {request.DatabaseId} not found");
+            return CreateTenantErrors.DatabaseNotFound;
         var displayNameExists = await context.Tenants.AnyAsync(x => x.DisplayName == request.DisplayName);
         if (displayNameExists)
-            return new Error("VALIDATION_ERROR", $"Tenant {request.DisplayName} already exists");
+            return CreateTenantErrors.TenantAlreadyExists;
         var plan = await context.Plans.FirstOrDefaultAsync(p => p.Id == request.PlanId);
         if (plan == null)
-            return new Error("NOT_FOUND", "The specified subscription plan does not exist");
+            return CreateTenantErrors.PlanNotFound;
 
         using var transaction = await context.Database.BeginTransactionAsync();
         try
@@ -43,7 +43,7 @@ public class CreateTenant(IAuthDbContext context, ITenantContext tenantContext)
             }
 
             var verificationCode = EmailVerificationCode.CreateForAccountSetup(request.OwnerEmail);
-            context.EmailVerificationCodes.Add(verificationCode);
+            ownerUser.EmailVerificationCodes.Add(verificationCode);
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();

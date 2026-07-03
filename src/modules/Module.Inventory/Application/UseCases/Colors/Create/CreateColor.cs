@@ -17,8 +17,7 @@ public class CreateColor(IInvDbContext context, ICurrentUser currentUser)
         if (existing)
         {
     
-            // Retornamos DUPLICATE para que tu mapper devuelva un Status 409
-            return new Error("DUPLICATE", $"El {colorName} ya está en uso.");
+            return CreateColorErrors.ColorAlreadyExists;
         }
 
         var newColor = new Color

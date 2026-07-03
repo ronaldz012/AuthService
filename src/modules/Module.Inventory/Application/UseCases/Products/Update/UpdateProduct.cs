@@ -9,7 +9,7 @@ public class UpdateProduct(IInvDbContext context)
     {
         var product = await context.Products.FindAsync(id);
         if(product == null) return 
-            new Error("NOT_FOUND", "Product not found");
+            UpdateProductErrors.ProductNotFound;
         
         product.Name = dto.Name ?? product.Name;
         product.Description = dto.Description ?? product.Description;

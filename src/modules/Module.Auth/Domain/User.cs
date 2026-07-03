@@ -73,13 +73,9 @@ public class User : IMustHaveTenant
 
 public enum UserStatus
 {
-    PendingVerification = 0,
     Active = 1,
     Suspended = 2,
-    Inactive = 3,
-    PendingRoleSelecting = 4,
-    PendingConfiguration = 5,
-    PendingPasswordSetup = 6,
+    PendingPasswordSetup = 3,
 }
 
 public enum AuthProvider

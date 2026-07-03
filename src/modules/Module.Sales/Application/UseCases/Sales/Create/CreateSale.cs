@@ -18,14 +18,14 @@ public class CreateSale(ISalesDbContext context, ICurrentUser currentUser, IInve
 
         var cashClosure = await context.CashRegisterClosures.FindAsync(dto.CashRegisterClosureId);
         if (cashClosure == null || cashClosure.BranchId != branchId)
-            return new Error("NOT_FOUND", "Cash closure not found or does not belong to this branch.");
+            return CreateSaleErrors.CashClosureNotFound;
 
         if (cashClosure.Status != CashRegisterClosureStatus.Open)
-            return new Error("VALIDATION_ERROR", "The cash closure must be open to register sales.");
+            return CreateSaleErrors.CashClosureNotOpen;
 
         var variants = stockResult.Value;
         if (variants.Count != variantIds.Count)
-            return new Error("NOT_FOUND", "One or more products do not exist.");
+            return CreateSaleErrors.ProductsNotFound;
 
         await using var transaction = await context.Database.BeginTransactionAsync();
         try
@@ -77,10 +77,10 @@ public class CreateSale(ISalesDbContext context, ICurrentUser currentUser, IInve
             await transaction.CommitAsync();
             return true;
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
             await transaction.RollbackAsync();
-            return new Error("VALIDATION_ERROR", ex.Message);
+            return CreateSaleErrors.SaleCreationFailed;
         }
         catch
         {

@@ -10,7 +10,7 @@ public class GetFeature(IAuthDbContext dbContext )
     {
         var feature = await dbContext.Features.Where(m => m.Key == key).FirstOrDefaultAsync();
         if (feature == null)
-            return new Error("NOT_FOUND", "Module not found");
+            return GetFeatureErrors.FeatureNotFound;
 
         return new FeatureDetailsDto()
         {

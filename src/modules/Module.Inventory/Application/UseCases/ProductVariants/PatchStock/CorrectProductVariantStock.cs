@@ -18,7 +18,7 @@ public class CorrectProductVariantStock(IInvDbContext context, ICurrentUser curr
             .FirstOrDefaultAsync();
     
         if (pv == null) 
-            return new Error("NOT_FOUND", "Product Variant not found");
+            return CorrectProductVariantStockErrors.VariantNotFound;
     
         try 
         {
@@ -33,9 +33,9 @@ public class CorrectProductVariantStock(IInvDbContext context, ICurrentUser curr
             await context.SaveChangesAsync();
             return true;
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return new Error("VALIDATION_ERROR", ex.Message);
+            return CorrectProductVariantStockErrors.StockCorrectionFailed;
         }
     }
 }

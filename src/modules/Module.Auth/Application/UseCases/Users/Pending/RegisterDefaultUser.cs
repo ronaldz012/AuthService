@@ -17,7 +17,7 @@ public class RegisterDefaultUser(RegisterUser registerUser)
         // };
         //
         // return await registerUser.Execute(user, dto.Password);
-        return new Error("NOT IMPMLEMENTED", "xd");
+        return RegisterDefaultUserErrors.NotImplemented;
     }
 
 }

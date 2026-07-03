@@ -14,7 +14,7 @@ public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext
         // ── Validaciones previas ──────────────────────────────────────────
         var brand = await context.Brands.FindAsync(request.BrandId);
         if (brand == null)
-            return new Error("NOT_FOUND", "Brand not found");
+            return CreateProductErrors.BrandNotFound;
 
         var colorIds = request.Variants.Select(pv => pv.ColorId).Distinct().ToList();
         var colors = await context.Colors
@@ -22,7 +22,7 @@ public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext
             .ToListAsync();
 
         if (colorIds.Except(colors.Select(c => c.Id)).Any())
-            return new Error("NOT_FOUND", "One or more colors not found");
+            return CreateProductErrors.ColorsNotFound;
 
         // ── Transacción ───────────────────────────────────────────────────
         await using var tx = await context.Database.BeginTransactionAsync();
@@ -76,7 +76,7 @@ public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext
                 .FirstOrDefaultAsync(p => p.Id == product.Id);
 
             if (saved == null)
-                return new Error("SERVER_ERROR", "Error retrieving created product");
+                return CreateProductErrors.ProductRetrievalFailed;
 
             return new ProductCreatedDto
             {

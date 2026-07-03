@@ -16,7 +16,7 @@ public class DeleteProduct(IInvDbContext context, ICurrentUser currentUser)
             .AnyAsync(bi => bi.Stock > 0);
 
         if (hasStock) 
-            return new Error("VALIDATION_ERROR", "Inventory still available");
+            return DeleteProductErrors.InventoryStillAvailable;
         
         
         var affectedRows = await context.Products
@@ -26,7 +26,7 @@ public class DeleteProduct(IInvDbContext context, ICurrentUser currentUser)
                 .SetProperty(p => p.DeletedById, currentUser.UserId));
 
         if (affectedRows == 0) 
-            return new Error("NOT_FOUND", "Product not found");
+            return DeleteProductErrors.ProductNotFound;
 
         return true;
     }

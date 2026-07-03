@@ -1,3 +1,4 @@
+using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Module.Auth.Application.UseCases.Users.CreateUser;
@@ -91,9 +92,7 @@ public class CreateUserTests
 
         var result = await sut.Execute(request);
 
-        Assert.False(result.IsSuccess);
-        Assert.NotNull(result.Error);
-        Assert.Equal("INVALID_OPERATION", result.Error.Code);
+        Assert.Equal(CreateUserErrors.EmailOrUsernameTaken, result.Error);
     }
 
     [Fact]
@@ -124,7 +123,6 @@ public class CreateUserTests
 
         var result = await sut.Execute(request);
 
-        Assert.False(result.IsSuccess);
-        Assert.Equal("NOT_FOUND", result.Error.Code);
+        Assert.Equal(CreateUserErrors.RolesNotFound, result.Error);
     }
 }

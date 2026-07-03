@@ -72,11 +72,11 @@ public class ListStockTransfers(IInvDbContext context, IUserIntegrationService u
 
         var branchesResult = await branchService.GetBranchesByIds(branchIds);
         if (!branchesResult.IsSuccess)
-            return new Error("INTERNAL_ERROR", branchesResult.Error.Message);
+            return ListStockTransfersErrors.BranchLookupFailed;
 
         var usersResult = await userIntegrationService.GetUsersByIds(userIds);
         if (!usersResult.IsSuccess)
-            return new Error("INTERNAL_ERROR", "Failed to resolve user names");
+            return ListStockTransfersErrors.UserLookupFailed;
 
         var branches = branchesResult.Value.ToDictionary(b => b.Id, b => b.Name);
         var users = usersResult.Value.ToDictionary(u => u.Id, u => $"{u.FirstName} {u.LastName}");

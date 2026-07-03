@@ -1,6 +1,36 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Common.Utilities;
+
+/// <summary>
+/// Categorías genéricas de error para todo el sistema que mapean a comportamientos HTTP.
+/// </summary>
+public enum ErrorCode
+{
+    // --- Mapean a 400 Bad Request ---
+    ValidationError,     // Errores de validación de inputs, reglas de negocio sencillas
+    BadRequest,          // Peticiones mal formadas o lógicamente imposibles
+    InvalidState,        // El sistema no está en el estado correcto para ejecutar la acción
+    
+    // --- Mapean a otros códigos 4xx ---
+    Unauthorized,        // 401: Falta autenticación o credenciales inválidas
+    Forbidden,           // 403: Autenticado pero no tiene permisos para el recurso
+    NotFound,            // 404: El recurso, entidad o registro no existe
+    Duplicate,           // 409: Conflicto por llaves duplicadas o datos únicos
+    Conflict,            // 409: Conflicto de concurrencia o de negocio general
+
+    // --- Mapean a 5xx Server Errors ---
+    DatabaseError,       // 500: Fallos explícitos al interactuar con el motor de persistencia
+    InternalError        // 500: Errores inesperados o excepciones no controladas
+}
+
+/// <summary>
+/// Representa un error con un código identificador fuertemente tipado y un mensaje descriptivo.
+/// </summary>
+/// <param name="Code">Código único del error basado en un catálogo cerrado</param>
+/// <param name="Message">Mensaje descriptivo del error especializado por cada UseCase</param>
+public record Error(ErrorCode Code, string Message);
+
 /// <summary>
 /// Representa el resultado de una operación que puede tener éxito o fallar.
 /// Implementa el patrón Railway Oriented Programming (ROP).
@@ -46,25 +76,16 @@ public readonly record struct Result<TValue>
     {
         Error = error;
         IsSuccess = false;
-        Value = default; // null para tipos referencia, 0 para int, etc.
+        Value = default;
     }
 
     /// <summary>
     /// Permite convertir automáticamente un valor al tipo Result exitoso.
-    /// Ejemplo: return menuId; (int) se convierte a Result{int} exitoso
     /// </summary>
     public static implicit operator Result<TValue>(TValue value) => new(value);
 
     /// <summary>
     /// Permite convertir automáticamente un Error al tipo Result fallido.
-    /// Ejemplo: return new Error("CODE", "msg"); se convierte a Result{T} fallido
     /// </summary>
     public static implicit operator Result<TValue>(Error error) => new(error);
 }
-
-/// <summary>
-/// Representa un error con un código identificador y un mensaje descriptivo.
-/// </summary>
-/// <param name="Code">Código único del error (ejemplo: "VALIDATION_ERROR", "NOT_FOUND")</param>
-/// <param name="Message">Mensaje descriptivo del error para el usuario o logs</param>
-public record Error(string Code, string Message);

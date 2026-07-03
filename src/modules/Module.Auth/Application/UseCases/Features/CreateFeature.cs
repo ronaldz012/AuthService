@@ -12,7 +12,7 @@ public class CreateFeature(IAuthDbContext dbContext)
     {
         var exists = await dbContext.Features
             .AnyAsync(m => m.Key == dto.Name);
-        if (exists) return new Error("DUPLICATE", "Ya existe un módulo con ese nombre");
+        if (exists) return CreateFeatureErrors.FeatureAlreadyExists;
 
         var feature = new Feature()
         {

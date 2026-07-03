@@ -26,7 +26,7 @@ public class GetTenantDatabaseDetails(IAuthDbContext context, IDbConnectionTeste
             })
         }).FirstOrDefaultAsync(x => x.Id == id);
         if(db is  null)
-            return new Error("NOT_FOUND", "Database not found");
+            return GetTenantDatabaseDetailsErrors.DatabaseNotFound;
         
         var result =  await connectionTester.TestConnectionAsync(db.Name, db.Schema);
         db.IsOnline = result.IsSuccess;

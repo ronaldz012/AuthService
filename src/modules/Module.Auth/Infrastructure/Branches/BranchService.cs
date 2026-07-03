@@ -25,7 +25,7 @@ public class BranchService(IAuthDbContext context) : IBranchService
         var missingIds = ids.Except(foundIds).ToList();
 
         if (missingIds.Any())
-            return new Error("NOT_FOUND", $"Branches not found: {string.Join(", ", missingIds)}");
+            return BranchServiceErrors.BranchesNotFound;
 
         return branches;
     }

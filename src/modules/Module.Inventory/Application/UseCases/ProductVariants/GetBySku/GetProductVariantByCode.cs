@@ -30,7 +30,7 @@ public class GetProductVariantByCode(IInvDbContext context, ICurrentUser current
             }
 
         ).FirstOrDefaultAsync(pv => pv.Sku == skuRequested);
-        if(result is null) return new Error("NOT_FOUND", "product Variant not found");
+        if(result is null) return GetProductVariantByCodeErrors.VariantNotFound;
 
         return result;
     }
