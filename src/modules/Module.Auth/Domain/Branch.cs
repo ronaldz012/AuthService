@@ -10,7 +10,7 @@ public class Branch: IMustHaveTenant
     public string Name { get; set; } = string.Empty;
     public string Place { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
-    public bool Status { get; set; } = true;
+    public bool IsActive { get; set; } = true;
     public string BranchCode { get; set; } = string.Empty;
     
     public Guid TenantId { get; set; }

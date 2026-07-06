@@ -25,7 +25,8 @@ public class TenantController(TenantDatabaseUseCases tenantDatabaseUseCases, Ten
 
 
     [HttpPost]
-    public async Task<IActionResult> CreateTenant([FromBody] CreateTenantRequest request)
+    public async Task<IActionResult> CreateTenant(
+        [FromBody] CreateTenantRequest request)
     {
         return await tenantUseCases.CreateTenant.ExecuteAsync(request).ToValueOrProblemDetails();
     }

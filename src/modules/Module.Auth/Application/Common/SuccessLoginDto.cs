@@ -1,5 +1,4 @@
 using Common.Contracts.authentication.dtos;
-using Module.Auth.Application.UseCases.Users.GetAllUsers;
 
 namespace Module.Auth.Application.Common;
 

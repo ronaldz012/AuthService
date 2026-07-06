@@ -7,5 +7,7 @@ public record CreateTenantRequest(
     string OwnerUserName,
     string BranchName,
     string BranchPlace,
-    string BranchPhoneNumber, Guid PlanId);
+    string BranchPhoneNumber,
+    Guid PlanId,
+    bool SendEmail = false);
     

@@ -90,6 +90,33 @@ public class EmailTemplateRenderer(IOptions<ProjectInfo> projectInfo,
         return htmlContent;
     }
 
+    public async Task<string> GetTenantSetupLinkBody(
+        string userName,
+        string email,
+        string setupLink,
+        DateTime expiresAt)
+    {
+        string htmlContent = await GetBaseHtmlContentAsync("TenantSetupLink.html");
+
+        var tenantSetupReplacements = new Dictionary<string, string>
+            {
+                { "##EMAIL_SUBJECT##", $"Configura tu cuenta de {_appBranding.AppName}" },
+                { "##EMAIL_MAIN_HEADING##", $"¡Bienvenido a {_appBranding.AppName}!" },
+                { "##USER_NAME##", userName },
+                { "##EMAIL_BODY_CONTENT##", $"Has sido registrado en {_appBranding.AppName}. Por favor, haz clic en el siguiente enlace para configurar tu contraseña y activar tu cuenta:" },
+                { "##SETUP_LINK##", setupLink },
+                { "##SETUP_BUTTON_TEXT##", "Configurar mi cuenta" },
+                { "##EXPIRATION_TIME##", _emailVerificationSettings.TokenExpirationHours.ToString() }
+            };
+
+        foreach (var replacement in tenantSetupReplacements)
+        {
+            htmlContent = htmlContent.Replace(replacement.Key, replacement.Value);
+        }
+
+        return htmlContent;
+    }
+
     public async Task<string> GetEmailChangeConfirmationBody(
         string userName,
         string verificationCode,

@@ -12,18 +12,19 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var currentTenantId = tenantContext.TenantId
-            ?? throw new InvalidOperationException("Tenant is not set");
+        var tenantEntries = ChangeTracker.Entries<IMustHaveTenant>()
+            .Where(e => e.State is EntityState.Added or EntityState.Modified)
+            .ToList();
 
-        var entries = ChangeTracker.Entries<IMustHaveTenant>()
-            .Where(e => e.State is EntityState.Added or EntityState.Modified);
-
-        foreach (var entry in entries)
+        if (tenantEntries.Count != 0)
         {
-            if (entry.State == EntityState.Added)
-                entry.Entity.TenantId = currentTenantId;
-            else if (entry.State == EntityState.Modified)
-                entry.Property(x => x.TenantId).IsModified = false;
+            var currentTenantId = tenantContext.TenantId;
+
+            foreach (var entry in tenantEntries)
+            {
+                if (entry.State == EntityState.Added && currentTenantId.HasValue)
+                    entry.Entity.TenantId = currentTenantId.Value;
+            }
         }
 
         return base.SaveChangesAsync(cancellationToken);
@@ -119,11 +120,10 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
         {
             
             e.HasIndex(rfp => new { rfp.RoleId, rfp.FeatureKey }).IsUnique();
-            
+
             e.HasOne(rfp => rfp.Feature)
-                .WithMany() 
-                .HasForeignKey(rfp => rfp.FeatureKey)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .WithMany()
+                .HasForeignKey(rfp => rfp.FeatureKey);
 
 
             e.HasQueryFilter(rfp => rfp.TenantId == tenantContext.TenantId);

@@ -15,6 +15,7 @@ public class AppBranding
     public string AppPrimaryColor { get; set; } = string.Empty;
     public string SupportEmail { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    public string FrontendDomain { get; set; } = string.Empty;
 }
 public class EmailTemplateDefaults
 {

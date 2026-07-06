@@ -1,4 +1,6 @@
-namespace Module.Auth.Application.UseCases.Users.GetAllUsers;
+using Module.Auth.Domain;
+
+namespace Module.Auth.Application.Common;
 
 public class UserDetailResponse
 {
@@ -6,6 +8,8 @@ public class UserDetailResponse
 
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public bool IsAdmin { get; set; }
+    public UserType UserType { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }

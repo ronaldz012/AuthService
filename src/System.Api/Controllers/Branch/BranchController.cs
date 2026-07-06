@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Module.Auth.Application.UseCases.Branches;
 using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Application.UseCases.Branches.GetBranches;
+using Module.Auth.Application.UseCases.Branches.UpdateBranch;
 
 namespace System.Api.Controllers.Branch
 {
@@ -19,9 +20,21 @@ namespace System.Api.Controllers.Branch
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBranches()
+        public async Task<IActionResult> GetBranches([FromQuery] bool? isActive = true)
         {
-            return await features.ListBranches.Execute().ToValueOrProblemDetails();
+            return await features.ListBranches.Execute(isActive).ToValueOrProblemDetails();
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateBranch([FromRoute] Guid id, [FromBody] UpdateBranchRequest request)
+        {
+            return await features.UpdateBranch.Execute(id, request).ToValueOrProblemDetails();
+        }
+
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> ToggleBranchStatus([FromRoute] Guid id)
+        {
+            return await features.ToggleBranchStatus.Execute(id).ToValueOrProblemDetails();
         }
     }
 }

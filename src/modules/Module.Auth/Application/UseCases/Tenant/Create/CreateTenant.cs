@@ -1,14 +1,20 @@
 using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Module.Auth.Application.UseCases.Tenant.Create;
 
 using global::Common.Utilities;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
-public class CreateTenant(IAuthDbContext context, ITenantContext tenantContext)
+using Module.Auth.Infrastructure.Authentication;
+public class CreateTenant(
+    IAuthDbContext context,
+    ITenantContext tenantContext,
+    IEmailVerificationService emailVerificationService,
+    IOptions<ProjectInfo> projectInfo)
 {
-    public async Task<Result<string>> ExecuteAsync(CreateTenantRequest request)
+    public async Task<Result<CreateTenantResponse>> ExecuteAsync(CreateTenantRequest request)
     {
         var db = await context.TenantDatabases.FirstOrDefaultAsync(x => x.Id == request.DatabaseId);
         if (db == null)
@@ -48,7 +54,31 @@ public class CreateTenant(IAuthDbContext context, ITenantContext tenantContext)
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            return verificationCode.Code;
+            var frontendDomain = projectInfo.Value.AppBranding.FrontendDomain;
+            var setupUrl = $"https://{request.DisplayName}.{frontendDomain}/auth/setup-password?code={verificationCode.Code}";
+            var response = new CreateTenantResponse(verificationCode.Code, setupUrl, request.DisplayName);
+
+            if (request.SendEmail)
+            {
+                try
+                {
+                    await emailVerificationService.SendTenantSetupEmailAsync(
+                        request.OwnerEmail,
+                        request.OwnerUserName,
+                        setupUrl,
+                        verificationCode.ExpiresAt);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+              
+                }
+
+            }
+            
+            return response;
+
+      
         }
         catch
         {

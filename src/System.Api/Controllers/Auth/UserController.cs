@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Module.Auth.Application.UseCases.Users;
 using Module.Auth.Application.UseCases.Users.CreateUser;
 using Module.Auth.Application.UseCases.Users.GetAllUsers;
+using Module.Auth.Application.UseCases.Users.UpdateUserStatus;
 
 namespace System.Api.Controllers.Auth
 {
@@ -24,6 +25,12 @@ namespace System.Api.Controllers.Auth
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             return await userUserCases.CreateUser.Execute(request).ToValueOrProblemDetails();
+        }
+
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> UpdateUserStatus([FromRoute] Guid id)
+        {
+            return await userUserCases.UpdateUserStatus.Execute(id).ToValueOrProblemDetails();
         }
     }
 }

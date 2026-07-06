@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.Common;
-using Module.Auth.Application.UseCases.Users.GetAllUsers;
 using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Autentication.Login;
@@ -81,6 +80,8 @@ public class Login(
             {
                 Id = user.Id,
                 FirstName = user.FirstName,
+                IsAdmin = user.IsAdmin,
+                UserType = user.Type,
                 LastName = user.LastName,
                 Email = user.Email
             }

@@ -6,14 +6,21 @@ using Module.Auth.Application.UseCases.Branches.CreateBranch;
 
 namespace Module.Auth.Application.UseCases.Branches.GetBranches;
 
-public class GetBranches(IAuthDbContext context )
+public class GetBranches(IAuthDbContext context)
 {
-    public async Task<Result<List<BranchCreatedResponse>>> Execute()
+    public async Task<Result<List<GetBranchResponse>>> Execute(bool? isActive = true)
     {
-        return await context.Branches.Select(x => new BranchCreatedResponse()
+        var query = context.Branches.AsQueryable();
+
+        if (isActive.HasValue)
+            query = query.Where(b => b.IsActive == isActive.Value);
+
+        return await query.Select(x => new GetBranchResponse
         {
             Id = x.Id,
             Name = x.Name,
+            IsActive = x.IsActive,
+            BranchCode = x.BranchCode,
         }).ToListAsync();
     }
 }

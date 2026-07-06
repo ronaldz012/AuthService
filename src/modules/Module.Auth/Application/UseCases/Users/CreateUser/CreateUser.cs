@@ -1,43 +1,92 @@
 using Common.Contracts.authentication;
-using Common.Contracts.branches;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
+using Module.Auth.Infrastructure.Authentication;
 
 namespace Module.Auth.Application.UseCases.Users.CreateUser;
 
-public class CreateUser(IAuthDbContext context, IBranchService branchService, ITenantContext tenantContext)
+public class CreateUser(
+    IAuthDbContext context,
+    ITenantContext tenantContext,
+    IEmailVerificationService emailVerificationService,
+    IOptions<ProjectInfo> projectInfo)
 {
-    public async Task<Result<string>> Execute(CreateUserRequest dto)
+    public async Task<Result<CreateUserResponse>> Execute(CreateUserRequest dto)
     {
-        var validation = await context.Users.AnyAsync(u => u.Email == dto.Email || u.Username == dto.Username);
-        if (validation) return CreateUserErrors.EmailOrUsernameTaken;
+        var displayName = await context.Tenants
+            .Where(t => t.Id == tenantContext.TenantId)
+            .Select(t => t.DisplayName)
+            .FirstAsync();
+
+        var globalUsername = $"{displayName}-{dto.Username}";
+
+        var usernameTaken = await context.Users
+            .IgnoreQueryFilters()
+            .AnyAsync(u => u.Username == globalUsername);
+        if (usernameTaken) return CreateUserErrors.EmailOrUsernameTaken;
+
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+        {
+            var emailTaken = await context.Users
+                .IgnoreQueryFilters()
+                .AnyAsync(u => u.Email == dto.Email);
+            if (emailTaken) return CreateUserErrors.EmailOrUsernameTaken;
+        }
 
         var branchIds = dto.BranchRoles.Select(br => br.BranchId).Distinct().ToList();
         var roleIds = dto.BranchRoles.Select(br => br.RoleId).Distinct().ToList();
 
-        var branchesResult = await branchService.GetBranchesByIds(branchIds);
+        var foundBranchIds = await context.Branches
+            .Where(b => branchIds.Contains(b.Id))
+            .Select(b => b.Id)
+            .ToListAsync();
+
+        if (foundBranchIds.Count != branchIds.Count)
+            return CreateUserErrors.BranchesNotFound;
+
         var rolesResult = await ValidateRoles(roleIds);
+        if (!rolesResult.IsSuccess)
+            return CreateUserErrors.MissingRoles;
 
-        if (!branchesResult.IsSuccess) return CreateUserErrors.BranchesNotFound;
-        if (!rolesResult.IsSuccess) return CreateUserErrors.RolesNotFound;
-
-
-        var newUser = User.CreateStandard(dto.Email, dto.Username);
+        var newUser = User.CreateStandard(dto.Email, globalUsername, dto.FirstName, dto.LastName, dto.Ci, dto.Nationality, dto.BirthDate);
         newUser.UserBranchRoles = dto.BranchRoles.Select(br => new UserBranchRole
         {
             BranchId = br.BranchId,
             RoleId = br.RoleId,
         }).ToList();
-        var verificationCode = EmailVerificationCode.CreateForAccountSetup(dto.Email);
+
+        var verificationCode = EmailVerificationCode.CreateForAccountSetup(dto.Email ?? string.Empty);
         newUser.EmailVerificationCodes.Add(verificationCode);
         context.Users.Add(newUser);
 
-
         await context.SaveChangesAsync();
 
-        return verificationCode.Code;
+        var frontendDomain = projectInfo.Value.AppBranding.FrontendDomain;
+        var setupUrl = $"https://{frontendDomain}/auth/setup-password?code={verificationCode.Code}";
+
+        var emailSent = false;
+
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+        {
+            try
+            {
+                await emailVerificationService.SendTenantSetupEmailAsync(
+                    dto.Email,
+                    dto.Username,
+                    setupUrl,
+                    verificationCode.ExpiresAt);
+                emailSent = true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        return new CreateUserResponse(newUser.Id, setupUrl, emailSent);
     }
 
     private async Task<Result<bool>> ValidateRoles(List<Guid> roleIds)
@@ -50,9 +99,7 @@ public class CreateUser(IAuthDbContext context, IBranchService branchService, IT
         var missingRoleIds = roleIds.Except(foundRolesIds).ToList();
 
         if (missingRoleIds.Any())
-        {
             return CreateUserErrors.MissingRoles;
-        }
 
         return true;
     }

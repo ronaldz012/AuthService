@@ -18,7 +18,7 @@ public class BranchService(IAuthDbContext context) : IBranchService
             {
                 Id = b.Id,
                 Name = b.Name,
-                Status = b.Status,
+                Status = b.IsActive,
             }).ToListAsync();
 
         var foundIds = branches.Select(b => b.Id).ToList();
@@ -37,7 +37,7 @@ public class BranchService(IAuthDbContext context) : IBranchService
             Id = x.Id,
             Name = x.Name,
             BranchCode =  x.BranchCode,
-            Status =  x.Status,
+            Status =  x.IsActive,
         }).ToListAsync();
     }
     
@@ -50,7 +50,7 @@ public class BranchService(IAuthDbContext context) : IBranchService
             Name = request.Name,
             Place = request.Place,
             PhoneNumber = request.PhoneNumber,
-            Status = true,
+            IsActive = true,
             BranchCode = request.BranchCode,
         };
         await context.Branches.AddAsync(newBranch);

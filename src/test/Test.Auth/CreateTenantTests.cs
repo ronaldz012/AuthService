@@ -1,9 +1,12 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Tenant.Create;
 using Module.Auth.Domain;
+using Module.Auth.Infrastructure.Authentication;
+using Moq;
 
 namespace Test.Auth;
 
@@ -18,7 +21,8 @@ public class CreateTenantTests
 
         var request = new CreateTenantRequest(
             "Test Tenant", "owner@test.com", Guid.NewGuid(),
-            "owner", "Main Branch", "Some Place", "123456789", Guid.NewGuid());
+            "owner", "Main Branch", "Some Place", "123456789", Guid.NewGuid(),
+            SendEmail: true);
 
         var result = await sut.ExecuteAsync(request);
 
@@ -51,7 +55,8 @@ public class CreateTenantTests
 
         var request = new CreateTenantRequest(
             "Existing Tenant", "owner@test.com", databaseId,
-            "owner", "Main Branch", "Some Place", "123456789", planId);
+            "owner", "Main Branch", "Some Place", "123456789", planId,
+            SendEmail: true);
 
         var result = await sut.ExecuteAsync(request);
 
@@ -72,7 +77,8 @@ public class CreateTenantTests
 
         var request = new CreateTenantRequest(
             "New Tenant", "owner@test.com", databaseId,
-            "owner", "Main Branch", "Some Place", "123456789", Guid.NewGuid());
+            "owner", "Main Branch", "Some Place", "123456789", Guid.NewGuid(),
+            SendEmail: true);
 
         var result = await sut.ExecuteAsync(request);
 
@@ -116,13 +122,16 @@ public class CreateTenantTests
 
         var request = new CreateTenantRequest(
             "New Tenant", "owner@test.com", databaseId,
-            "owner", "Main Branch", "Some Place", "123456789", planId);
+            "owner", "Main Branch", "Some Place", "123456789", planId,
+            SendEmail: true);
 
         var result = await sut.ExecuteAsync(request);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.NotEmpty(result.Value);
+        Assert.NotEmpty(result.Value.Code);
+        Assert.NotEmpty(result.Value.SetupUrl);
+        Assert.Equal("New Tenant", result.Value.DisplayName);
 
         var savedTenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.DisplayName == "New Tenant");
         Assert.NotNull(savedTenant);
@@ -145,11 +154,21 @@ public class CreateTenantTests
             .FirstOrDefaultAsync(ev => ev.TenantId == savedTenant.Id);
         Assert.NotNull(savedCode);
         Assert.Equal(savedTenant.OwnerId, savedCode.UserId);
-        Assert.Equal(result.Value, savedCode.Code);
+        Assert.Equal(result.Value.Code, savedCode.Code);
     }
 
     private static CreateTenant CreateSut(IAuthDbContext dbContext, ITenantContext tenantContext)
     {
-        return new CreateTenant(dbContext, tenantContext);
+        var projectInfoOptions = Options.Create(new ProjectInfo
+        {
+            AppBranding = new AppBranding { FrontendDomain = "test.com" },
+            EmailTemplateDefaults = new EmailTemplateDefaults()
+        });
+
+        return new CreateTenant(
+            dbContext,
+            tenantContext,
+            Mock.Of<IEmailVerificationService>(),
+            projectInfoOptions);
     }
 }

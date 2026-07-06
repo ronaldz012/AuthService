@@ -73,6 +73,18 @@ public class EmailVerificationService(IAuthDbContext dbContext,
             await emailService.SendEmailAsync(user.Email, emailSubject, emailBody, isHtml: true);
 
     }
+    public async Task SendTenantSetupEmailAsync(string email, string userName, string setupLink, DateTime expiresAt)
+    {
+        var emailBody = await emailTemplateRenderer.GetTenantSetupLinkBody(
+            userName, email, setupLink, expiresAt);
+
+        await emailService.SendEmailAsync(
+            email,
+            $"Configura tu cuenta de {_appBranding.AppName}",
+            emailBody,
+            isHtml: true);
+    }
+
     public Task ResendVerificationEmailAsync(int userId, string userEmail, VerificationCodePurpose purpose)
     {
         throw new NotImplementedException();

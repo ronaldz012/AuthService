@@ -489,3 +489,7 @@ Common/GooglePopUp/google.html
 #IDES
 .vscode
 .idea
+.dockerignore
+.gitignore
+Dockerfile
+docker-compose.yml

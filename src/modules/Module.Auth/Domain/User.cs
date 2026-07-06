@@ -15,7 +15,7 @@ public class User : IMustHaveTenant
 
     public string PasswordHash { get; set; } = string.Empty;
     [StringLength(100)]
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; } = string.Empty;
     [StringLength(100)]
     public string FirstName { get; set; } = string.Empty;
     [StringLength(100)]
@@ -57,12 +57,17 @@ public class User : IMustHaveTenant
         };
     }
 
-    public static User CreateStandard(string email, string username)
+    public static User CreateStandard(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate)
     {
         return new User
         {
             Email = email,
             Username = username,
+            FirstName = firstName,
+            LastName = lastName,
+            Ci = ci,
+            Nationality = nationality,
+            BirthDate = birthDate,
             PasswordHash = string.Empty,
             Status = UserStatus.PendingPasswordSetup,
             CreatedAt = DateTime.UtcNow,
@@ -74,7 +79,7 @@ public class User : IMustHaveTenant
 public enum UserStatus
 {
     Active = 1,
-    Suspended = 2,
+    InActive = 2,
     PendingPasswordSetup = 3,
 }
 
