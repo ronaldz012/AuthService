@@ -1,3 +1,4 @@
+using Module.Auth.Application.UseCases.Autentication.AuthMe;
 using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Application.UseCases.Autentication.PublicLogin;
 using Module.Auth.Application.UseCases.Autentication.VerifiUser;
@@ -12,4 +13,5 @@ public record AutenticationUseCases(RegisterDefaultUser RegisterDefaultUser,
                              VerifyUser VerifyUser,
                               CompletePublicRegister CompletePublicRegister,
                              SetupUserPassword.SetupUserPassword SetupUserPassword,
-                             VerifyToken.VerifyToken VerifyToken);
+                             VerifyToken.VerifyToken VerifyToken,
+                             AuthMe.AuthMe AuthMe);

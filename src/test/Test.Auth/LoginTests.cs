@@ -1,5 +1,3 @@
-
-
 using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
 using Common.Utilities;
@@ -48,46 +46,38 @@ public class LoginTests
         });
         await dbContext.SaveChangesAsync();
 
-        var permissionsCacheMock = new Mock<IUserPermissionsCacheService>();
-        permissionsCacheMock
-            .Setup(p => p.GetAsync(userId, tenantId, false))
-            .ReturnsAsync(new List<PermissionsDto>
-            {
-                new()
+        var sessionState = new Mock<ISessionStateService>();
+        sessionState
+            .Setup(s => s.GetOrBuildAsync(userId, tenantId, false))
+            .ReturnsAsync(new SessionStateDto(
+                new UserDetailResponse
                 {
-                    BranchId = Guid.NewGuid(),
-                    BranchName = "Main",
-                    RoleName = "Admin",
-                    Features = new List<FeaturePermissionsDto>
-                    {
-                        new()
-                        {
-                            Key = "dashboard",
-                            DisplayName = "Dashboard",
-                            ModuleName = "Dashboard",
-                            IsMenu = true,
-                            Route = "/dashboard",
-                            Permissions = new List<string> { "view" },
-                        }
-                    }
-                }
-            });
+                    Id = userId,
+                    Email = "active@test.com",
+                    FirstName = "Jane",
+                    LastName = "Smith",
+                    UserType = (int)UserType.Standard,
+                },
+                [],
+                new TenantPlanUsageDto("Free", [], 10, 1, 5, 1)
+            ));
 
-        var sut = CreateSut(dbContext, tenantContext, permissionsCacheMock.Object);
+        var sut = CreateSut(dbContext, tenantContext, sessionState.Object);
 
         var request = new LoginRequest { Email = "active@test.com", Password = "Password123!" };
         var result = await sut.Execute(request);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.Equal("Active", result.Value.Status);
         Assert.Equal("fake-access-token", result.Value.AccessToken);
+        Assert.Equal("fake-refresh-token", result.Value.RefreshToken);
+        Assert.Equal(3600, result.Value.ExpiresIn);
     }
 
     private static Login CreateSut(IAuthDbContext dbContext, ITenantContext tenantContext,
-        IUserPermissionsCacheService? permissionsCache = null)
+        ISessionStateService? sessionState = null)
     {
-        permissionsCache ??= new Mock<IUserPermissionsCacheService>().Object;
+        sessionState ??= new Mock<ISessionStateService>().Object;
         var tokenGeneratorMock = new Mock<ITokenGenerator>();
         tokenGeneratorMock
             .Setup(t => t.GenerateAccessToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<bool>()))
@@ -102,7 +92,7 @@ public class LoginTests
         return new Login(
             dbContext,
             tenantContext,
-            permissionsCache,
+            sessionState,
             tokenGeneratorMock.Object,
             new Mock<ILogger<Login>>().Object);
     }

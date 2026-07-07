@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Autentication;
+using Module.Auth.Application.UseCases.Autentication.AuthMe;
 using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Application.UseCases.Autentication.PublicLogin;
 using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
@@ -66,13 +67,14 @@ public static class SharedDependencyInjection
          
         
          services.AddScoped<AutenticationUseCases>()
-              .AddScoped<RegisterUser>()
-              .AddScoped<RegisterDefaultUser>()
-              .AddScoped<Login>()
-              .AddScoped<CompletePublicRegister>()
-              .AddScoped<VerifyUser>()
-              .AddScoped<SetupUserPassword>()
-              .AddScoped<VerifyToken>();
+               .AddScoped<RegisterUser>()
+               .AddScoped<RegisterDefaultUser>()
+               .AddScoped<Login>()
+               .AddScoped<CompletePublicRegister>()
+               .AddScoped<VerifyUser>()
+               .AddScoped<SetupUserPassword>()
+               .AddScoped<VerifyToken>()
+               .AddScoped<AuthMe>();
          
          services.AddScoped<UserUserCases>()
                  .AddScoped<GetAllUsers>()
@@ -87,9 +89,6 @@ public static class SharedDependencyInjection
              .AddScoped<CreateTenant>() ;            
 
          
-         //OTHERS
-         IConfigurationSection tokenSettingsSection = configuration.GetSection(TokenSettings.SectionName);
-         services.Configure<TokenSettings>(tokenSettingsSection);
 
          IConfigurationSection authSettingsSection = configuration.GetSection(AuthenticationSettings.SectionName);
          services.Configure<AuthenticationSettings>(authSettingsSection);
@@ -111,9 +110,9 @@ public static class SharedDependencyInjection
          services.AddScoped<IBranchService, BranchService>();
          services.AddScoped<IEmailVerificationService, EmailVerificationService>();
          //INTEGRATION
-         services.AddScoped<ICurrentUser, CurrentUserService>()
-             .AddScoped<IUserIntegrationService, UserIntegrationService>();
-         services.AddScoped<IUserPermissionsCacheService, UserPermissionsCacheService>();
+          services.AddScoped<ICurrentUser, CurrentUserService>()
+              .AddScoped<IUserIntegrationService, UserIntegrationService>();
+          services.AddScoped<ISessionStateService, SessionStateService>();
 
          services.AddScoped<IDbConnectionTester, DbConnectionTester>();
          services.AddScoped<ITenantDatabaseResolver, TenantDatabaseResolverService>();

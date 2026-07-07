@@ -13,9 +13,8 @@ namespace System.Api.Controllers.Auth
     [Route("api/[controller]")]
     [ApiController]
     [Tags("Authentication | Authorization")]
-    public class AuthController(AutenticationUseCases autenticationUseCases, IOptions<TenantOptions> options) : ControllerBase
+    public class AuthController(AutenticationUseCases autenticationUseCases ) : ControllerBase
     {
-        private readonly List<string> tentants = options.Value.Schemas;
         
         
         [HttpPost("Register/User")]
@@ -69,6 +68,13 @@ namespace System.Api.Controllers.Auth
         public async Task<IActionResult> VerifyToken([FromBody] string token)
         {
             return await autenticationUseCases.VerifyToken.ExecuteAsync(token).ToValueOrProblemDetails();
+        }
+
+        [HttpGet("Me")]
+        [Authorize]
+        public async Task<IActionResult> AuthMe()
+        {
+            return await autenticationUseCases.AuthMe.Execute().ToValueOrProblemDetails();
         }
     }
 }

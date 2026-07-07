@@ -89,10 +89,11 @@ public enum AuthProvider
     Google = 1,
     Facebook = 2,
     Microsoft = 3
-}   
+}
+
 public enum UserType
 {
-    Standard = 0,     
-    TenantAdmin = 1,  
+    Standard = 0,
+    TenantAdmin = 1,
     Owner = 2
 }

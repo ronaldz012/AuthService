@@ -1,9 +1,10 @@
 using Common.Contracts.authentication;
+using Common.Contracts.authentication.dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using Module.Auth.Application.Abstraction; // Ajusta según dónde esté tu IUserPermissionsCacheService
+using Module.Auth.Application.Abstraction;
 
 namespace System.Api.Filters;
 
@@ -13,7 +14,7 @@ public class RequireFeatureFilter(
     bool multiBranch,
     ICurrentUser currentUser,
     ITenantContext tenantContext,
-    IUserPermissionsCacheService permissionsCache, 
+    ISessionStateService sessionState, 
     ILogger<RequireFeatureFilter> logger) : IAsyncAuthorizationFilter
 {
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
@@ -42,9 +43,10 @@ public class RequireFeatureFilter(
             return;
         }
 
-        var allUserBranches = await permissionsCache.GetAsync(currentUser.UserId,tenantContext.TenantId!.Value, currentUser.IsAdmin);
+        var session = await sessionState.GetOrBuildAsync(
+            currentUser.UserId, tenantContext.TenantId!.Value, currentUser.IsAdmin);
 
-        var requestedBranches = allUserBranches
+        var requestedBranches = session.Branches
             .Where(b => currentUser.BranchIds.Contains(b.BranchId))
             .ToList();
 
@@ -58,11 +60,11 @@ public class RequireFeatureFilter(
             return;
         }
 
-
         bool hasPermission = requestedBranches.All(branch =>
-            branch.Features.Any(f => 
-                f.Key == feature && 
-                f.Permissions.Contains(permission)));
+            branch.Modules.Any(module =>
+                module.Features.Any(f =>
+                    f.key == feature &&
+                    f.Permission.Contains(permission))));
 
         if (!hasPermission)
         {
