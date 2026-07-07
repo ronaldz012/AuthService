@@ -15,10 +15,10 @@ namespace System.Api.Controllers.Auth
     public class UserController(UserUserCases userUserCases) : ControllerBase
     {
 
-        [HttpGet("users")]
+        [HttpGet]
         public async Task<IActionResult> GetUsers([FromQuery]UserQueryDto request)
         {
-            return await userUserCases.GetAllUsers.execute(request).ToValueOrProblemDetails();
+            return await userUserCases.GetAllUsers.Execute(request).ToValueOrProblemDetails();
         }
 
         [HttpPost]

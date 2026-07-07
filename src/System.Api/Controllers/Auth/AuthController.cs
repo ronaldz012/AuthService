@@ -32,6 +32,13 @@ namespace System.Api.Controllers.Auth
                                                     .ToValueOrProblemDetails();
         }
 
+        [HttpGet("Me")]
+        [Authorize]
+        public async Task<IActionResult> AuthMe()
+        {
+            return await autenticationUseCases.AuthMe.Execute().ToValueOrProblemDetails();
+        }
+
         /// <summary>
         /// this will Active the user
         /// </summary>
@@ -70,12 +77,6 @@ namespace System.Api.Controllers.Auth
             return await autenticationUseCases.VerifyToken.ExecuteAsync(token).ToValueOrProblemDetails();
         }
 
-        [HttpGet("Me")]
-        [Authorize]
-        public async Task<IActionResult> AuthMe()
-        {
-            return await autenticationUseCases.AuthMe.Execute().ToValueOrProblemDetails();
-        }
     }
 }
  

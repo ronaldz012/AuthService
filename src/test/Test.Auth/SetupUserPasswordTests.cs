@@ -49,6 +49,7 @@ public class SetupUserPasswordTests
             Username = "owner",
             PasswordHash = string.Empty,
             Status = UserStatus.PendingPasswordSetup,
+            IsActive = false,
             Type = UserType.Owner,
         });
 
@@ -63,7 +64,8 @@ public class SetupUserPasswordTests
 
         var updatedUser = await dbContext.Users.FindAsync(userId);
         Assert.NotNull(updatedUser);
-        Assert.Equal(UserStatus.Active, updatedUser.Status);
+        Assert.Equal(UserStatus.Ready, updatedUser.Status);
+        Assert.True(updatedUser.IsActive);
         Assert.True(BCrypt.Net.BCrypt.Verify("NewPassword123!", updatedUser.PasswordHash));
 
         var updatedCode = await dbContext.EmailVerificationCodes.FindAsync(1);

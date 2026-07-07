@@ -29,7 +29,8 @@ public class SetupUserPassword(IAuthDbContext  context, ITenantContext tenantCon
         try
         {
             ownerUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-            ownerUser.Status = UserStatus.Active; 
+            ownerUser.Status = UserStatus.Ready;
+            ownerUser.IsActive = true;
             ownerUser.UpdatedAt = DateTime.UtcNow;
             verificationCode.IsUsed = true;
 

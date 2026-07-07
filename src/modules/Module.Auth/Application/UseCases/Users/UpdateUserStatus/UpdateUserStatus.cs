@@ -12,7 +12,7 @@ public class UpdateUserStatus(IAuthDbContext context)
         var user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user == null) return UpdateUserStatusErrors.UserNotFound;
 
-        user.Status = user.Status == UserStatus.Active ? UserStatus.InActive : UserStatus.Active;
+        user.IsActive = !user.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();
         return true;

@@ -17,7 +17,8 @@ public class VerifyUser(IAuthDbContext dbContext )
         if (code.ExpiresAt < DateTime.UtcNow)
             return VerifyUserErrors.CodeExpired;
         code.IsUsed = true;
-        code.User.Status = UserStatus.Active;
+        code.User.Status = UserStatus.Ready;
+        code.User.IsActive = true;
         await dbContext.SaveChangesAsync();
         return true;
     } 

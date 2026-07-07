@@ -125,7 +125,8 @@ public class CreateUserTests
             Email = "existing@test.com",
             Username = "existing",
             TenantId = tenantId,
-            Status = UserStatus.Active,
+            Status = UserStatus.Ready,
+            IsActive = true,
         });
         await dbContext.SaveChangesAsync();
 
@@ -159,7 +160,8 @@ public class CreateUserTests
             Email = "other@test.com",
             Username = "TestTenant-taken",
             TenantId = tenantId,
-            Status = UserStatus.Active,
+            Status = UserStatus.Ready,
+            IsActive = true,
         });
         await dbContext.SaveChangesAsync();
 

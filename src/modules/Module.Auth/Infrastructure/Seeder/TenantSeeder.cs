@@ -31,7 +31,8 @@ public class TenantSeeder(IAuthDbContext context, ITenantContext tenantContext) 
             Email = "admin@drivecore.com",
             Username = "admin",
             PasswordHash = passwordHash,
-            Status = UserStatus.Active,
+            Status = UserStatus.Ready,
+            IsActive = true,
             Type = UserType.Owner,
             CreatedAt = DateTime.UtcNow,
         };

@@ -130,7 +130,7 @@ public class SessionStateService(
         }
 
         var activeUsers = await context.Users.IgnoreQueryFilters()
-            .CountAsync(u => u.TenantId == tenantId && u.Status == UserStatus.Active);
+            .CountAsync(u => u.TenantId == tenantId && u.IsActive);
 
         var activeBranches = await context.Branches.IgnoreQueryFilters()
             .CountAsync(b => b.TenantId == tenantId && b.IsActive);

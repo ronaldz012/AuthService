@@ -24,8 +24,9 @@ public class User : IMustHaveTenant
     public string Ci { get; set; } = string.Empty;
     public string Nationality { get; set; } = string.Empty;
     public DateTime BirthDate { get; set; } = DateTime.MinValue;
-    public UserStatus Status { get; set; } 
-    public string? GoogleId { get; set; } 
+    public UserStatus Status { get; set; }
+    public bool IsActive { get; set; }
+    public string? GoogleId { get; set; }
     public DateTime LastActive { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
@@ -52,6 +53,7 @@ public class User : IMustHaveTenant
             Username = username,
             PasswordHash = string.Empty,
             Status = UserStatus.PendingPasswordSetup,
+            IsActive = true,
             CreatedAt = DateTime.UtcNow,
             Type = UserType.Owner,
         };
@@ -70,6 +72,7 @@ public class User : IMustHaveTenant
             BirthDate = birthDate,
             PasswordHash = string.Empty,
             Status = UserStatus.PendingPasswordSetup,
+            IsActive = true,
             CreatedAt = DateTime.UtcNow,
             Type = UserType.Standard,
         };
@@ -78,9 +81,8 @@ public class User : IMustHaveTenant
 
 public enum UserStatus
 {
-    Active = 1,
-    InActive = 2,
-    PendingPasswordSetup = 3,
+    PendingPasswordSetup = 1,
+    Ready = 2,
 }
 
 public enum AuthProvider

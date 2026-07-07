@@ -17,7 +17,7 @@ public class Login(
     public async Task<Result<LoginResponse>> Execute(LoginRequest request)
     {
         var user = await dbContext.Users.IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Email == request.Email);
+            .FirstOrDefaultAsync(u => u.Email == request.Email || u.Username == request.Email);
 
         if (user == null)
             return LoginErrors.UserNotFound;
