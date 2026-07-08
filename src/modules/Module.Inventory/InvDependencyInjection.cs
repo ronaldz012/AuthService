@@ -100,6 +100,8 @@ public  static class InvDependencyInjection
         services.AddScoped<IInventoryIntegrationService, InventoryIntegrationService>();
         services.AddScoped<IInvDbContext>(provider => provider.GetRequiredService<InvDbContext>());
 
+
+        //Runtime Configuration (Fails safely if tenant data is missing)
         services.AddDbContext<InvDbContext>((sp, options) =>
         {
             var configuration = sp.GetRequiredService<IConfiguration>();

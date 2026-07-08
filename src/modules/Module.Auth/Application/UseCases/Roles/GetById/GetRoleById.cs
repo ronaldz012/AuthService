@@ -4,7 +4,7 @@ using Module.Auth.Application.Abstraction;
 
 namespace Module.Auth.Application.UseCases.Roles.GetById;
 
-public class GetRole(IAuthDbContext dbContext )
+public class GetRoleById(IAuthDbContext dbContext )
 {
 
     public async Task<Result<RoleDetailsDto>> Execute(Guid roleId)
@@ -13,7 +13,7 @@ public class GetRole(IAuthDbContext dbContext )
             .Include(r => r.RoleFeaturePermissions)
             .FirstOrDefaultAsync();
         if (role == null)
-            return GetRoleErrors.RoleNotFound;
+            return GetRoleByIdErrors.RoleNotFound;
 
         
         return new RoleDetailsDto()

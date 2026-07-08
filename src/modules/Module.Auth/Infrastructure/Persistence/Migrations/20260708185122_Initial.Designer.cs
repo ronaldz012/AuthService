@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Module.Auth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260706210134_auth_mvp")]
-    partial class auth_mvp
+    [Migration("20260708185122_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -369,6 +369,9 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Property<string>("GoogleId")
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("LastActive")
                         .HasColumnType("timestamp with time zone");
 
@@ -408,13 +411,17 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"Email\" IS NOT NULL");
 
                     b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.UserBranchRole", b =>
                 {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("BranchId")
                         .HasColumnType("uuid");
 
@@ -436,14 +443,11 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.HasKey("UserId", "BranchId", "RoleId");
 
-                    b.HasKey("BranchId", "RoleId");
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("UserBranchRoles");
                 });

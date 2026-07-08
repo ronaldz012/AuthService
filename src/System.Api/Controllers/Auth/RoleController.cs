@@ -23,8 +23,14 @@ namespace System.Api.Controllers.Auth
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return await roleUseCases.GetRole.Execute(id)
+            return await roleUseCases.GetRoleById.Execute(id)
                                         .ToValueOrProblemDetails();
+        }
+        [HttpGet]
+        public async Task<IActionResult> List()
+        {
+            return await roleUseCases.GetRoles.Execute()
+                                                .ToValueOrProblemDetails();
         }
     }
 }

@@ -47,7 +47,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
 
         modelBuilder.Entity<User>(e =>
         {
-            e.HasIndex(u => u.Email).IsUnique();
+            e.HasIndex(u => u.Email).IsUnique().HasFilter("\"Email\" IS NOT NULL");
 
             e.HasMany(u => u.EmailVerificationCodes)
                 .WithOne(ev => ev.User)
@@ -131,7 +131,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
 
         modelBuilder.Entity<UserBranchRole>(ubr =>
         {
-            ubr.HasKey(ur => new { ur.BranchId, ur.RoleId });
+            ubr.HasKey(ur => new { ur.UserId, ur.BranchId, ur.RoleId });
             
             ubr.HasOne(ur => ur.Branch)
                 .WithMany(b => b.UserBranchRoles)

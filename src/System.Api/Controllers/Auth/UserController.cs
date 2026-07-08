@@ -6,6 +6,7 @@ using Module.Auth.Application.UseCases.Users;
 using Module.Auth.Application.UseCases.Users.CreateUser;
 using Module.Auth.Application.UseCases.Users.GetAllUsers;
 using Module.Auth.Application.UseCases.Users.UpdateUserStatus;
+using Module.Auth.Application.UseCases.Users.UpdateUser;
 
 namespace System.Api.Controllers.Auth
 {
@@ -31,6 +32,12 @@ namespace System.Api.Controllers.Auth
         public async Task<IActionResult> UpdateUserStatus([FromRoute] Guid id)
         {
             return await userUserCases.UpdateUserStatus.Execute(id).ToValueOrProblemDetails();
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] UpdateUserRequest request)
+        {
+            return await userUserCases.UpdateUser.Execute(id, request).ToValueOrProblemDetails();
         }
     }
 }

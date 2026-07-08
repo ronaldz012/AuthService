@@ -408,13 +408,17 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"Email\" IS NOT NULL");
 
                     b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.UserBranchRole", b =>
                 {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("BranchId")
                         .HasColumnType("uuid");
 
@@ -436,14 +440,11 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.HasKey("UserId", "BranchId", "RoleId");
 
-                    b.HasKey("BranchId", "RoleId");
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("UserBranchRoles");
                 });

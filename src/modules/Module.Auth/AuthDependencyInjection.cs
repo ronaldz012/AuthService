@@ -29,6 +29,7 @@ using Module.Auth.Application.UseCases.Users;
 using Module.Auth.Application.UseCases.Users.CreateUser;
 using Module.Auth.Application.UseCases.Users.GetAllUsers;
 using Module.Auth.Application.UseCases.Users.UpdateUserStatus;
+using Module.Auth.Application.UseCases.Users.UpdateUser;
 using Module.Auth.Application.UseCases.Users.Pending;
 using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Infrastructure.Authentication.EmailTemplates;
@@ -61,7 +62,7 @@ public static class SharedDependencyInjection
              .AddScoped<ToggleBranchStatus>();
 
          services.AddScoped<RoleUseCases>()
-             .AddScoped<GetRole>()
+             .AddScoped<GetRoleById>()
              .AddScoped<AddRole>()
              .AddScoped<GetRoles>();
          
@@ -79,7 +80,8 @@ public static class SharedDependencyInjection
          services.AddScoped<UserUserCases>()
                  .AddScoped<GetAllUsers>()
                  .AddScoped<CreateUser>()
-                 .AddScoped<UpdateUserStatus>();
+                 .AddScoped<UpdateUserStatus>()
+                 .AddScoped<UpdateUser>();
 
          services.AddScoped<TenantDatabaseUseCases>()
              .AddScoped<GetTenantDatabases>()

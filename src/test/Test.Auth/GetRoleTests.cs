@@ -24,7 +24,7 @@ public class GetRoleTests
         });
         await dbContext.SaveChangesAsync();
 
-        var sut = new GetRole(dbContext);
+        var sut = new GetRoleById(dbContext);
         var result = await sut.Execute(roleId);
 
         Assert.True(result.IsSuccess);
@@ -39,10 +39,10 @@ public class GetRoleTests
         var tenantContext = TestAuthDbContextFactory.CreateTenantContext();
         using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
 
-        var sut = new GetRole(dbContext);
+        var sut = new GetRoleById(dbContext);
         var result = await sut.Execute(Guid.NewGuid());
 
-        Assert.Equal(GetRoleErrors.RoleNotFound, result.Error);
+        Assert.Equal(GetRoleByIdErrors.RoleNotFound, result.Error);
     }
 
     [Fact]
@@ -70,24 +70,24 @@ public class GetRoleTests
 
         using (var dbReadA = TestAuthDbContextFactory.Create(contextA, dbName))
         {
-            var sutA = new GetRole(dbReadA);
+            var sutA = new GetRoleById(dbReadA);
             var resultA = await sutA.Execute(roleAId);
             Assert.True(resultA.IsSuccess);
             Assert.Equal("Role A", resultA.Value.Name);
 
             var resultB = await sutA.Execute(roleBId);
-            Assert.Equal(GetRoleErrors.RoleNotFound, resultB.Error);
+            Assert.Equal(GetRoleByIdErrors.RoleNotFound, resultB.Error);
         }
 
         using (var dbReadB = TestAuthDbContextFactory.Create(contextB, dbName))
         {
-            var sutB = new GetRole(dbReadB);
+            var sutB = new GetRoleById(dbReadB);
             var resultB = await sutB.Execute(roleBId);
             Assert.True(resultB.IsSuccess);
             Assert.Equal("Role B", resultB.Value.Name);
 
             var resultA = await sutB.Execute(roleAId);
-            Assert.Equal(GetRoleErrors.RoleNotFound, resultA.Error);
+            Assert.Equal(GetRoleByIdErrors.RoleNotFound, resultA.Error);
         }
 
         using (var dbAll = TestAuthDbContextFactory.Create(contextA, dbName))
