@@ -216,4 +216,48 @@ public class UpdateUserTests
         Assert.Contains(saved.UserBranchRoles, r => r.BranchId == branchId && r.RoleId == roleId);
         Assert.Contains(saved.UserBranchRoles, r => r.BranchId == branch3 && r.RoleId == role3);
     }
+
+    [Fact]
+    public async Task Execute_ShouldOnlyUpdateProvidedFields_WhenOthersAreNull()
+    {
+        var tenantContext = TestAuthDbContextFactory.CreateTenantContext();
+        using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
+
+        var (tenantId, branchId, roleId, userId) = Seed(dbContext, tenantContext.TenantId!.Value);
+        var user = dbContext.Users.Local.First(u => u.Id == userId);
+        user.UserBranchRoles =
+        [
+            new UserBranchRole { UserId = userId, BranchId = branchId, RoleId = roleId },
+        ];
+        await dbContext.SaveChangesAsync();
+
+        var sut = CreateSut(dbContext);
+
+        var request = new UpdateUserRequest
+        {
+            FirstName = "Jane",
+            LastName = null,
+            Ci = null,
+            Nationality = null,
+            BirthDate = null,
+            BranchRoles = null,
+        };
+
+        var result = await sut.Execute(userId, request);
+
+        Assert.True(result.IsSuccess);
+
+        var saved = await dbContext.Users
+            .IgnoreQueryFilters()
+            .Include(u => u.UserBranchRoles)
+            .FirstAsync(u => u.Id == userId);
+
+        Assert.Equal("Jane", saved.FirstName);
+        Assert.Equal("Doe", saved.LastName);
+        Assert.Equal("123", saved.Ci);
+        Assert.Equal("US", saved.Nationality);
+        Assert.Equal(new DateTime(1990, 1, 1), saved.BirthDate);
+        Assert.Single(saved.UserBranchRoles);
+        Assert.Equal(branchId, saved.UserBranchRoles.First().BranchId);
+    }
 }

@@ -4,20 +4,19 @@ namespace Module.Auth.Application.UseCases.Users.UpdateUser;
 
 public class UpdateUserRequest
 {
-    [Required, MinLength(3)]
-    public string FirstName { get; set; } = string.Empty;
+    [MinLength(3)]
+    public string? FirstName { get; set; }
 
-    [Required, MinLength(3)]
-    public string LastName { get; set; } = string.Empty;
+    [MinLength(3)]
+    public string? LastName { get; set; }
 
-    public string Ci { get; set; } = string.Empty;
+    public string? Ci { get; set; }
 
-    public string Nationality { get; set; } = string.Empty;
+    public string? Nationality { get; set; }
 
-    public DateTime BirthDate { get; set; } = DateTime.MinValue;
+    public DateTime? BirthDate { get; set; }
 
-    [Required, MinLength(1)]
-    public IEnumerable<BranchRoleDto> BranchRoles { get; set; } = [];
+    public IEnumerable<BranchRoleDto>? BranchRoles { get; set; }
 }
 
 public class BranchRoleDto

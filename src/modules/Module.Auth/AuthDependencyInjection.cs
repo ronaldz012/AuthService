@@ -27,9 +27,12 @@ using Module.Auth.Application.UseCases.TenantDatabases.Get;
 using Module.Auth.Application.UseCases.TenantDatabases.GetById;
 using Module.Auth.Application.UseCases.Users;
 using Module.Auth.Application.UseCases.Users.CreateUser;
+using Module.Auth.Application.UseCases.Users.CreateTenantAdmin;
 using Module.Auth.Application.UseCases.Users.GetAllUsers;
 using Module.Auth.Application.UseCases.Users.UpdateUserStatus;
 using Module.Auth.Application.UseCases.Users.UpdateUser;
+using Module.Auth.Application.UseCases.Users.GetUserDetails;
+using Module.Auth.Application.UseCases.Users.ToggleUserType;
 using Module.Auth.Application.UseCases.Users.Pending;
 using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Infrastructure.Authentication.EmailTemplates;
@@ -80,8 +83,11 @@ public static class SharedDependencyInjection
          services.AddScoped<UserUserCases>()
                  .AddScoped<GetAllUsers>()
                  .AddScoped<CreateUser>()
+                 .AddScoped<CreateTenantAdmin>()
                  .AddScoped<UpdateUserStatus>()
-                 .AddScoped<UpdateUser>();
+                 .AddScoped<UpdateUser>()
+                 .AddScoped<GetUserDetails>()
+                 .AddScoped<ToggleUserType>();
 
          services.AddScoped<TenantDatabaseUseCases>()
              .AddScoped<GetTenantDatabases>()

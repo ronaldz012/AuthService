@@ -16,51 +16,64 @@ public class UpdateUser(IAuthDbContext context)
         if (user is null)
             return UpdateUserErrors.UserNotFound;
 
-        var branchIds = dto.BranchRoles.Select(br => br.BranchId).Distinct().ToList();
-        var roleIds = dto.BranchRoles.Select(br => br.RoleId).Distinct().ToList();
+        if (dto.BranchRoles is not null)
+        {
+            var branchIds = dto.BranchRoles.Select(br => br.BranchId).Distinct().ToList();
+            var roleIds = dto.BranchRoles.Select(br => br.RoleId).Distinct().ToList();
 
-        var foundBranchIds = await context.Branches
-            .Where(b => branchIds.Contains(b.Id))
-            .Select(b => b.Id)
-            .ToListAsync();
+            var foundBranchIds = await context.Branches
+                .Where(b => branchIds.Contains(b.Id))
+                .Select(b => b.Id)
+                .ToListAsync();
 
-        if (foundBranchIds.Count != branchIds.Count)
-            return UpdateUserErrors.BranchesNotFound;
+            if (foundBranchIds.Count != branchIds.Count)
+                return UpdateUserErrors.BranchesNotFound;
 
-        var foundRoleIds = await context.Roles
-            .Where(r => roleIds.Contains(r.Id))
-            .Select(r => r.Id)
-            .ToListAsync();
+            var foundRoleIds = await context.Roles
+                .Where(r => roleIds.Contains(r.Id))
+                .Select(r => r.Id)
+                .ToListAsync();
 
-        if (foundRoleIds.Count != roleIds.Count)
-            return UpdateUserErrors.RolesNotFound;
+            if (foundRoleIds.Count != roleIds.Count)
+                return UpdateUserErrors.RolesNotFound;
 
-        user.FirstName = dto.FirstName;
-        user.LastName = dto.LastName;
-        user.Ci = dto.Ci;
-        user.Nationality = dto.Nationality;
-        user.BirthDate = dto.BirthDate;
-        
-        var existing = user.UserBranchRoles.ToList();
+            var existing = user.UserBranchRoles.ToList();
 
-        var toRemove = existing
-            .Where(e => !dto.BranchRoles.Any(br => br.BranchId == e.BranchId && br.RoleId == e.RoleId))
-            .ToList();
+            var toRemove = existing
+                .Where(e => !dto.BranchRoles.Any(br => br.BranchId == e.BranchId && br.RoleId == e.RoleId))
+                .ToList();
 
-        var toAdd = dto.BranchRoles
-            .Where(br => !existing.Any(e => e.BranchId == br.BranchId && e.RoleId == br.RoleId))
-            .Select(br => new UserBranchRole
-            {
-                UserId = user.Id,
-                BranchId = br.BranchId,
-                RoleId = br.RoleId,
-            })
-            .ToList();
-        foreach (var item in toRemove)
-            user.UserBranchRoles.Remove(item);
+            var toAdd = dto.BranchRoles
+                .Where(br => !existing.Any(e => e.BranchId == br.BranchId && e.RoleId == br.RoleId))
+                .Select(br => new UserBranchRole
+                {
+                    UserId = user.Id,
+                    BranchId = br.BranchId,
+                    RoleId = br.RoleId,
+                })
+                .ToList();
 
-        foreach (var item in toAdd)
-            user.UserBranchRoles.Add(item);
+            foreach (var item in toRemove)
+                user.UserBranchRoles.Remove(item);
+
+            foreach (var item in toAdd)
+                user.UserBranchRoles.Add(item);
+        }
+
+        if (dto.FirstName is not null)
+            user.FirstName = dto.FirstName;
+
+        if (dto.LastName is not null)
+            user.LastName = dto.LastName;
+
+        if (dto.Ci is not null)
+            user.Ci = dto.Ci;
+
+        if (dto.Nationality is not null)
+            user.Nationality = dto.Nationality;
+
+        if (dto.BirthDate is not null)
+            user.BirthDate = dto.BirthDate.Value;
 
         user.UpdatedAt = DateTime.UtcNow;
 

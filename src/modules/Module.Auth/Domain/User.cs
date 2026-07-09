@@ -59,6 +59,25 @@ public class User : IMustHaveTenant
         };
     }
 
+    public static User CreateTenantAdmin(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate)
+    {
+        return new User
+        {
+            Email = email,
+            Username = username,
+            FirstName = firstName,
+            LastName = lastName,
+            Ci = ci,
+            Nationality = nationality,
+            BirthDate = birthDate,
+            PasswordHash = string.Empty,
+            Status = UserStatus.PendingPasswordSetup,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            Type = UserType.TenantAdmin,
+        };
+    }
+
     public static User CreateStandard(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate)
     {
         return new User
