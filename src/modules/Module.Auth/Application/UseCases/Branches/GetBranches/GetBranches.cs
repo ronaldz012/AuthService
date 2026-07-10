@@ -20,6 +20,7 @@ public class GetBranches(IAuthDbContext context)
             Id = x.Id,
             Name = x.Name,
             IsActive = x.IsActive,
+            Place = x.Place,
             BranchCode = x.BranchCode,
         }).ToListAsync();
     }

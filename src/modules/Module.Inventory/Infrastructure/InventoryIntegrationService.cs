@@ -3,6 +3,7 @@ using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Domain.Transfers;
 
 namespace Module.Inventory.Infrastructure;
 
@@ -48,5 +49,13 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
         context.StockMovements.AddRange(movements);
         // No llama SaveChanges, eso lo maneja CreateSale dentro de la transacción
         return true;
+    }
+
+    public async Task<bool> BranchHasPendingTransfers(Guid branchId)
+    {
+        return await context.StockTransfers
+            .AnyAsync(t =>
+                (t.FromBranchId == branchId || t.ToBranchId == branchId) &&
+                (t.Status == TransferStatus.Pending || t.Status == TransferStatus.Transit));
     }
 }

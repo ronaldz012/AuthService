@@ -18,6 +18,7 @@ using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Application.UseCases.Branches.GetBranches;
 using Module.Auth.Application.UseCases.Branches.UpdateBranch;
 using Module.Auth.Application.UseCases.Branches.ToggleBranchStatus;
+using Module.Auth.Application.UseCases.Branches.GetBranchDetails;
 using Module.Auth.Application.UseCases.Features;
 using Module.Auth.Application.UseCases.Roles;
 using Module.Auth.Application.UseCases.Tenant;
@@ -62,7 +63,8 @@ public static class SharedDependencyInjection
              .AddScoped<CreateBranch>()
              .AddScoped<GetBranches>()
              .AddScoped<UpdateBranch>()
-             .AddScoped<ToggleBranchStatus>();
+              .AddScoped<ToggleBranchStatus>()
+              .AddScoped<GetBranchDetails>();
 
          services.AddScoped<RoleUseCases>()
              .AddScoped<GetRoleById>()
