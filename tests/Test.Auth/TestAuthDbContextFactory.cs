@@ -15,19 +15,19 @@ public static class TestAuthDbContextFactory
         return Create(CreateTenantContext(tenantId));
     }
 
-    public static AuthDbContext Create(ITenantContext tenantContext, string? dbName = null)
+    public static AuthDbContext Create(ITenantConnectionContext tenantConnectionContext, string? dbName = null)
     {
         var options = new DbContextOptionsBuilder<AuthDbContext>()
             .UseInMemoryDatabase(dbName ?? $"AuthTest_{Guid.NewGuid()}")
             .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
-        return new AuthDbContext(options, tenantContext);
+        return new AuthDbContext(options, tenantConnectionContext);
     }
 
-    public static TenantContext CreateTenantContext(Guid? tenantId = null)
+    public static TenantConnectionContext CreateTenantContext(Guid? tenantId = null)
     {
-        return new TenantContext
+        return new TenantConnectionContext
         {
             TenantId = tenantId ?? DefaultTenantId,
             Schema = "test_schema",

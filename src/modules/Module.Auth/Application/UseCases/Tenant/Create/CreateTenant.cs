@@ -10,7 +10,7 @@ using Module.Auth.Domain;
 using Module.Auth.Infrastructure.Authentication;
 public class CreateTenant(
     IAuthDbContext context,
-    ITenantContext tenantContext,
+    ITenantConnectionContext tenantConnectionContext,
     IEmailVerificationService emailVerificationService,
     IOptions<ProjectInfo> projectInfo)
 {
@@ -33,7 +33,7 @@ public class CreateTenant(
             var ownerUserId = Guid.NewGuid();
             var mainBranchId = Guid.NewGuid();
 
-            tenantContext.TenantId = tenantId;
+            tenantConnectionContext.TenantId = tenantId;
 
             var ownerUser = User.CreateOwner(ownerUserId, request.OwnerEmail, request.OwnerUserName);
             var tenant = Tenant.Create(tenantId, request.DisplayName, db.Id, plan.Id, ownerUser);

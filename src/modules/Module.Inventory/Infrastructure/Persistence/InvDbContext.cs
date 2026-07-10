@@ -7,10 +7,11 @@ using Module.Inventory.Domain.Organization;
 using Module.Inventory.Domain.Products;
 using Module.Inventory.Domain.Receptions;
 using Module.Inventory.Domain.Transfers;
+using Npgsql;
 
 namespace Module.Inventory.Infrastructure.Persistence;
 
-public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext tenantContext ) : DbContext(options), IInvDbContext
+public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantConnectionContext tenantConnectionContext ) : DbContext(options), IInvDbContext
 {
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductVariant> ProductVariants { get; set; }
@@ -34,16 +35,16 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
     {
         
         
-        if (!string.IsNullOrEmpty(tenantContext.Schema))
+        if (!string.IsNullOrEmpty(tenantConnectionContext.Schema))
         {
-            modelBuilder.HasDefaultSchema(tenantContext.Schema);
+            modelBuilder.HasDefaultSchema(tenantConnectionContext.Schema);
         }
         base.OnModelCreating(modelBuilder);
-        modelBuilder.HasDefaultSchema(tenantContext.Schema);
+        modelBuilder.HasDefaultSchema(tenantConnectionContext.Schema);
   
         modelBuilder.Entity<Product>(entity =>
             {
-                entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+                entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
                 entity.HasQueryFilter(x => x.DeletedAt == null);
 
                 entity.HasMany(product => product.ProductVariants)
@@ -61,7 +62,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
         );
         modelBuilder.Entity<ProductVariant>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
             entity.HasQueryFilter(x => x.DeletedAt == null);
 
             entity.HasMany(pv => pv.BranchInventories)
@@ -81,29 +82,29 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
         });
         modelBuilder.Entity<BranchInventory>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
 
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
         modelBuilder.Entity<Provider>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
         modelBuilder.Entity<Brand>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
         modelBuilder.Entity<Color>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
         //RECEPTIONS
         modelBuilder.Entity<StockReception>(entity =>
             {
-                entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+                entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
 
                 entity.HasMany(r => r.Items)
                     .WithOne(i => i.StockReception)
@@ -114,9 +115,9 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
 
         modelBuilder.Entity<StockReceptionItem>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
 
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
 
             entity.HasOne(ri => ri.ProductVariant)
                 .WithMany(pv => pv.StockReceptionItems)
@@ -125,18 +126,18 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
 
         modelBuilder.Entity<StockTransfer>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
         modelBuilder.Entity<StockTransferItem>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
 
     }
     
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var currentTenantId = tenantContext.TenantId ?? throw new InvalidOperationException("Tenant is not set") ;
+        var currentTenantId = tenantConnectionContext.TenantId ?? throw new InvalidOperationException("Tenant is not set") ;
 
         var entries = ChangeTracker.Entries<IMustHaveTenant>()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
@@ -154,5 +155,39 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantContext
         }
 
         return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<string> ReserveBrandCounter(Guid brandId, string prefix)
+    {
+        var schema = tenantConnectionContext.Schema;
+        var sql = $"""
+                   UPDATE "{schema}"."Brands"
+                   SET "ProductCounter" = "ProductCounter" + 1
+                   WHERE "Id" = @id
+                   RETURNING "ProductCounter"
+                   """;
+
+        var result = await Database
+            .SqlQueryRaw<int>(sql, new NpgsqlParameter("id", brandId))
+            .ToListAsync();
+
+        return $"{prefix}-{result[0]}";
+    }
+
+    public async Task<string> ReserveVariantCounter(Guid productId, string productCode)
+    {
+        var schema = tenantConnectionContext.Schema;
+        var sql = $"""
+                   UPDATE "{schema}"."Products"
+                   SET "ProductVariantCounter" = "ProductVariantCounter" + 1
+                   WHERE "Id" = @id
+                   RETURNING "ProductVariantCounter"
+                   """;
+
+        var result = await Database
+            .SqlQueryRaw<int>(sql, new NpgsqlParameter("id", productId))
+            .ToListAsync();
+
+        return $"{productCode}-{result[0].ToString().PadLeft(3, '0')}";
     }
 }

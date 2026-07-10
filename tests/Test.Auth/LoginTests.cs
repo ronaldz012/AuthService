@@ -49,7 +49,7 @@ public class LoginTests
 
         var sessionState = new Mock<ISessionStateService>();
         sessionState
-            .Setup(s => s.GetOrBuildAsync(userId, tenantId, false))
+            .Setup(s => s.GetOrBuildAsync(userId, tenantId, It.IsAny<UserType>()))
             .ReturnsAsync(new SessionStateDto(
                 new UserDetailResponse
                 {
@@ -75,13 +75,13 @@ public class LoginTests
         Assert.Equal(3600, result.Value.ExpiresIn);
     }
 
-    private static Login CreateSut(IAuthDbContext dbContext, ITenantContext tenantContext,
+    private static Login CreateSut(IAuthDbContext dbContext, ITenantConnectionContext tenantConnectionContext,
         ISessionStateService? sessionState = null)
     {
         sessionState ??= new Mock<ISessionStateService>().Object;
         var tokenGeneratorMock = new Mock<ITokenGenerator>();
         tokenGeneratorMock
-            .Setup(t => t.GenerateAccessToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<bool>()))
+            .Setup(t => t.GenerateAccessToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<UserType>()))
             .Returns("fake-access-token");
         tokenGeneratorMock
             .Setup(t => t.GenerateRefreshToken())
@@ -92,7 +92,7 @@ public class LoginTests
 
         return new Login(
             dbContext,
-            tenantContext,
+            tenantConnectionContext,
             sessionState,
             tokenGeneratorMock.Object,
             new Mock<ILogger<Login>>().Object);

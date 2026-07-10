@@ -5,12 +5,13 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Module.Auth.Application.Abstraction;
+using Module.Auth.Domain;
 
 namespace Module.Auth.Infrastructure.Authentication;
 
 public class JwtTokenGenerator(IConfiguration configuration) : ITokenGenerator
 {
-    public string GenerateAccessToken(Guid userId, Guid tenantId, bool isAdmin)
+    public string GenerateAccessToken(Guid userId, Guid tenantId, UserType userType)
     {
         var keyString = configuration["TokenSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Key is missing in config.");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
@@ -19,8 +20,8 @@ public class JwtTokenGenerator(IConfiguration configuration) : ITokenGenerator
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim("tenantId", tenantId.ToString()),           // para TenantMiddleware
-            new Claim("is_admin", isAdmin.ToString().ToLower()),  // para ICurrentUser
+            new Claim("tenantId", tenantId.ToString()),
+            new Claim("user_type", ((int)userType).ToString()),
         };
 
         var token = new JwtSecurityToken(

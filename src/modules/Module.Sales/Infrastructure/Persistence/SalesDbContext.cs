@@ -6,7 +6,7 @@ using Module.Sales.Domain;
 
 namespace Module.Sales.Infrastructure.Persistence;
 
-public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantContext tenantContext) : DbContext(options), ISalesDbContext
+public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantConnectionContext tenantConnectionContext) : DbContext(options), ISalesDbContext
 {
     public DbSet<Sale> Sales { get; set; }
     public DbSet<SaleItem> SaleItems { get; set; }
@@ -16,9 +16,9 @@ public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantCon
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        if (!string.IsNullOrEmpty(tenantContext.Schema))
+        if (!string.IsNullOrEmpty(tenantConnectionContext.Schema))
         {
-            modelBuilder.HasDefaultSchema(tenantContext.Schema);
+            modelBuilder.HasDefaultSchema(tenantConnectionContext.Schema);
         }
 
 
@@ -26,19 +26,19 @@ public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantCon
 
         modelBuilder.Entity<Sale>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
             entity.HasMany(s => s.SaleItems)
                 .WithOne(i => i.Sale)
                 .HasForeignKey(i => i.SaleId);
         });
         modelBuilder.Entity<SaleItem>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
 
         modelBuilder.Entity<CashRegisterClosure>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
             entity.HasMany(c => c.Movements)
                 .WithOne(m => m.CashRegisterClosure)
                 .HasForeignKey(m => m.CashRegisterClosureId);
@@ -50,14 +50,14 @@ public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantCon
 
         modelBuilder.Entity<CashRegisterMovement>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         });
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         // Obtenemos el TenantId actual desde el servicio de contexto
-        var currentTenantId = tenantContext.TenantId ?? throw new InvalidOperationException("Tenant is not set") ;
+        var currentTenantId = tenantConnectionContext.TenantId ?? throw new InvalidOperationException("Tenant is not set") ;
 
         // Buscamos todas las entidades que:
         // 1. Están siendo agregadas (Added) o modificadas (Modified)

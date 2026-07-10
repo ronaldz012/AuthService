@@ -9,7 +9,7 @@ namespace Module.Auth.Application.UseCases.Autentication.Login;
 
 public class Login(
     IAuthDbContext dbContext,
-    ITenantContext tenantContext,
+    ITenantConnectionContext tenantConnectionContext,
     ISessionStateService sessionState,
     ITokenGenerator tokenGenerator,
     ILogger<Login> logger) 
@@ -25,15 +25,15 @@ public class Login(
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return LoginErrors.InvalidPassword;
 
-        tenantContext.TenantId = user.TenantId;
+        tenantConnectionContext.TenantId = user.TenantId;
 
-        var session = await sessionState.GetOrBuildAsync(user.Id, user.TenantId, user.IsAdmin);
+        var session = await sessionState.GetOrBuildAsync(user.Id, user.TenantId, user.Type);
 
         var expirationMinutes = tokenGenerator.GetExpirationMinutes();
         var accessToken = tokenGenerator.GenerateAccessToken(
             user.Id,
             user.TenantId,
-            user.IsAdmin);
+            user.Type);
 
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 

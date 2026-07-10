@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\modules\Module.Auth\Module.Auth.csproj" />
-    <ProjectReference Include="..\..\Common\Common.csproj" />
+    <ProjectReference Include="..\..\src\modules\Module.Auth\Module.Auth.csproj" />
+    <ProjectReference Include="..\..\src\Common\Common.csproj" />
   </ItemGroup>
 
 </Project>

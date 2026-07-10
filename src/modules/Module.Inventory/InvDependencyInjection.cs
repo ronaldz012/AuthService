@@ -106,7 +106,7 @@ public  static class InvDependencyInjection
         {
             var configuration = sp.GetRequiredService<IConfiguration>();
             var tenantConnection = configuration.GetConnectionString("TenantConnection")!;
-            var tenant = sp.GetRequiredService<ITenantContext>();
+            var tenant = sp.GetRequiredService<ITenantConnectionContext>();
 
             if (string.IsNullOrEmpty(tenant.DatabaseName))
                 throw new InvalidOperationException("DatabaseName is not set on tenant context");

@@ -6,7 +6,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Infrastructure.Persistence;
 
-public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantContext tenantContext) : DbContext(options), IAuthDbContext
+public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConnectionContext tenantConnectionContext) : DbContext(options), IAuthDbContext
 {
     
 
@@ -18,7 +18,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
 
         if (tenantEntries.Count != 0)
         {
-            var currentTenantId = tenantContext.TenantId;
+            var currentTenantId = tenantConnectionContext.TenantId;
 
             foreach (var entry in tenantEntries)
             {
@@ -59,7 +59,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .HasForeignKey(ubr => ubr.UserId)
                 .OnDelete(DeleteBehavior.Restrict); 
 
-            e.HasQueryFilter(u => u.DeletedAt == null && u.TenantId == tenantContext.TenantId);
+            e.HasQueryFilter(u => u.DeletedAt == null && u.TenantId == tenantConnectionContext.TenantId);
         });
             
         modelBuilder.Entity<Tenant>(e =>
@@ -112,7 +112,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .OnDelete(DeleteBehavior.Cascade); 
 
             // Filtro Global Multitenant (¡Muy recomendado!)
-            e.HasQueryFilter(r => r.TenantId == tenantContext.TenantId);
+            e.HasQueryFilter(r => r.TenantId == tenantConnectionContext.TenantId);
         });
 
         // --- CONFIGURACIÓN DE ROLE FEATURE PERMISSION ---
@@ -126,7 +126,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .HasForeignKey(rfp => rfp.FeatureKey);
 
 
-            e.HasQueryFilter(rfp => rfp.TenantId == tenantContext.TenantId);
+            e.HasQueryFilter(rfp => rfp.TenantId == tenantConnectionContext.TenantId);
         });
 
         modelBuilder.Entity<UserBranchRole>(ubr =>
@@ -141,13 +141,13 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConte
                 .WithMany(r => r.UserRoles)
                 .HasForeignKey(ur => ur.RoleId); // <- Asegúrate de especificar la FK aquí
 
-            ubr.HasQueryFilter(ur => ur.TenantId == tenantContext.TenantId);
+            ubr.HasQueryFilter(ur => ur.TenantId == tenantConnectionContext.TenantId);
         });
 
         // --- CONFIGURACIÓN DE BRANCH ---
         modelBuilder.Entity<Branch>(e =>
         {
-            e.HasQueryFilter(branch => branch.TenantId == tenantContext.TenantId);
+            e.HasQueryFilter(branch => branch.TenantId == tenantConnectionContext.TenantId);
         });
     }
 }

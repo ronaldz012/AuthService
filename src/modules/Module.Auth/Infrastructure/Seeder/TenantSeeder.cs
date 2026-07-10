@@ -6,7 +6,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Infrastructure.Seeder;
 
-public class TenantSeeder(IAuthDbContext context, ITenantContext tenantContext) : IDataSeeder
+public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenantConnectionContext) : IDataSeeder
 {
     public int Order => 4;
 
@@ -21,7 +21,7 @@ public class TenantSeeder(IAuthDbContext context, ITenantContext tenantContext) 
         var ownerUserId = Guid.NewGuid();
         var mainBranchId = Guid.NewGuid();
 
-        tenantContext.TenantId = tenantId;
+        tenantConnectionContext.TenantId = tenantId;
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword("1234");
 

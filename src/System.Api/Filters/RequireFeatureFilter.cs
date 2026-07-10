@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Module.Auth.Application.Abstraction;
+using Module.Auth.Domain;
 
 namespace System.Api.Filters;
 
@@ -13,7 +14,7 @@ public class RequireFeatureFilter(
     string permission,
     bool multiBranch,
     ICurrentUser currentUser,
-    ITenantContext tenantContext,
+    ITenantConnectionContext tenantConnectionContext,
     ISessionStateService sessionState, 
     ILogger<RequireFeatureFilter> logger) : IAsyncAuthorizationFilter
 {
@@ -44,7 +45,7 @@ public class RequireFeatureFilter(
         }
 
         var session = await sessionState.GetOrBuildAsync(
-            currentUser.UserId, tenantContext.TenantId!.Value, currentUser.IsAdmin);
+            currentUser.UserId, tenantConnectionContext.TenantId!.Value, (UserType)currentUser.UserType);
 
         var requestedBranches = session.Branches
             .Where(b => currentUser.BranchIds.Contains(b.BranchId))

@@ -132,7 +132,7 @@ public static class SharedDependencyInjection
              .AddScoped<IDataSeeder, PlanSeeder>()
              .AddScoped<IDataSeeder, TenantSeeder>();
 
-        services.AddScoped<ITenantContext, TenantContext>();
+        services.AddScoped<ITenantConnectionContext, TenantConnectionContext>();
 
         services.AddDbContext<AuthDbContext>((sp, options) =>
         {

@@ -20,6 +20,6 @@ public class SalesDbContextFactory : IDesignTimeDbContextFactory<SalesDbContext>
                 x.MigrationsHistoryTable("__EFMigrationsHistory_sales"))
             .Options;
 
-        return new SalesDbContext(options, new DesignTimeTenantContext());
+        return new SalesDbContext(options, new DesignTimeTenantConnectionContext());
     }
 }

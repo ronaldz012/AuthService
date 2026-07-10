@@ -1,6 +1,6 @@
 namespace Common.Contracts.authentication;
 
-public interface ITenantContext
+public interface ITenantConnectionContext
 {
     string? Schema { get; set; }
 
@@ -8,7 +8,7 @@ public interface ITenantContext
     public string? DatabaseName { get; set; }
 }
 
-public class DesignTimeTenantContext : ITenantContext
+public class DesignTimeTenantConnectionContext : ITenantConnectionContext
 {
     public string? Schema { get; set; } = "base";
     public Guid? TenantId { get; set; } = new Guid();

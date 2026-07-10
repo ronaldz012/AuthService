@@ -1,6 +1,7 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Module.Auth.Application.Abstraction;
+using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Autentication.AuthMe;
 
@@ -13,7 +14,7 @@ public class AuthMe(
         var session = await sessionState.GetOrBuildAsync(
             currentUser.UserId,
             currentUser.TenantId,
-            currentUser.IsAdmin);
+            (UserType)currentUser.UserType);
 
         return new AuthMeResponse(session);
     }

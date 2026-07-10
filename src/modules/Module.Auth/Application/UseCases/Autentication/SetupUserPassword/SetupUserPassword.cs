@@ -6,7 +6,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 
-public class SetupUserPassword(IAuthDbContext  context, ITenantContext tenantContext)
+public class SetupUserPassword(IAuthDbContext  context, ITenantConnectionContext tenantConnectionContext)
 {
     public async Task<Result<bool>> ExecuteAsync(SetupUserPasswordRequest request)
     {
@@ -18,7 +18,7 @@ public class SetupUserPassword(IAuthDbContext  context, ITenantContext tenantCon
         if (verificationCode == null)
             return SetupUserPasswordErrors.TokenNotFound;
 
-        tenantContext.TenantId = verificationCode.User.TenantId;
+        tenantConnectionContext.TenantId = verificationCode.User.TenantId;
 
         if (verificationCode.ExpiresAt < DateTime.UtcNow)
             return SetupUserPasswordErrors.TokenExpired;

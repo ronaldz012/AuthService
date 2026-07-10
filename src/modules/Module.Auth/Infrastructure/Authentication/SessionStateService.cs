@@ -15,19 +15,19 @@ public class SessionStateService(
 
     private static string Key(Guid userId) => $"session_state:{userId}";
 
-    public async Task<SessionStateDto> GetOrBuildAsync(Guid userId, Guid tenantId, bool isAdmin)
+    public async Task<SessionStateDto> GetOrBuildAsync(Guid userId, Guid tenantId, UserType userType)
     {
         if (cache.TryGetValue(Key(userId), out SessionStateDto? cached) && cached is not null)
             return cached;
 
-        var session = await BuildAsync(userId, tenantId, isAdmin);
+        var session = await BuildAsync(userId, tenantId, userType);
         cache.Set(Key(userId), session, CacheOpts);
         return session;
     }
 
     public void Invalidate(Guid userId) => cache.Remove(Key(userId));
 
-    private async Task<SessionStateDto> BuildAsync(Guid userId, Guid tenantId, bool isAdmin)
+    private async Task<SessionStateDto> BuildAsync(Guid userId, Guid tenantId, UserType userType)
     {
         var user = await context.Users
             .IgnoreQueryFilters()
@@ -51,7 +51,7 @@ public class SessionStateService(
 
         List<PermissionsByModuleDto> branches;
 
-        if (isAdmin)
+        if (userType is UserType.TenantAdmin or UserType.Owner)
         {
             var planFeatures = await context.Features
                 .Where(f => tenantInfo.Plan.AllowedFeatureKeys.Contains(f.Key))

@@ -1,22 +1,19 @@
-using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Products;
-using Npgsql;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.Create;
 
-public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenantContext)
+public class CreateProductVariantUc(IInvDbContext context)
 {
     public async Task<Result<List<ProductVariantCreatedDto>>> Execute(Guid productId, List<CreateProductVariantDto> dto)
     {
         if (dto == null) throw new ArgumentNullException(nameof(dto));
-        // ── Validar lista no vacía ────────────────────────────────────────
+
         if (dto.Count == 0)
             return CreateProductVariantErrors.EmptyVariantList;
 
-        // ── Validar duplicados dentro del DTO ─────────────────────────────
         var hasDuplicatesInDto = dto
             .GroupBy(x => new { x.ColorId, Size = x.Size.Trim().ToLower() })
             .Any(g => g.Count() > 1);
@@ -24,7 +21,6 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
         if (hasDuplicatesInDto)
             return CreateProductVariantErrors.DuplicateVariantsInRequest;
 
-        // ── Validar producto ──────────────────────────────────────────────
         var product = await context.Products
             .Select(x => new { x.Id, x.InternalCode })
             .FirstOrDefaultAsync(p => p.Id == productId);
@@ -32,7 +28,6 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
         if (product is null)
             return CreateProductVariantErrors.ProductNotFound;
 
-        // ── Validar y mapear colores ──────────────────────────────────────
         var colorIdsInDto = dto.Select(x => x.ColorId).Distinct().ToList();
 
         var colorsDictionary = await context.Colors
@@ -46,7 +41,6 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
             return CreateProductVariantErrors.ColorIdsNotFound;
         }
 
-        // ── Validar duplicados contra base de datos ───────────────────────
         var dtoCombinations = dto
             .Select(d => new { d.ColorId, Size = d.Size.Trim().ToLower() })
             .ToList();
@@ -67,14 +61,13 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
         if (alreadyExists)
             return CreateProductVariantErrors.VariantAlreadyExists;
 
-        // ── Transacción: reservar SKUs y guardar ──────────────────────────
         await using var tx = await context.Database.BeginTransactionAsync();
         try
         {
             var variants = new List<ProductVariant>();
             foreach (var x in dto)
             {
-                var sku = await ReserveVariantCounter(productId, product.InternalCode);
+                var sku = await context.ReserveVariantCounter(productId, product.InternalCode);
                 variants.Add(new ProductVariant
                 {
                     ProductId = productId,
@@ -103,24 +96,5 @@ public class CreateProductVariantUc(IInvDbContext context, ITenantContext tenant
             await tx.RollbackAsync();
             throw;
         }
-    }
-
-    // ── Helper ────────────────────────────────────────────────────────────
-
-    private async Task<string> ReserveVariantCounter(Guid productId, string productCode)
-    {
-        string schema = tenantContext.Schema;
-        var sql = $"""
-            UPDATE "{schema}"."Products"
-            SET "ProductVariantCounter" = "ProductVariantCounter" + 1
-            WHERE "Id" = @id
-            RETURNING "ProductVariantCounter"
-            """;
-
-        var result = await context.Database
-            .SqlQueryRaw<int>(sql, new NpgsqlParameter("id", productId))
-            .ToListAsync();
-
-        return $"{productCode}-{result[0].ToString().PadLeft(3, '0')}";
     }
 }

@@ -24,9 +24,7 @@ namespace System.Api.Controllers.Auth
                                                     .ToValueOrProblemDetails();
         }
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(
-            [FromBody] LoginRequest dto, 
-            [FromHeader(Name = "X-Forwarded-Host")] string? tenantHost = null)
+        public async Task<IActionResult> Login([FromBody] LoginRequest dto)
         {
             return await autenticationUseCases.Login.Execute(dto)
                                                     .ToValueOrProblemDetails();
@@ -66,6 +64,7 @@ namespace System.Api.Controllers.Auth
         // }
         
         [HttpPost("complete")]
+        [AllowAnonymous]
         public async Task<IActionResult> CompleteTenant([FromBody] SetupUserPasswordRequest request)
         {
             return await autenticationUseCases.SetupUserPassword.ExecuteAsync(request).ToValueOrProblemDetails();

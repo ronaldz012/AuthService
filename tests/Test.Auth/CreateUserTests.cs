@@ -12,11 +12,11 @@ namespace Test.Auth;
 
 public class CreateUserTests
 {
-    private static CreateUser CreateSut(IAuthDbContext dbContext, ITenantContext tenantContext)
+    private static CreateUser CreateSut(IAuthDbContext dbContext, ITenantConnectionContext tenantConnectionContext)
     {
         return new CreateUser(
             dbContext,
-            tenantContext,
+            tenantConnectionContext,
             Mock.Of<IEmailVerificationService>(),
             Options.Create(new ProjectInfo
             {

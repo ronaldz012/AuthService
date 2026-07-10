@@ -14,7 +14,8 @@ public class CurrentUserService : ICurrentUser
     public Guid BranchId { get; }
     public IReadOnlyList<Guid> BranchIds { get; }
     public string Username { get; }
-    public bool IsAdmin { get; }
+    public int UserType { get; }
+    public bool IsAdmin => UserType is 1 or 2;
     public bool IsAuthenticated { get; }
     public string? Token { get; }
 
@@ -35,7 +36,7 @@ public class CurrentUserService : ICurrentUser
         UserId = Guid.TryParse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var uGuid) ? uGuid : Guid.Empty;
         TenantId = Guid.TryParse(user?.FindFirst("tenantId")?.Value, out var tGuid) ? tGuid : Guid.Empty;
         Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? "Anonymous";
-        IsAdmin = bool.TryParse(user?.FindFirst("is_admin")?.Value, out var admin) && admin;
+        UserType = int.TryParse(user?.FindFirst("user_type")?.Value, out var ut) ? ut : 0;
         Token = context?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
         var branchHeader = context?.Request.Headers["X-Branch-Id"].ToString();

@@ -22,7 +22,7 @@ public class InvDbContextFactory : IDesignTimeDbContextFactory<InvDbContext>
                 x.MigrationsHistoryTable("__EFMigrationsHistory_inventory"))
             .Options;
         // Dummy TenantContext for design-time operations
-        return new InvDbContext(options, new DesignTimeTenantContext());
+        return new InvDbContext(options, new DesignTimeTenantConnectionContext());
     }
 }
 

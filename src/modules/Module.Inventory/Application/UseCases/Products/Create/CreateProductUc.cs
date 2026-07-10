@@ -1,17 +1,14 @@
-using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Products;
-using Npgsql;
 
 namespace Module.Inventory.Application.UseCases.Products.Create;
 
-public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext)
+public class CreateProductUc(IInvDbContext context)
 {
     public async Task<Result<ProductCreatedDto>> Execute(CreateProductRequest request)
     {
-        // ── Validaciones previas ──────────────────────────────────────────
         var brand = await context.Brands.FindAsync(request.BrandId);
         if (brand == null)
             return CreateProductErrors.BrandNotFound;
@@ -24,14 +21,11 @@ public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext
         if (colorIds.Except(colors.Select(c => c.Id)).Any())
             return CreateProductErrors.ColorsNotFound;
 
-        // ── Transacción ───────────────────────────────────────────────────
         await using var tx = await context.Database.BeginTransactionAsync();
         try
         {
-            // 1. Reservar código de producto en la marca
-            var internalCode = await ReserveBrandCounter(request.BrandId, brand.Prefix);
+            var internalCode = await context.ReserveBrandCounter(request.BrandId, brand.Prefix);
 
-            // 2. Crear producto (sin variantes todavía — necesitamos el Id)
             var product = new Product
             {
                 Name = request.Name,
@@ -46,11 +40,10 @@ public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
-            // 3. Crear variantes con SKU secuencial por producto
             var variants = new List<ProductVariant>();
             foreach (var pv in request.Variants)
             {
-                var sku = await ReserveVariantCounter(product.Id, product.InternalCode);
+                var sku = await context.ReserveVariantCounter(product.Id, product.InternalCode);
                 variants.Add(new ProductVariant
                 {
                     ProductId = product.Id,
@@ -67,7 +60,6 @@ public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext
 
             await tx.CommitAsync();
 
-            // 4. Recargar con todas las relaciones para el frontend
             var saved = await context.Products
                 .Include(p => p.Brand)
                 .Include(p => p.Category)
@@ -99,41 +91,5 @@ public class CreateProductUc(IInvDbContext context, ITenantContext tenantContext
             await tx.RollbackAsync();
             throw;
         }
-    }
-
-    // ── Helpers ───────────────────────────────────────────────────────────
-
-    private async Task<string> ReserveBrandCounter(Guid brandId, string prefix)
-    {
-        var schema = tenantContext.Schema;
-        var sql = $"""
-                   UPDATE "{schema}"."Brands"
-                   SET "ProductCounter" = "ProductCounter" + 1
-                   WHERE "Id" = @id
-                   RETURNING "ProductCounter"
-                   """;
-
-        var result = await context.Database
-            .SqlQueryRaw<int>(sql, new NpgsqlParameter("id", brandId))
-            .ToListAsync();
-
-        return $"{prefix}-{result[0]}";
-    }
-
-    private async Task<string> ReserveVariantCounter(Guid productId, string productCode)
-    {
-        var schema = tenantContext.Schema;
-        var sql = $"""
-                   UPDATE "{schema}"."Products"
-                   SET "ProductVariantCounter" = "ProductVariantCounter" + 1
-                   WHERE "Id" = @id
-                   RETURNING "ProductVariantCounter"
-                   """;
-
-        var result = await context.Database
-            .SqlQueryRaw<int>(sql, new NpgsqlParameter("id", productId))
-            .ToListAsync();
-
-        return $"{productCode}-{result[0].ToString().PadLeft(3, '0')}";
     }
 }

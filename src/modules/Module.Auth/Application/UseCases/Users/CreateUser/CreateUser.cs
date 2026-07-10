@@ -10,14 +10,14 @@ namespace Module.Auth.Application.UseCases.Users.CreateUser;
 
 public class CreateUser(
     IAuthDbContext context,
-    ITenantContext tenantContext,
+    ITenantConnectionContext tenantConnectionContext,
     IEmailVerificationService emailVerificationService,
     IOptions<ProjectInfo> projectInfo)
 {
     public async Task<Result<CreateUserResponse>> Execute(CreateUserRequest dto)
     {
         var displayName = await context.Tenants
-            .Where(t => t.Id == tenantContext.TenantId)
+            .Where(t => t.Id == tenantConnectionContext.TenantId)
             .Select(t => t.DisplayName)
             .FirstAsync();
 

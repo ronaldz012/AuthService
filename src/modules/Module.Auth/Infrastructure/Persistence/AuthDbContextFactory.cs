@@ -29,6 +29,6 @@ public class AuthDbContextFactory : IDesignTimeDbContextFactory<AuthDbContext>
                 x.MigrationsHistoryTable("__EFMigrationsHistory_shared"))
             .Options;
 
-        return new AuthDbContext(options, new DesignTimeTenantContext());
+        return new AuthDbContext(options, new DesignTimeTenantConnectionContext());
     }
 }

@@ -157,7 +157,7 @@ public class CreateTenantTests
         Assert.Equal(result.Value.Code, savedCode.Code);
     }
 
-    private static CreateTenant CreateSut(IAuthDbContext dbContext, ITenantContext tenantContext)
+    private static CreateTenant CreateSut(IAuthDbContext dbContext, ITenantConnectionContext tenantConnectionContext)
     {
         var projectInfoOptions = Options.Create(new ProjectInfo
         {
@@ -167,7 +167,7 @@ public class CreateTenantTests
 
         return new CreateTenant(
             dbContext,
-            tenantContext,
+            tenantConnectionContext,
             Mock.Of<IEmailVerificationService>(),
             projectInfoOptions);
     }

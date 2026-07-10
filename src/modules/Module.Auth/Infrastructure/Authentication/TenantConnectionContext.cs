@@ -3,7 +3,7 @@ using Common.Contracts.authentication;
 
 namespace Module.Auth.Infrastructure.Authentication;
 
-public class TenantContext : ITenantContext
+public class TenantConnectionContext : ITenantConnectionContext
 {
     public string? Schema { get; set; }
     public Guid? TenantId { get; set; }
