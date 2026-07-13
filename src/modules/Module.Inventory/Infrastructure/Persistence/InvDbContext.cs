@@ -157,7 +157,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantConnect
         return base.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<string> ReserveBrandCounter(Guid brandId, string prefix)
+    public virtual async Task<string> ReserveBrandCounter(Guid brandId, string prefix)
     {
         var schema = tenantConnectionContext.Schema;
         var sql = $"""
@@ -174,7 +174,7 @@ public class InvDbContext(DbContextOptions<InvDbContext> options, ITenantConnect
         return $"{prefix}-{result[0]}";
     }
 
-    public async Task<string> ReserveVariantCounter(Guid productId, string productCode)
+    public virtual async Task<string> ReserveVariantCounter(Guid productId, string productCode)
     {
         var schema = tenantConnectionContext.Schema;
         var sql = $"""
