@@ -2,27 +2,27 @@ using System.Data.Common;
 using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Module.Inventory.Infrastructure.Persistence;
+using Module.Sales.Infrastructure.Persistence;
 
-namespace Test.Inventory;
+namespace Test.Sales;
 
-public static class TestInvDbContextFactory
+public static class TestSalesDbContextFactory
 {
     private static readonly Guid DefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-    public static InvDbContext Create(Guid? tenantId = null)
+    public static SalesDbContext Create(Guid? tenantId = null)
     {
         return Create(CreateTenantContext(tenantId));
     }
 
-    public static InvDbContext Create(ITenantConnectionContext tenantConnectionContext, string? dbName = null)
+    public static SalesDbContext Create(ITenantConnectionContext tenant, string? dbName = null)
     {
-        var options = new DbContextOptionsBuilder<InvDbContext>()
-            .UseInMemoryDatabase(dbName ?? $"InvTest_{Guid.NewGuid()}")
+        var options = new DbContextOptionsBuilder<SalesDbContext>()
+            .UseInMemoryDatabase(dbName ?? $"SalesTest_{Guid.NewGuid()}")
             .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
-        return new InvDbContext(options, tenantConnectionContext);
+        return new SalesDbContext(options, tenant);
     }
 
     public static TenantConnectionContext CreateTenantContext(Guid? tenantId = null)

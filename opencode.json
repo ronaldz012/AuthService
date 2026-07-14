@@ -2,6 +2,9 @@
   "$schema": "https://opencode.ai/config.json",
   "instructions": [
     ".agents/rules/usecase-patterns.md",
-    ".agents/rules/controller-patterns.md"
+    ".agents/rules/controller-patterns.md",
+    ".agents/rules/communications-guidelines.md",
+    ".agents/rules/domain-guidelines.md",
+    ".agents/rules/integrations-service.md"
   ]
 }

@@ -1,6 +1,7 @@
 using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Infrastructure.Persistence;
 
@@ -27,7 +28,8 @@ public static class TestAuthDbContextFactory
 
     public static TenantConnectionContext CreateTenantContext(Guid? tenantId = null)
     {
-        return new TenantConnectionContext
+        var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
+        return new TenantConnectionContext(config)
         {
             TenantId = tenantId ?? DefaultTenantId,
             Schema = "test_schema",

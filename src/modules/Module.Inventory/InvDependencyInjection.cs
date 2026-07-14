@@ -1,9 +1,7 @@
 using Common.Contracts.authentication;
 using Common.Contracts.inventory;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Brands;
 using Module.Inventory.Application.UseCases.Brands.CreateBrand;
@@ -101,36 +99,15 @@ public  static class InvDependencyInjection
         services.AddScoped<IInvDbContext>(provider => provider.GetRequiredService<InvDbContext>());
 
 
-        //Runtime Configuration (Fails safely if tenant data is missing)
+        //Runtime Configuration — usa la conexión compartida registrada en Program.cs
         services.AddDbContext<InvDbContext>((sp, options) =>
         {
-            var configuration = sp.GetRequiredService<IConfiguration>();
-            var tenantConnection = configuration.GetConnectionString("TenantConnection")!;
             var tenant = sp.GetRequiredService<ITenantConnectionContext>();
 
-            if (string.IsNullOrEmpty(tenant.DatabaseName))
-                throw new InvalidOperationException("DatabaseName is not set on tenant context");
-            if (string.IsNullOrEmpty(tenant.Schema))
-                throw new InvalidOperationException("Schema is not set on tenant context");
-
-            var connString = BuildConnectionString(tenantConnection, tenant.Schema, tenant.DatabaseName);
-            options.UseNpgsql(connString,
+            options.UseNpgsql(tenant.Connection,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", tenant.Schema));
         });
 
         return services;
-    }
-
-    private static string BuildConnectionString(string baseConnection, string? schema, string? databaseName)
-    {
-        if (string.IsNullOrEmpty(databaseName))
-            return baseConnection;
-
-        var builder = new NpgsqlConnectionStringBuilder(baseConnection)
-        {
-            Database = databaseName,
-            SearchPath = schema ?? "",
-        };
-        return builder.ConnectionString;
     }
 }

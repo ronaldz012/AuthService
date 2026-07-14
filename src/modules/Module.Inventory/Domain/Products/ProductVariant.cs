@@ -30,6 +30,27 @@ public class ProductVariant: Params, IMustHaveTenant
     {
         return internalCode +"-"+colorCode+"-"+size;
     }
+    public bool HasSufficientStock(int quantity, Guid branchId)
+    {
+        var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
+        return branchInventory != null && branchInventory.Stock >= quantity;
+    }
+
+    // DOER: Realiza la acción. Asume que quien lo llama ya validó el estado.
+    public void SellStock(int quantity, Guid branchId, Guid userId, Guid referenceId, string? notes = null)
+    {
+        var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
+        if (branchInventory == null)
+            throw new InvalidOperationException($"No existe registro de inventario para la sucursal {branchId}");
+
+        if (branchInventory.Stock < quantity)
+            throw new InvalidOperationException($"Stock insuficiente para {Sku}"); // Solo actúa como salvaguarda
+
+        branchInventory.Stock -= quantity;
+        StockMovements.Add(StockMovement.CreateSale(branchId, Id, userId, quantity, referenceId, notes));
+    }
+
+
     public void AddQuantity(int quantity, Guid branchId)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
@@ -69,7 +90,7 @@ public class ProductVariant: Params, IMustHaveTenant
             throw new InvalidOperationException($"No existe registro de inventario para la sucursal {branchId}");
 
         if (branchInventory.Stock < quantity)
-            throw new InvalidOperationException($"Stock insuficiente para {Sku}. Disponible: {branchInventory.Stock}, Solicitado: {quantity}");
+            throw new InvalidOperationException($"Cantidad solicitada para {Sku} excede el stock disponible ({branchInventory.Stock})");
 
         branchInventory.Stock -= quantity;
     }

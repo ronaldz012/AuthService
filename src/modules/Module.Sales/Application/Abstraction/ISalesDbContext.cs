@@ -1,3 +1,4 @@
+using System.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -11,11 +12,12 @@ public interface ISalesDbContext
     public DbSet<SaleItem> SaleItems { get; set; }
     public DbSet<CashRegisterClosure> CashRegisterClosures { get; set; }
     public DbSet<CashRegisterMovement> CashRegisterMovements { get; set; }
-    
+
     DbSet<TEntity> Set<TEntity>()
         where TEntity : class;
     DatabaseFacade Database { get; }
 
+    TransactionScope BeginTransactionScope();
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         where TEntity : class;

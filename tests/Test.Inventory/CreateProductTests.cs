@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -132,6 +133,7 @@ public class TestTenantConnectionContext : ITenantConnectionContext
     public string? Schema { get; set; }
     public Guid? TenantId { get; set; }
     public string? DatabaseName { get; set; }
+    public DbConnection Connection => throw new NotSupportedException("InMemory tests do not support Connection.");
 }
 
 public class TestInvDbContext(DbContextOptions<InvDbContext> options, ITenantConnectionContext tenant)

@@ -1,12 +1,18 @@
 using Common.Contracts.authentication;
 using Common.Contracts.inventory;
+using Common.Domain;
 using Common.Utilities;
+using Microsoft.Extensions.Logging;
 using Module.Sales.Application.Abstraction;
 using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Sales.Create;
 
-public class CreateSale(ISalesDbContext context, ICurrentUser currentUser, IInventoryIntegrationService inventoryService)
+public class CreateSale(
+    ISalesDbContext context,
+    ICurrentUser currentUser,
+    IInventoryIntegrationService inventoryService,
+    ILogger<CreateSale> logger)
 {
     public async Task<Result<bool>> Execute(CreateSaleDto dto)
     {
@@ -27,7 +33,8 @@ public class CreateSale(ISalesDbContext context, ICurrentUser currentUser, IInve
         if (variants.Count != variantIds.Count)
             return CreateSaleErrors.ProductsNotFound;
 
-        await using var transaction = await context.Database.BeginTransactionAsync();
+        using var scope = context.BeginTransactionScope();
+
         try
         {
             var factoryItems = dto.Items.Select(itemDto =>
@@ -70,22 +77,16 @@ public class CreateSale(ISalesDbContext context, ICurrentUser currentUser, IInve
 
             var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId, sale.Id);
             if (!deductResult.IsSuccess) return deductResult.Error;
-
             context.Sales.Add(sale);
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
 
-            await transaction.CommitAsync();
+            scope.Complete();
             return true;
         }
-        catch (InvalidOperationException)
+        catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            logger.LogError(ex, "Error creando venta para sucursal {BranchId}", branchId);
             return CreateSaleErrors.SaleCreationFailed;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
         }
     }
 }

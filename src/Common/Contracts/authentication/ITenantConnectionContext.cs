@@ -1,11 +1,13 @@
+using System.Data.Common;
+
 namespace Common.Contracts.authentication;
 
 public interface ITenantConnectionContext
 {
     string? Schema { get; set; }
-
     Guid? TenantId { get; set; }
-    public string? DatabaseName { get; set; }
+    string? DatabaseName { get; set; }
+    DbConnection Connection { get; }
 }
 
 public class DesignTimeTenantConnectionContext : ITenantConnectionContext
@@ -13,4 +15,5 @@ public class DesignTimeTenantConnectionContext : ITenantConnectionContext
     public string? Schema { get; set; } = "base";
     public Guid? TenantId { get; set; } = new Guid();
     public string? DatabaseName { get; set; } = "base";
+    public DbConnection Connection => throw new NotSupportedException("Design-time context does not support connection resolution.");
 }

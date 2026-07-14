@@ -96,6 +96,12 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddCommon(builder.Configuration);
 
   builder.Services.AuthDependencyInjection(builder.Configuration);
+
+  // ADVERTENCIA: TenantConnectionContext.Connection devuelve la MISMA instancia
+  // NpgsqlConnection para toda la request (lazy, Scoped). Sales e Inventory
+  // comparten esa conexión, por lo que TransactionScope funciona sin MSDTC.
+  // Cualquier nuevo DbContext que participe en la misma unidad de trabajo DEBE
+  // usar tenant.Connection en lugar de abrir su propia conexión.
   builder.Services.AddInventory();
   builder.Services.AddSales();
 

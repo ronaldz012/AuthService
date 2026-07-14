@@ -27,29 +27,33 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
         return result;
     }
 
-    public async Task<Result<bool>> DeductStock(
-        List<StockDeductionDto> deductions, Guid branchId, Guid userId, Guid referenceId)
+public async Task<Result<bool>> DeductStock(
+    List<StockDeductionDto> deductions, Guid branchId, Guid userId, Guid referenceId)
+{
+    var variantIds = deductions.Select(d => d.ProductVariantId).ToList();
+
+    var variants = await context.ProductVariants
+        .Include(pv => pv.BranchInventories.Where(bi => bi.BranchId == branchId))
+        .Where(pv => variantIds.Contains(pv.Id))
+        .ToListAsync();
+
+    foreach (var deduction in deductions)
     {
-        var variantIds = deductions.Select(d => d.ProductVariantId).ToList();
-
-        var variants = await context.ProductVariants
-            .Include(pv => pv.BranchInventories.Where(bi => bi.BranchId == branchId))
-            .Where(pv => variantIds.Contains(pv.Id))
-            .ToListAsync();
-
-        var movements = new List<StockMovement>();
-
-        foreach (var deduction in deductions)
+        var pv = variants.FirstOrDefault(v => v.Id == deduction.ProductVariantId);
+        if (pv == null)
         {
-            var pv = variants.First(v => v.Id == deduction.ProductVariantId);
-            pv.RemoveQuantity(deduction.Quantity, branchId); // lanza si stock insuficiente
-            movements.Add(StockMovement.CreateSale(branchId, pv.Id, userId, deduction.Quantity,referenceId));
+            return new Error(ErrorCode.NotFound, $"Product variant {deduction.ProductVariantId} not found.");
         }
-
-        context.StockMovements.AddRange(movements);
-        // No llama SaveChanges, eso lo maneja CreateSale dentro de la transacción
-        return true;
+        if (!pv.HasSufficientStock(deduction.Quantity, branchId))
+        {
+            return new Error(ErrorCode.InvalidState, $"Insufficient stock for product {pv.Sku}.");
+        }
+        pv.SellStock(deduction.Quantity, branchId, userId, referenceId);
     }
+
+    await context.SaveChangesAsync();
+    return true; 
+}
 
     public async Task<bool> BranchHasPendingTransfers(Guid branchId)
     {
