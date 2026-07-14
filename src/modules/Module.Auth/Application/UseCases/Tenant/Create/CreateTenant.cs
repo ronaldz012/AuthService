@@ -7,7 +7,6 @@ namespace Module.Auth.Application.UseCases.Tenant.Create;
 using global::Common.Utilities;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
-using Module.Auth.Infrastructure.Authentication;
 public class CreateTenant(
     IAuthDbContext context,
     ITenantConnectionContext tenantConnectionContext,
@@ -68,10 +67,8 @@ public class CreateTenant(
                         setupUrl,
                         verificationCode.ExpiresAt);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.WriteLine(e);
-              
                 }
 
             }

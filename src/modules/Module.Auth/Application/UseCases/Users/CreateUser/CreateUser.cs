@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
-using Module.Auth.Infrastructure.Authentication;
 
 namespace Module.Auth.Application.UseCases.Users.CreateUser;
 
@@ -80,9 +79,8 @@ public class CreateUser(
                     verificationCode.ExpiresAt);
                 emailSent = true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e);
             }
         }
 

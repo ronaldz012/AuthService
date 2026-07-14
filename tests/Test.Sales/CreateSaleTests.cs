@@ -7,6 +7,7 @@ using Module.Sales.Application.Abstraction;
 using Module.Sales.Application.UseCases.Sales.Create;
 using Module.Sales.Domain;
 using Moq;
+using System.Transactions;
 
 namespace Test.Sales;
 
@@ -182,8 +183,13 @@ public class CreateSaleTests
         currentUser.Setup(u => u.BranchId).Returns(BranchId);
         currentUser.Setup(u => u.BranchIds).Returns([BranchId]);
 
+        var tenantConnection = new Mock<ITenantConnectionContext>();
+        tenantConnection.Setup(tc => tc.BeginTransactionScopeAsync())
+            .ReturnsAsync(new TransactionScope(TransactionScopeOption.Suppress));
+
         return new CreateSale(
             dbContext,
+            tenantConnection.Object,
             currentUser.Object,
             inventoryService ?? new Mock<IInventoryIntegrationService>().Object,
             new Mock<ILogger<CreateSale>>().Object);

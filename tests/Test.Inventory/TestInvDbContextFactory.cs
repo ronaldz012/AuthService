@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Transactions;
 using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -42,4 +43,7 @@ public class TenantConnectionContext : ITenantConnectionContext
     public Guid? TenantId { get; set; }
     public string? DatabaseName { get; set; }
     public DbConnection Connection => throw new NotSupportedException("InMemory tests do not support Connection.");
+    public Task EnsureOpenAsync() => Task.CompletedTask;
+    public Task<TransactionScope> BeginTransactionScopeAsync() =>
+        Task.FromResult(new TransactionScope(TransactionScopeOption.Suppress));
 }

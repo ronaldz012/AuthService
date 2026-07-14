@@ -1,10 +1,10 @@
 using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
-using Module.Sales.Infrastructure.Persistence;
+using Module.Sales.Application.Abstraction;
 
 namespace Module.Sales.Application.UseCases.Sales.Get;
 
-public class GetListSales(SalesDbContext context,ICurrentUser currentUser )
+public class GetListSales(ISalesDbContext context, ICurrentUser currentUser)
 {
     public async Task<List<SaleListDto>> Execute(SalesQueryDto queryDto)
     {

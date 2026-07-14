@@ -1,4 +1,3 @@
-using System.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -16,8 +15,6 @@ public interface ISalesDbContext
     DbSet<TEntity> Set<TEntity>()
         where TEntity : class;
     DatabaseFacade Database { get; }
-
-    TransactionScope BeginTransactionScope();
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         where TEntity : class;

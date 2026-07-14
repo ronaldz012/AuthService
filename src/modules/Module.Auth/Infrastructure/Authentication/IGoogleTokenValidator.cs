@@ -1,5 +1,6 @@
 using Common.Utilities;
 using Microsoft.Extensions.Options;
+using Module.Auth.Application.Abstraction;
 
 namespace Module.Auth.Infrastructure.Authentication;
 

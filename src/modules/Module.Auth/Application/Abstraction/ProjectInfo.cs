@@ -1,4 +1,4 @@
-namespace Module.Auth.Infrastructure.Authentication;
+namespace Module.Auth.Application.Abstraction;
 
 public class ProjectInfo
 {
@@ -17,6 +17,7 @@ public class AppBranding
     public string Address { get; set; } = string.Empty;
     public string FrontendDomain { get; set; } = string.Empty;
 }
+
 public class EmailTemplateDefaults
 {
     public const string SectionName = "EmailTemplateDefaults";
@@ -24,19 +25,3 @@ public class EmailTemplateDefaults
     public string DefaultFooterText { get; set; } = string.Empty;
     public string DefaultContactLink { get; set; } = string.Empty;
 }
-
-
-//   "ProjectInfo": {
-//     "AppBranding": {
-//       "AppName": "Nombre de la Aplicación Actual",
-//       "AppLogoUrl": "https://cdn.nombreapp.com/logo.png",
-//       "AppPrimaryColor": "#FF5733", 
-//       "SupportEmail": "soporte@nombreapp.com",
-//       "Address": "Dirección de la Empresa, Ciudad, País"
-//     },
-//     "EmailTemplateDefaults": {
-//       "DefaultSenderName": "Support Team",
-//       "DefaultFooterText": "Your Default Footer Text Here",
-//       "DefaultContactLink": "https://yourdomain.com/support"
-//     }
-//   },

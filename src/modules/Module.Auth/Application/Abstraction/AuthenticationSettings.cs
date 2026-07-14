@@ -1,8 +1,5 @@
-namespace Module.Auth.Infrastructure.Authentication;
+namespace Module.Auth.Application.Abstraction;
 
-/// <summary>
-/// Configuración de autenticación y verificación de email.
-/// </summary>
 public class AuthenticationSettings
 {
     public const string SectionName = "Authentication";
@@ -12,21 +9,9 @@ public class AuthenticationSettings
 
 public class EmailVerificationSettings
 {
-    /// <summary>
-    /// Indica si la verificación de email está habilitada.
-    /// </summary>
     public bool Required { get; set; }
-
-    /// <summary>
-    /// Horas de validez del token de verificación.
-    /// </summary>
     public int TokenExpirationHours { get; set; } = 24;
-
     public int VerificationCodeLength { get; set; } = 6;
-    
-    /// <summary>
-    /// Proveedores que requieren verificación de email.
-    /// </summary>
     public List<string> RequiredForProviders { get; set; } = new() { "Local" };
 }
 

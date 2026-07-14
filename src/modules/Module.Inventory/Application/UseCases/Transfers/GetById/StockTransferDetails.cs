@@ -2,13 +2,12 @@ using Common.Contracts.authentication;
 using Common.Contracts.branches;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Transfers;
-using Module.Inventory.Infrastructure;
-using Module.Inventory.Infrastructure.Persistence;
 
 namespace Module.Inventory.Application.UseCases.Transfers.GetById;
 
-public class StockTransferDetails(InvDbContext context, IBranchService branchService, IUserIntegrationService userService, ICurrentUser currentUser)
+public class StockTransferDetails(IInvDbContext context, IBranchService branchService, IUserIntegrationService userService, ICurrentUser currentUser)
 {
     public async Task<Result<StockTransferDetailDto>> Execute(Guid stockTransferId)
     {

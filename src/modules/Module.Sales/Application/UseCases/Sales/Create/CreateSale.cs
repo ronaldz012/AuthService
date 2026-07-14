@@ -10,6 +10,7 @@ namespace Module.Sales.Application.UseCases.Sales.Create;
 
 public class CreateSale(
     ISalesDbContext context,
+    ITenantConnectionContext tenantConnection,
     ICurrentUser currentUser,
     IInventoryIntegrationService inventoryService,
     ILogger<CreateSale> logger)
@@ -33,7 +34,7 @@ public class CreateSale(
         if (variants.Count != variantIds.Count)
             return CreateSaleErrors.ProductsNotFound;
 
-        using var scope = context.BeginTransactionScope();
+        using var scope = await tenantConnection.BeginTransactionScopeAsync();
 
         try
         {

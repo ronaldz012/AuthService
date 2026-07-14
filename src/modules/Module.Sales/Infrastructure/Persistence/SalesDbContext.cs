@@ -1,5 +1,3 @@
-using System.Data;
-using System.Transactions;
 using Common.Contracts.authentication;
 using Common.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -14,21 +12,6 @@ public class SalesDbContext(DbContextOptions<SalesDbContext> options, ITenantCon
     public DbSet<SaleItem> SaleItems { get; set; }
     public DbSet<CashRegisterClosure> CashRegisterClosures { get; set; }
     public DbSet<CashRegisterMovement> CashRegisterMovements { get; set; }
-
-    public TransactionScope BeginTransactionScope()
-    {
-        var scope = new TransactionScope(
-            TransactionScopeOption.Required,
-            new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted },
-            TransactionScopeAsyncFlowOption.Enabled);
-
-        var conn = Database.GetDbConnection();
-        if (conn.State != ConnectionState.Open)
-            conn.Open();
-
-        return scope;
-    }
-    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

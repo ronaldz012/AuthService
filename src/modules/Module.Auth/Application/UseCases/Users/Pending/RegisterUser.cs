@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
-using Module.Auth.Infrastructure.Authentication;
 
 namespace Module.Auth.Application.UseCases.Users.Pending;
 
