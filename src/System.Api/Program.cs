@@ -9,6 +9,7 @@ using Common.Contracts.Seeder;
 using Module.Auth;
 using Module.Inventory;
 using Module.Sales;
+using System.Infrastructure;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -97,11 +98,7 @@ builder.Services.AddCommon(builder.Configuration);
 
   builder.Services.AuthDependencyInjection(builder.Configuration);
 
-  // ADVERTENCIA: TenantConnectionContext.Connection devuelve la MISMA instancia
-  // NpgsqlConnection para toda la request (lazy, Scoped). Sales e Inventory
-  // comparten esa conexión, por lo que TransactionScope funciona sin MSDTC.
-  // Cualquier nuevo DbContext que participe en la misma unidad de trabajo DEBE
-  // usar tenant.Connection en lugar de abrir su propia conexión.
+  builder.Services.AddAppInfrastructure();
   builder.Services.AddInventory();
   builder.Services.AddSales();
 

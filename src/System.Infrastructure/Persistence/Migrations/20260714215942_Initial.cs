@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Module.Inventory.Infrastructure.Persistence.Migrations
+namespace System.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -32,6 +32,27 @@ namespace Module.Inventory.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Brands", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CashRegisterClosures",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BranchId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OpenById = table.Column<Guid>(type: "uuid", nullable: false),
+                    CloseById = table.Column<Guid>(type: "uuid", nullable: true),
+                    OpenAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ClosedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    OpeningBalance = table.Column<decimal>(type: "numeric", nullable: false),
+                    SystemSalesAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    RealCountedAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CashRegisterClosures", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -145,6 +166,60 @@ namespace Module.Inventory.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CashRegisterMovements",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CashRegisterClosureId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CashRegisterMovements", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CashRegisterMovements_CashRegisterClosures_CashRegisterClos~",
+                        column: x => x.CashRegisterClosureId,
+                        principalTable: "CashRegisterClosures",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sales",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BranchId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SoldById = table.Column<Guid>(type: "uuid", nullable: false),
+                    CashRegisterClosureId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PaymentMethod = table.Column<int>(type: "integer", nullable: false),
+                    TransactionCode = table.Column<string>(type: "text", nullable: true),
+                    TotalAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    InvoiceNumber = table.Column<int>(type: "integer", nullable: true),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    DocumentType = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    CancelledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sales", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sales_CashRegisterClosures_CashRegisterClosureId",
+                        column: x => x.CashRegisterClosureId,
+                        principalTable: "CashRegisterClosures",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
@@ -181,6 +256,30 @@ namespace Module.Inventory.Infrastructure.Persistence.Migrations
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SaleItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SaleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    DiscountAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    FinalPrice = table.Column<decimal>(type: "numeric", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SaleItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SaleItems_Sales_SaleId",
+                        column: x => x.SaleId,
+                        principalTable: "Sales",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -355,6 +454,11 @@ namespace Module.Inventory.Infrastructure.Persistence.Migrations
                 column: "ProductVariantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CashRegisterMovements_CashRegisterClosureId",
+                table: "CashRegisterMovements",
+                column: "CashRegisterClosureId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_BrandId",
                 table: "Products",
                 column: "BrandId");
@@ -373,6 +477,16 @@ namespace Module.Inventory.Infrastructure.Persistence.Migrations
                 name: "IX_ProductVariants_ProductId",
                 table: "ProductVariants",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SaleItems_SaleId",
+                table: "SaleItems",
+                column: "SaleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sales_CashRegisterClosureId",
+                table: "Sales",
+                column: "CashRegisterClosureId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StockMovements_ProductVariantId",
@@ -412,7 +526,13 @@ namespace Module.Inventory.Infrastructure.Persistence.Migrations
                 name: "BranchInventories");
 
             migrationBuilder.DropTable(
+                name: "CashRegisterMovements");
+
+            migrationBuilder.DropTable(
                 name: "Providers");
+
+            migrationBuilder.DropTable(
+                name: "SaleItems");
 
             migrationBuilder.DropTable(
                 name: "StockMovements");
@@ -424,6 +544,9 @@ namespace Module.Inventory.Infrastructure.Persistence.Migrations
                 name: "StockTransferItems");
 
             migrationBuilder.DropTable(
+                name: "Sales");
+
+            migrationBuilder.DropTable(
                 name: "StockReceptions");
 
             migrationBuilder.DropTable(
@@ -431,6 +554,9 @@ namespace Module.Inventory.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "StockTransfers");
+
+            migrationBuilder.DropTable(
+                name: "CashRegisterClosures");
 
             migrationBuilder.DropTable(
                 name: "Colors");

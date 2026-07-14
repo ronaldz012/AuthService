@@ -1,8 +1,5 @@
-using Common.Contracts.authentication;
 using Common.Contracts.inventory;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Brands;
 using Module.Inventory.Application.UseCases.Brands.CreateBrand;
 using Module.Inventory.Application.UseCases.Brands.GetBrands;
@@ -40,7 +37,6 @@ using Module.Inventory.Application.UseCases.Transfers.Resolve;
 using Module.Inventory.Application.UseCases.StockMovements;
 using Module.Inventory.Application.UseCases.StockMovements.Get;
 using Module.Inventory.Infrastructure;
-using Module.Inventory.Infrastructure.Persistence;
 
 namespace Module.Inventory;
 
@@ -96,17 +92,6 @@ public  static class InvDependencyInjection
             .AddScoped<GetListColors>();
 
         services.AddScoped<IInventoryIntegrationService, InventoryIntegrationService>();
-        services.AddScoped<IInvDbContext>(provider => provider.GetRequiredService<InvDbContext>());
-
-
-        //Runtime Configuration — usa la conexión compartida registrada en Program.cs
-        services.AddDbContext<InvDbContext>((sp, options) =>
-        {
-            var tenant = sp.GetRequiredService<ITenantConnectionContext>();
-
-            options.UseNpgsql(tenant.Connection,
-                x => x.MigrationsHistoryTable("__EFMigrationsHistory_inventory", tenant.Schema));
-        });
 
         return services;
     }

@@ -1,6 +1,5 @@
 using System.Data;
 using System.Data.Common;
-using System.Transactions;
 using Common.Contracts.authentication;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
@@ -21,21 +20,6 @@ public class TenantConnectionContext(IConfiguration configuration) : ITenantConn
     {
         if (Connection.State != ConnectionState.Open)
             await Connection.OpenAsync();
-    }
-
-    public async Task<TransactionScope> BeginTransactionScopeAsync()
-    {
-        var scope = new TransactionScope(
-            TransactionScopeOption.Required,
-            new TransactionOptions
-            {
-                IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
-                Timeout = TimeSpan.FromSeconds(30)
-            },
-            TransactionScopeAsyncFlowOption.Enabled);
-
-        await EnsureOpenAsync();
-        return scope;
     }
 
     private DbConnection BuildConnection()

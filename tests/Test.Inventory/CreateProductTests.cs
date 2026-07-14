@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Domain.Products;
-using Module.Inventory.Infrastructure.Persistence;
+using System.Infrastructure.Persistence;
 
 namespace Test.Inventory;
 
@@ -93,7 +93,7 @@ public class CreateProductTests
         Assert.Equal("BRD-1-001", result.Value.Variants[0].Sku);
     }
 
-    private static TestInvDbContext CreateDbContext()
+    private static TestAppDbContext CreateDbContext()
     {
         var tenantCtx = new TestTenantConnectionContext
         {
@@ -102,27 +102,27 @@ public class CreateProductTests
             DatabaseName = "test_db"
         };
 
-        var options = new DbContextOptionsBuilder<InvDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase($"InvTest_{Guid.NewGuid()}")
             .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
-        return new TestInvDbContext(options, tenantCtx);
+        return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static void SeedBrand(TestInvDbContext ctx)
+    private static void SeedBrand(TestAppDbContext ctx)
     {
         ctx.Brands.Add(new Brand { Id = BrandId, Name = "Test Brand", Prefix = "BRD", ProductCounter = 0 });
         ctx.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
-    private static void SeedCategory(TestInvDbContext ctx)
+    private static void SeedCategory(TestAppDbContext ctx)
     {
         ctx.Categories.Add(new Category { Id = CategoryId, Name = "Test Category" });
         ctx.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
-    private static void SeedColor(TestInvDbContext ctx)
+    private static void SeedColor(TestAppDbContext ctx)
     {
         ctx.Colors.Add(new Color { Id = ColorId, Name = "Red" });
         ctx.SaveChangesAsync().GetAwaiter().GetResult();
@@ -140,8 +140,8 @@ public class TestTenantConnectionContext : ITenantConnectionContext
         Task.FromResult(new TransactionScope(TransactionScopeOption.Suppress));
 }
 
-public class TestInvDbContext(DbContextOptions<InvDbContext> options, ITenantConnectionContext tenant)
-    : InvDbContext(options, tenant)
+public class TestAppDbContext(DbContextOptions<AppDbContext> options, ITenantConnectionContext tenant)
+    : AppDbContext(options, tenant)
 {
     private int _brandCounter;
     private int _variantCounter;

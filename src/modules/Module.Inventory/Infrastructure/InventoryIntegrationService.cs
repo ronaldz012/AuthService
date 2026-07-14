@@ -51,7 +51,6 @@ public async Task<Result<bool>> DeductStock(
         pv.SellStock(deduction.Quantity, branchId, userId, referenceId);
     }
 
-    await context.SaveChangesAsync();
     return true; 
 }
 

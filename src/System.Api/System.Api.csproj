@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Common\Common.csproj" />
+        <ProjectReference Include="..\System.Infrastructure\System.Infrastructure.csproj" />
         <ProjectReference Include="..\modules\Module.Auth\Module.Auth.csproj" />
         <ProjectReference Include="..\modules\Module.Inventory\Module.Inventory.csproj" />
         <ProjectReference Include="..\modules\Module.Sales\Module.Sales.csproj" />

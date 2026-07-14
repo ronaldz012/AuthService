@@ -3,7 +3,7 @@ using System.Transactions;
 using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Module.Inventory.Infrastructure.Persistence;
+using System.Infrastructure.Persistence;
 
 namespace Test.Inventory;
 
@@ -11,19 +11,19 @@ public static class TestInvDbContextFactory
 {
     private static readonly Guid DefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
 
-    public static InvDbContext Create(Guid? tenantId = null)
+    public static AppDbContext Create(Guid? tenantId = null)
     {
         return Create(CreateTenantContext(tenantId));
     }
 
-    public static InvDbContext Create(ITenantConnectionContext tenantConnectionContext, string? dbName = null)
+    public static AppDbContext Create(ITenantConnectionContext tenantConnectionContext, string? dbName = null)
     {
-        var options = new DbContextOptionsBuilder<InvDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(dbName ?? $"InvTest_{Guid.NewGuid()}")
             .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
-        return new InvDbContext(options, tenantConnectionContext);
+        return new AppDbContext(options, tenantConnectionContext);
     }
 
     public static TenantConnectionContext CreateTenantContext(Guid? tenantId = null)

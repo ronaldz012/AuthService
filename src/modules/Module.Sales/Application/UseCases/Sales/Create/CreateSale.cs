@@ -1,6 +1,5 @@
 using Common.Contracts.authentication;
 using Common.Contracts.inventory;
-using Common.Domain;
 using Common.Utilities;
 using Microsoft.Extensions.Logging;
 using Module.Sales.Application.Abstraction;
@@ -10,7 +9,6 @@ namespace Module.Sales.Application.UseCases.Sales.Create;
 
 public class CreateSale(
     ISalesDbContext context,
-    ITenantConnectionContext tenantConnection,
     ICurrentUser currentUser,
     IInventoryIntegrationService inventoryService,
     ILogger<CreateSale> logger)
@@ -34,7 +32,7 @@ public class CreateSale(
         if (variants.Count != variantIds.Count)
             return CreateSaleErrors.ProductsNotFound;
 
-        using var scope = await tenantConnection.BeginTransactionScopeAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
@@ -77,16 +75,21 @@ public class CreateSale(
                 .ToList();
 
             var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId, sale.Id);
-            if (!deductResult.IsSuccess) return deductResult.Error;
+            if (!deductResult.IsSuccess)
+            {
+                await transaction.RollbackAsync();
+                return deductResult.Error;
+            }
 
             context.Sales.Add(sale);
             await context.SaveChangesAsync();
 
-            scope.Complete();
+            await transaction.CommitAsync();
             return true;
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
             logger.LogError(ex, "Error creando venta para sucursal {BranchId}", branchId);
             return CreateSaleErrors.SaleCreationFailed;
         }
