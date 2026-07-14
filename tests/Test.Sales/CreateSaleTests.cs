@@ -1,5 +1,3 @@
-using System.Data;
-using System.Data.Common;
 using Common.Contracts.authentication;
 using Common.Contracts.inventory;
 using Common.Utilities;
@@ -32,7 +30,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new Error(ErrorCode.NotFound, "One or more products do not exist."));
 
-        var sut = CreateSut(dbContext, tenantCtx, inventoryMock.Object);
+        var sut = CreateSut(dbContext, inventoryMock.Object);
 
         var result = await sut.Execute(new CreateSaleDto
         {
@@ -60,7 +58,7 @@ public class CreateSaleTests
                 new(VariantId, "SKU-001", 100m, 10)
             });
 
-        var sut = CreateSut(dbContext, tenantCtx, inventoryMock.Object);
+        var sut = CreateSut(dbContext, inventoryMock.Object);
 
         var result = await sut.Execute(new CreateSaleDto
         {
@@ -88,7 +86,7 @@ public class CreateSaleTests
                 new(VariantId, "SKU-001", 100m, 10)
             });
 
-        var sut = CreateSut(dbContext, tenantCtx, inventoryMock.Object);
+        var sut = CreateSut(dbContext, inventoryMock.Object);
 
         var result = await sut.Execute(new CreateSaleDto
         {
@@ -120,7 +118,7 @@ public class CreateSaleTests
             .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<Guid>()))
             .ReturnsAsync(deductError);
 
-        var sut = CreateSut(dbContext, tenantCtx, inventoryMock.Object);
+        var sut = CreateSut(dbContext, inventoryMock.Object);
 
         var result = await sut.Execute(new CreateSaleDto
         {
@@ -151,7 +149,7 @@ public class CreateSaleTests
             .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<Guid>()))
             .ReturnsAsync(true);
 
-        var sut = CreateSut(dbContext, tenantCtx, inventoryMock.Object);
+        var sut = CreateSut(dbContext, inventoryMock.Object);
 
         var result = await sut.Execute(new CreateSaleDto
         {
@@ -177,17 +175,8 @@ public class CreateSaleTests
 
     private static CreateSale CreateSut(
         ISalesDbContext dbContext,
-        ITenantConnectionContext tenantCtx,
         IInventoryIntegrationService? inventoryService = null)
     {
-        var mockConn = new Mock<DbConnection>();
-        mockConn.Setup(c => c.State).Returns(ConnectionState.Open);
-
-        var mockTenantConn = new Mock<ITenantConnectionContext>();
-        mockTenantConn.Setup(t => t.Connection).Returns(mockConn.Object);
-        mockTenantConn.Setup(t => t.TenantId).Returns(tenantCtx.TenantId);
-        mockTenantConn.Setup(t => t.Schema).Returns(tenantCtx.Schema);
-
         var currentUser = new Mock<ICurrentUser>();
         currentUser.Setup(u => u.UserId).Returns(UserId);
         currentUser.Setup(u => u.BranchId).Returns(BranchId);
@@ -197,7 +186,6 @@ public class CreateSaleTests
             dbContext,
             currentUser.Object,
             inventoryService ?? new Mock<IInventoryIntegrationService>().Object,
-            mockTenantConn.Object,
             new Mock<ILogger<CreateSale>>().Object);
     }
 

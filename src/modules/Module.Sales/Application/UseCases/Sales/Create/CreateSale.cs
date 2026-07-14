@@ -77,6 +77,7 @@ public class CreateSale(
 
             var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId, sale.Id);
             if (!deductResult.IsSuccess) return deductResult.Error;
+
             context.Sales.Add(sale);
             await context.SaveChangesAsync();
 

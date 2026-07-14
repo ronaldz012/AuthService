@@ -155,7 +155,7 @@ Content-Type: application/json
     "items": [
         {
             "productVariantId": "{{variant1Id}}",
-            "quantity": 2,
+            "quantity": 1,
             "discountAmount": 0
         }
     ]
@@ -224,6 +224,34 @@ Content-Type: application/json
     "items": [
         {
             "productVariantId": "00000000-0000-0000-0000-000000000000",
+            "quantity": 1,
+            "discountAmount": 0
+        }
+    ]
+}
+
+### ============================================
+### 12. CREATE SALE (variant1 tiene stock, variant2 no — SHOULD FAIL, rollback total)
+### ============================================
+POST {{host}}/api/Sale
+Authorization: Bearer {{token}}
+X-BRANCH-ID: {{branchId}}
+Content-Type: application/json
+
+{
+    "paymentMethod": 0,
+    "documentType": 0,
+    "cashRegisterClosureId": "{{cashClosureId}}",
+    "transactionCode": null,
+    "notes": "Venta mixta: variant1 con stock, variant2 sin stock — debe fallar y NO descontar variant1",
+    "items": [
+        {
+            "productVariantId": "{{variant1Id}}",
+            "quantity": 1,
+            "discountAmount": 0
+        },
+        {
+            "productVariantId": "{{variant2Id}}",
             "quantity": 1,
             "discountAmount": 0
         }
