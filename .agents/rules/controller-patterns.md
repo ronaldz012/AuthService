@@ -1,4 +1,7 @@
-# Controller Patterns (System.Api)
+# Controller Patterns
+
+> **Scope:** System.Api
+> **When to use:** Creating or modifying API controllers in any module
 
 ## Class Structure
 - Primary constructor with the grouping record(s)

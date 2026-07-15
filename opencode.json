@@ -1,9 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "instructions": [
+    "AGENTS.md",
+    "Documentation/architecture.md",
     ".agents/rules/usecase-patterns.md",
     ".agents/rules/controller-patterns.md",
-    ".agents/rules/communications-guidelines.md",
+    ".agents/rules/cross-module-transactions.md",
     ".agents/rules/domain-guidelines.md",
     ".agents/rules/integrations-service.md"
   ]

@@ -1,4 +1,7 @@
-# UseCase Patterns (Module.Inventory)
+# UseCase Patterns
+
+> **Scope:** All modules (Inventory, Sales, Auth)
+> **When to use:** Creating or modifying use cases in any module
 
 ## Class Structure
 - Plain C# class with **primary constructor** for DI (no MediatR)
@@ -6,7 +9,7 @@
 - Group use cases under domain folder: `UseCases/{Domain}/Get/`, `UseCases/{Domain}/Create/`, etc.
 
 ```csharp
-public class ListSomething(IInvDbContext context, IServiceX serviceX)
+public class ListSomething(ISalesDbContext context, IServiceX serviceX)
 {
     public async Task<Result<PagedResultDto<SomethingDto>>> Execute(Guid id, SomeQueryDto query)
     {
@@ -61,8 +64,9 @@ public static class ListSomethingErrors
 public record SomethingUseCases(ListSomething ListSomething, GetSomething GetSomething);
 ```
 
-## DI Registration (InvDependencyInjection.cs)
+## DI Registration
 - Register both the grouping record and each individual use case as Scoped
+- The registration lives in the module's own DI extension (e.g. `InvDependencyInjection.cs`, `SalesDependencyInjection.cs`)
 
 ```csharp
 services.AddScoped<SomethingUseCases>()
@@ -72,3 +76,49 @@ services.AddScoped<SomethingUseCases>()
 
 ## Branch Scoping
 - Always filter queries by current user's branch: `query.Where(x => x.BranchId == currentUser.BranchIds[0])`
+
+## Transactions
+
+### Single-module (within same DbContext)
+Use `context.Database.BeginTransactionAsync()` from EF Core:
+
+```csharp
+await using var tx = await context.Database.BeginTransactionAsync();
+try
+{
+    // ... work ...
+    await context.SaveChangesAsync();
+    await tx.CommitAsync();
+}
+catch
+{
+    await tx.RollbackAsync();
+    throw;
+}
+```
+
+### Cross-module (Sales + Inventory)
+Both modules share the same `AppDbContext` — use the same EF Core transaction API. Integration services must **NOT** call `SaveChangesAsync()`:
+
+```csharp
+await using var transaction = await context.Database.BeginTransactionAsync();
+try
+{
+    var deductResult = await inventoryService.DeductStock(...);
+    if (!deductResult.IsSuccess)
+    {
+        await transaction.RollbackAsync();
+        return deductResult.Error;
+    }
+    context.Sales.Add(sale);
+    await context.SaveChangesAsync();
+    await transaction.CommitAsync();
+}
+catch (Exception ex)
+{
+    await transaction.RollbackAsync();
+    return SomeErrors.Failed;
+}
+```
+
+No `TransactionScope` needed. The `AppDbContext` handles both modules' entities.

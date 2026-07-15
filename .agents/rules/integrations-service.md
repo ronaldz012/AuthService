@@ -1,4 +1,7 @@
-# Integration Services: Bridges Between Modules and Flow Control
+# Integration Services
+
+> **Scope:** Module boundary interfaces (defined in Common)
+> **When to use:** Writing integration services between modules (e.g., InventoryIntegrationService, SalesIntegrationService)
 
 Integration Services (which implement interfaces defined in the `Common` project) act as the module boundary. Their purpose is to coordinate data access and translate pure domain rules into the application's control flow pattern (`Result<T>`).
 
@@ -6,14 +9,23 @@ Integration Services (which implement interfaces defined in the `Common` project
 - **Orchestrate persistence:** Load entities from their own module's database (using its respective `DbContext`).
 - **Query the domain:** Use the entity's *Tester* methods to verify feasibility.
 - **Map errors:** Translate domain validation failures into strongly-typed `Error` objects with `ErrorCode`.
-- **Persist changes:** Execute `SaveChangesAsync()` on the local context.
+- **SaveChangesAsync policy:** See table below — depends on whether the caller owns the transaction.
 
-## 2. Standard Service Structure
+## 2. SaveChangesAsync Policy
+
+| Scenario | SaveChangesAsync? |
+|---|---|
+| Called from another module's use case (cross-module tx) | **NO** — caller controls transaction |
+| Called standalone (e.g., from a controller or seeder) | **YES** — owns its own transaction |
+
+For dual-use integration services, create an overload or pass a `bool saveChanges = true` parameter.
+
+## 3. Standard Service Structure
 
 Services must always return a `Result<T>` or `Result<bool>` to prevent exception leaks to the consuming use cases.
 
 ```csharp
-public class InventoryIntegrationService(IInventoryDbContext context) : IInventoryIntegrationService
+public class InventoryIntegrationService(IInvDbContext context) : IInventoryIntegrationService
 {
     public async Task<Result<bool>> DeductStock(
         List<StockDeductionDto> deductions, Guid branchId, Guid userId, Guid referenceId)
@@ -45,8 +57,8 @@ public class InventoryIntegrationService(IInventoryDbContext context) : IInvento
             pv.SellStock(deduction.Quantity, branchId, userId, referenceId);
         }
 
-        // 4. Commit local changes
-        await context.SaveChangesAsync();
+        // 4. DO NOT call SaveChangesAsync here when participating in a cross-module transaction.
+        //    The caller owns the transaction and calls SaveChangesAsync once.
         return true; // Implicit conversion to successful Result
     }
 }

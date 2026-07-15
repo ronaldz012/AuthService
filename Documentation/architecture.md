@@ -1,8 +1,8 @@
-# DriveCoreSystem — Arquitectura
+# DriveCoreSystem — Architecture
 
-## Visión General
+## Overview
 
-Monolito modular con Clean Architecture pragmática en .NET 8/9. Un solo deployment (System.Api) con bounded contexts separados en módulos independientes.
+Modular monolith with pragmatic Clean Architecture in .NET 8/9. Single deployment (System.Api) with separated bounded contexts in independent modules.
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -27,27 +27,27 @@ Monolito modular con Clean Architecture pragmática en .NET 8/9. Un solo deploym
 
 ## Common (Shared Kernel)
 
-Librería transversal sin dependencias hacia los módulos.
+Cross-cutting library with no dependencies toward modules.
 
-| Carpeta | Contenido |
+| Folder | Content |
 |---------|-----------|
-| `Contracts/` | Interfaces de comunicación entre módulos (`IInventoryIntegrationService`, `IBranchService`, `IUserIntegrationService`, `ITenantConnectionContext`) |
-| `Contracts/Seeder/` | `IDataSeeder` + `DatabaseSeeder` (agregador) |
-| `Domain/` | Interfaces base: `IMustHaveTenant`, `ISoftDelete`, `ICreatedAt`, `IUpdatedAt`, `ICreatedBy`, `IUpdatedBy` |
-| `Utilities/` | `Result<T>` (Railway Oriented Programming), paginación, filtros dinámicos sobre `IQueryable` |
-| `Services/` | `IEmailService`, configuraciones (`TokenSettings`, `SmtpSettings`, `TennantOptions`) |
+| `Contracts/` | Inter-module communication interfaces (`IInventoryIntegrationService`, `IBranchService`, `IUserIntegrationService`, `ITenantConnectionContext`) |
+| `Contracts/Seeder/` | `IDataSeeder` + `DatabaseSeeder` (aggregator) |
+| `Domain/` | Base interfaces: `IMustHaveTenant`, `ISoftDelete`, `ICreatedAt`, `IUpdatedAt`, `ICreatedBy`, `IUpdatedBy` |
+| `Utilities/` | `Result<T>` (Railway Oriented Programming), pagination, dynamic filters over `IQueryable` |
+| `Services/` | `IEmailService`, settings (`TokenSettings`, `SmtpSettings`, `TenantOptions`) |
 
 ---
 
-## System.Infrastructure (DbContext Unificado)
+## System.Infrastructure (Unified DbContext)
 
-Proyecto compartido que contiene el **único DbContext** (AppDbContext) para Sales + Inventory. Los módulos Auth tiene su propio DbContext (global, no multi-tenant).
+Shared project containing the **single DbContext** (AppDbContext) for Sales + Inventory. Auth has its own DbContext (global, non multi-tenant).
 
-### Responsabilidades
+### Responsibilities
 
-- `Persistence/AppDbContext` — implementa `ISalesDbContext` e `IInvDbContext`
-- `Persistence/AppDbContextFactory` — fábrica design-time para migraciones
-- `SystemInfrastructureDependencyInjection` — registra `AppDbContext` y forwarding a ambas interfaces
+- `Persistence/AppDbContext` — implements `ISalesDbContext` and `IInvDbContext`
+- `Persistence/AppDbContextFactory` — design-time factory for migrations
+- `SystemInfrastructureDependencyInjection` — registers `AppDbContext` and forwarding to both interfaces
 
 ```
 AppDbContext : ISalesDbContext, IInvDbContext
@@ -57,16 +57,15 @@ AppDbContext : ISalesDbContext, IInvDbContext
                StockMovement, StockTransfer, StockTransferItem
 ```
 
-### Configuración
+### Configuration
 
-Un solo `AddDbContext<AppDbContext>` con `ITenantConnectionContext.Connection` (misma conexión física Npgsql para toda la request). Una sola tabla `__EFMigrationsHistory`.
+Single `AddDbContext<AppDbContext>` with `ITenantConnectionContext.Connection` (same physical Npgsql connection for the entire request). Single `__EFMigrationsHistory` table.
 
 ```csharp
 services.AddDbContext<AppDbContext>((sp, options) =>
 {
     var tenant = sp.GetRequiredService<ITenantConnectionContext>();
-    options.UseNpgsql(tenant.Connection,
-        x => x.MigrationsHistoryTable("__EFMigrationsHistory"));
+    options.UseNpgsql(tenant.Connection);
 });
 
 services.AddScoped<ISalesDbContext>(sp => sp.GetRequiredService<AppDbContext>());
@@ -75,65 +74,65 @@ services.AddScoped<IInvDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
 ---
 
-## Módulos
+## Modules
 
-Cada módulo es un proyecto independiente con 3 capas. **Nunca se referencian entre sí**, solo a Common y (según el caso) a `System.Infrastructure`.
+Each module is an independent project with 3 layers. **They never reference each other**, only Common and (where applicable) `System.Infrastructure`.
 
-### Estructura interna
+### Internal structure
 
 ```
 Module.X/
-├── Domain/                 # Entidades y enums, sin dependencias
+├── Domain/                 # Entities and enums, zero dependencies
 ├── Application/
-│   ├── Abstraction/        # Interfaces de DbContext y servicios externos
-│   └── UseCases/           # Casos de uso (un clase por operación)
+│   ├── Abstraction/        # DbContext interfaces and external service contracts
+│   └── UseCases/           # Use cases (one class per operation)
 └── Infrastructure/
-    ├── Seeder/             # Implementaciones de IDataSeeder
-    └── Services/           # Implementaciones de contratos de Common
+    ├── Seeder/             # IDataSeeder implementations
+    └── Services/           # Implementations of Common contracts
 ```
 
-> Nota: Persistence ya no existe en los módulos. El DbContext unificado está en `System.Infrastructure`.
+> Note: Persistence no longer lives in modules. The unified DbContext is in `System.Infrastructure`.
 
-### Reglas de dependencia
+### Dependency rules
 
-- **Domain** — cero dependencias externas
-- **Application** → depende de `Domain` + `Common.Contracts`
-- **Infrastructure** → depende de `Application` + `Common`
-- Módulos **no se referencian entre sí**
+- **Domain** — zero external dependencies
+- **Application** → depends on `Domain` + `Common.Contracts`
+- **Infrastructure** → depends on `Application` + `Common`
+- Modules **never reference each other**
 
-### Módulo.Auth
+### Module.Auth
 
-- Usuarios, roles, autenticación (JWT + Google OAuth), tenants, sucursales, features/permissions
-- DbContext propio: `AuthDbContext` (global, no multi-tenant)
-- Implementa: `IBranchService`, `IUserIntegrationService`, `IUserPermissionsCacheService`
+- Users, roles, authentication (JWT + Google OAuth), tenants, branches, features/permissions
+- Own DbContext: `AuthDbContext` (global, non multi-tenant)
+- Implements: `IBranchService`, `IUserIntegrationService`, `IUserPermissionsCacheService`
 
-### Módulo.Inventory
+### Module.Inventory
 
-- Productos, variantes, marcas, categorías, colores, recepciones, transferencias de stock
-- Usa `IInvDbContext` (resuelto desde `AppDbContext` en `System.Infrastructure`)
-- Implementa: `IInventoryIntegrationService` (DeductStock, GetVariantsWithStock)
+- Products, variants, brands, categories, colors, receptions, stock transfers
+- Uses `IInvDbContext` (resolved from `AppDbContext` in `System.Infrastructure`)
+- Implements: `IInventoryIntegrationService` (DeductStock, GetVariantsWithStock)
 
-### Módulo.Sales
+### Module.Sales
 
-- Ventas, items de venta, cierres de caja, movimientos de caja
-- Usa `ISalesDbContext` (resuelto desde `AppDbContext` en `System.Infrastructure`)
-- Cross-module transactions vía `context.Database.BeginTransactionAsync()` (ya no usa `TransactionScope`)
+- Sales, sale items, cash register closures, cash register movements
+- Uses `ISalesDbContext` (resolved from `AppDbContext` in `System.Infrastructure`)
+- Cross-module transactions via `context.Database.BeginTransactionAsync()` (no longer uses `TransactionScope`)
 
 ---
 
 ## System.Api (Composition Root)
 
-Host ASP.NET Core Web API. Referencia a todos los proyectos y orquesta el wiring.
+ASP.NET Core Web API host. References all projects and orchestrates wiring.
 
 ```
 System.Api/
 ├── Program.cs                    # Composition Root
-├── Controllers/                  # Capa de presentación (Auth/, Branch/, Inventory/)
+├── Controllers/                  # Presentation layer (Auth/, Branch/, Inventory/)
 ├── Middlewares/
 │   ├── GlobalExceptionHandlerMiddleware.cs
-│   └── TenantMiddleware.cs       # Resuelve tenant desde JWT
+│   └── TenantMiddleware.cs       # Resolves tenant from JWT
 ├── Filters/
-│   ├── RequireFeatureFilter.cs   # Authorization filter por feature
+│   ├── RequireFeatureFilter.cs   # Authorization filter by feature
 │   └── ValidationFilter.cs       # ModelState → ProblemDetails
 ├── Result/
 │   ├── ResultExtension.cs        # Result<T> → IActionResult
@@ -150,36 +149,36 @@ Cors → GlobalExceptionHandler → HttpsRedirection → Authentication → Auth
 
 ---
 
-## Comunicación entre módulos
+## Inter-Module Communication
 
-Las integraciones se definen como interfaces en `Common/Contracts/` y se implementan en la capa `Infrastructure` del módulo propietario.
+Integration interfaces are defined in `Common/Contracts/` and implemented in the owning module's `Infrastructure` layer.
 
-**Ejemplo:** Module.Sales necesita deducir stock:
+**Example:** Module.Sales needs to deduct stock:
 
-1. `Common/Contracts/inventory/IInventoryIntegrationService` define `DeductStock(StockDeductionDto)`
-2. `Module.Inventory/Infrastructure/InventoryIntegrationService` implementa la interfaz
-3. `Module.Sales` inyecta `IInventoryIntegrationService` (desde Common) — sin conocer Module.Inventory
-4. System.Api registra todo vía DI
+1. `Common/Contracts/inventory/IInventoryIntegrationService` defines `DeductStock(StockDeductionDto)`
+2. `Module.Inventory/Infrastructure/InventoryIntegrationService` implements the interface
+3. `Module.Sales` injects `IInventoryIntegrationService` (from Common) — without knowing Module.Inventory
+4. System.Api registers everything via DI
 
-Flujo de dependencias:
+Dependency flow:
 
 ```
 Module.Sales.Application.UseCases
-    → IInventoryIntegrationService (en Common)
-        → Module.Inventory.Infrastructure.InventoryIntegrationService (implementación)
+    → IInventoryIntegrationService (in Common)
+        → Module.Inventory.Infrastructure.InventoryIntegrationService (implementation)
 ```
 
-### Transacciones cross-module
+### Cross-module transactions
 
-Como Sales e Inventory comparten el mismo `AppDbContext`, las transacciones se manejan con EF Core nativo:
+Since Sales and Inventory share the same `AppDbContext`, transactions use native EF Core:
 
 ```csharp
 await using var transaction = await context.Database.BeginTransactionAsync();
 try
 {
-    inventoryService.DeductStock(deductions, branchId, userId, sale.Id);  // modifica entidades
+    inventoryService.DeductStock(deductions, branchId, userId, sale.Id);  // modifies entities
     context.Sales.Add(sale);
-    await context.SaveChangesAsync();  // persiste todo en una sola llamada
+    await context.SaveChangesAsync();  // persists everything in a single call
     await transaction.CommitAsync();
 }
 catch
@@ -188,27 +187,27 @@ catch
 }
 ```
 
-No se necesita `TransactionScope`. La integración service (`DeductStock`) ya no llama `SaveChangesAsync` — el caller controla la transacción.
+No `TransactionScope` needed. The integration service (`DeductStock`) no longer calls `SaveChangesAsync` — the caller controls the transaction.
 
 ---
 
-## Patrones clave
+## Key patterns
 
-| Patrón | Ubicación |
+| Pattern | Location |
 |--------|-----------|
-| **Clean Architecture** (3 capas) | Cada módulo |
-| **Result Pattern** | `Common/Utilities/Result.cs` — `Result<T>` sin excepciones para flujos de negocio |
-| **Use Case classes** | Sin MediatR, inyección directa de clases |
-| **Multi-tenencia por esquema** | `ITenantConnectionContext` + `IMustHaveTenant.HasQueryFilter` en `AppDbContext` |
-| **DbContext unificado** | `System.Infrastructure.Persistence.AppDbContext` — Sales + Inventory juntos |
-| **Auth DbContext separado** | `AuthDbContext` (global, sin multi-tenant) — conexión fija desde config |
-| **Transacciones nativas EF Core** | `context.Database.BeginTransactionAsync()` — sin `TransactionScope` |
-| **Seeders vía IDataSeeder** | Cada módulo registra seeders, `DatabaseSeeder` los agrega y ejecuta en orden |
+| **Clean Architecture** (3 layers) | Each module |
+| **Result Pattern** | `Common/Utilities/Result.cs` — `Result<T>` without exceptions for business flows |
+| **Use Case classes** | No MediatR, direct class injection |
+| **Schema-based multi-tenancy** | `ITenantConnectionContext` + `IMustHaveTenant.HasQueryFilter` in `AppDbContext` |
+| **Unified DbContext** | `System.Infrastructure.Persistence.AppDbContext` — Sales + Inventory together |
+| **Separate Auth DbContext** | `AuthDbContext` (global, non multi-tenant) — fixed connection from config |
+| **Native EF Core transactions** | `context.Database.BeginTransactionAsync()` — without `TransactionScope` |
+| **Seeders via IDataSeeder** | Each module registers seeders, `DatabaseSeeder` aggregates and runs them in order |
 | **Global Exception Handling** | `GlobalExceptionHandlerMiddleware` → RFC 7807 ProblemDetails |
 
 ---
 
-## Proyectos y dependencias
+## Projects and dependencies
 
 ```
 System.Api (net9.0)

@@ -1,4 +1,7 @@
-# Domain Design Guidelines: Purity and Business Rules
+# Domain Design Guidelines
+
+> **Scope:** All modules
+> **When to use:** Writing domain entities, value objects, or business rules
 
 The Domain is the heart of the system. It must model business rules, invariants, and entities without being contaminated by infrastructure details, databases, or application control flow (such as the `Result` pattern).
 
