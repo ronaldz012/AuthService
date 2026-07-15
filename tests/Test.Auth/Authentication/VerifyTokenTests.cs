@@ -1,7 +1,7 @@
 using Module.Auth.Application.UseCases.Autentication.VerifyToken;
 using Module.Auth.Domain;
 
-namespace Test.Auth;
+namespace Test.Auth.Authentication;
 
 public class VerifyTokenTests
 {

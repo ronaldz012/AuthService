@@ -5,7 +5,7 @@ using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Users.UpdateUser;
 using Module.Auth.Domain;
 
-namespace Test.Auth;
+namespace Test.Auth.Users;
 
 public class UpdateUserTests
 {

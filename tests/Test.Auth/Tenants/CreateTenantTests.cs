@@ -8,7 +8,7 @@ using Module.Auth.Domain;
 using Module.Auth.Infrastructure.Authentication;
 using Moq;
 
-namespace Test.Auth;
+namespace Test.Auth.Tenants;
 
 public class CreateTenantTests
 {

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.UseCases.Roles.GetRoles;
 using Module.Auth.Domain;
 
-namespace Test.Auth;
+namespace Test.Auth.Roles;
 
 public class GetRolesTests
 {

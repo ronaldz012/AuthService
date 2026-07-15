@@ -4,7 +4,7 @@ using Module.Auth.Application.UseCases.Roles.Create;
 using Module.Auth.Application.UseCases.Roles.GetById;
 using Module.Auth.Domain;
 
-namespace Test.Auth;
+namespace Test.Auth.Roles;
 
 public class GetRoleTests
 {

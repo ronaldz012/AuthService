@@ -1,6 +1,6 @@
 using Module.Auth.Application.UseCases.Branches.CreateBranch;
 
-namespace Test.Auth;
+namespace Test.Auth.Branches;
 
 public class CreateBranchTests
 {

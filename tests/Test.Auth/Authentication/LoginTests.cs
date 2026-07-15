@@ -7,7 +7,7 @@ using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Domain;
 using Moq;
 
-namespace Test.Auth;
+namespace Test.Auth.Authentication;
 
 public class LoginTests
 {

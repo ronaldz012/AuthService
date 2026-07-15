@@ -8,7 +8,7 @@ using Module.Auth.Application.UseCases.Users.CreateUser;
 using Module.Auth.Domain;
 using Module.Auth.Infrastructure.Authentication;
 
-namespace Test.Auth;
+namespace Test.Auth.Users;
 
 public class CreateUserTests
 {

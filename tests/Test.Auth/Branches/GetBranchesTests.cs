@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.UseCases.Branches.GetBranches;
 using Module.Auth.Domain;
 
-namespace Test.Auth;
+namespace Test.Auth.Branches;
 
 public class GetBranchesTests
 {

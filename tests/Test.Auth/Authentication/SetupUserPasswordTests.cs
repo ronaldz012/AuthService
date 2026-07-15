@@ -2,7 +2,7 @@ using Common.Utilities;
 using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Domain;
 
-namespace Test.Auth;
+namespace Test.Auth.Authentication;
 
 public class SetupUserPasswordTests
 {
