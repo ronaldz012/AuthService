@@ -17,9 +17,29 @@ public class CashRegisterClosure: IMustHaveTenant
         public decimal SystemSalesAmount { get; set; } // Lo que el sistema calculó
         public decimal RealCountedAmount { get; set; } // Lo que el usuario contó
 
-        public CashRegisterClosureStatus Status { get; set; }
-        public ICollection<CashRegisterMovement> Movements { get; set; } = new List<CashRegisterMovement>();
-        public ICollection<Sale> Sales { get; set; } = new List<Sale>();
+    public CashRegisterClosureStatus Status { get; set; }
+    public ICollection<CashRegisterMovement> Movements { get; set; } = new List<CashRegisterMovement>();
+    public ICollection<Sale> Sales { get; set; } = new List<Sale>();
+
+    public void Close(decimal realCountedAmount, Guid closedById)
+    {
+        if (Status != CashRegisterClosureStatus.Open)
+            throw new InvalidOperationException("Cash register is already closed.");
+
+        var cashSalesTotal = Sales
+            .Where(s => s.PaymentMethod == PaymentMethod.Cash)
+            .Sum(s => s.TotalAmount);
+
+        var outflowsTotal = Movements
+            .Where(m => m.Type == CashRegisterMovementType.Outflow)
+            .Sum(m => m.Amount);
+
+        SystemSalesAmount = OpeningBalance + cashSalesTotal - outflowsTotal;
+        RealCountedAmount = realCountedAmount;
+        CloseById = closedById;
+        ClosedAt = DateTime.UtcNow;
+        Status = CashRegisterClosureStatus.Closed;
+    }
 }
 public enum CashRegisterClosureStatus
 {

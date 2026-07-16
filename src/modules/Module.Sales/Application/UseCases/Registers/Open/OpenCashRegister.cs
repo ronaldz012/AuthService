@@ -17,11 +17,10 @@ public class OpenCashRegister(ISalesDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<Guid>> Execute(OpenCashRegisterDto dto)
     {
-        if (dto.BranchId != currentUser.BranchId)
-            return OpenCashRegisterErrors.BranchMismatch;
+        var branchId = currentUser.BranchId;
 
         var alreadyOpen = await context.CashRegisterClosures
-            .AnyAsync(c => c.BranchId == dto.BranchId && c.Status == CashRegisterClosureStatus.Open);
+            .AnyAsync(c => c.BranchId == branchId && c.Status == CashRegisterClosureStatus.Open);
 
         if (alreadyOpen)
             return OpenCashRegisterErrors.AlreadyOpen;
@@ -29,7 +28,7 @@ public class OpenCashRegister(ISalesDbContext context, ICurrentUser currentUser)
         var closure = new CashRegisterClosure
         {
             Id = Guid.NewGuid(),
-            BranchId = dto.BranchId,
+            BranchId = branchId,
             OpenById = currentUser.UserId,
             OpenAt = DateTime.UtcNow,
             OpeningBalance = dto.OpeningBalance,
