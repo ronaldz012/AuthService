@@ -11,16 +11,13 @@ public class CreateMovement(ISalesDbContext context, ICurrentUser currentUser)
     public async Task<Result<Guid>> Execute(CreateMovementDto dto)
     {
         var closure = await context.CashRegisterClosures
-            .FirstOrDefaultAsync(c => c.Id == dto.CashRegisterClosureId);
+            .FirstOrDefaultAsync(c => c.BranchId == currentUser.BranchId && c.IsOpen);
 
-        if (closure is null || closure.BranchId != currentUser.BranchId)
-            return CreateMovementErrors.ClosureNotFound;
-
-        if (closure.Status != CashRegisterClosureStatus.Open)
-            return CreateMovementErrors.ClosureNotOpen;
+        if (closure is null)
+            return CreateMovementErrors.NoOpenClosure;
 
         var movement = CashRegisterMovement.Create(
-            dto.CashRegisterClosureId, dto.Amount, dto.Description, dto.Type);
+            closure.Id, dto.Amount, dto.Description, CashRegisterMovementType.Outflow);
 
         context.CashRegisterMovements.Add(movement);
         await context.SaveChangesAsync();

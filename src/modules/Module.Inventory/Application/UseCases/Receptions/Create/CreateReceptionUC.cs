@@ -1,6 +1,7 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Inventory;
 using Module.Inventory.Domain.Receptions;
@@ -9,18 +10,19 @@ namespace Module.Inventory.Application.UseCases.Receptions.Create;
 
 public class CreateReceptionUc(
     IInvDbContext context,
-    ICurrentUser currentUser)
+    ICurrentUser currentUser,
+    ILogger<CreateReceptionUc> logger)
 {
     public async Task<Result<StockReceptionResultDto>> Execute(CreateStockReceptionDto dto)
     {
         var userId = currentUser.UserId;
         var branchId = currentUser.BranchIds[0];
 
-        // -- 1. Validar que todas las variantes existen -----------------------
         var variantIds = dto.Items.Select(x => x.ProductVariantId).ToList();
 
         var variants = await context.ProductVariants
             .Include(x => x.BranchInventories)
+            .Include(x => x.Product)
             .Where(x => variantIds.Contains(x.Id))
             .ToListAsync();
 
@@ -28,19 +30,11 @@ public class CreateReceptionUc(
         if (missingIds.Count != 0)
             return CreateReceptionErrors.VariantsNotFound;
 
-        // -- 2. Construir recepción -------------------------------------------
         await using var transaction = await context.Database.BeginTransactionAsync();
+
         try
         {
-            var newReception = new StockReception
-            {
-                Id = new Guid(),
-                BranchId = branchId,
-                Notes = dto.Notes,
-                ReceivedAt = DateTime.UtcNow
-            };
-            var receptionId = newReception.Id;
-
+            var reception = StockReception.Create(branchId, dto.Notes);
             var stockMovements = new List<StockMovement>();
             var variantMap = variants.ToDictionary(v => v.Id);
 
@@ -48,28 +42,21 @@ public class CreateReceptionUc(
             {
                 var variant = variantMap[item.ProductVariantId];
 
-                newReception.Items.Add(new StockReceptionItem
-                {
-                    ProductVariantId = variant.Id,
-                    QuantityReceived = item.QuantityReceived,
-                    UnitCost = item.UnitCost
-                });
-
+                reception.AddExistingVariant(variant.Id, item.QuantityReceived, item.UnitCost);
                 variant.AddQuantity(item.QuantityReceived, branchId);
 
                 stockMovements.Add(StockMovement.CreateReception(
-                    branchId, variant.Id, userId, item.QuantityReceived, receptionId));
+                    branchId, variant.Id, userId, item.QuantityReceived, reception.Id));
             }
 
-            context.StockReceptions.Add(newReception);
+            context.StockReceptions.Add(reception);
             context.StockMovements.AddRange(stockMovements);
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            // -- 3. Retornar resultado ----------------------------------------
             var result = await context.StockReceptions
-                .Where(r => r.Id == newReception.Id)
+                .Where(r => r.Id == reception.Id)
                 .Select(r => new StockReceptionResultDto
                 {
                     Id = r.Id,
@@ -88,14 +75,15 @@ public class CreateReceptionUc(
                 .FirstOrDefaultAsync();
 
             if (result == null)
-                throw new Exception($"La recepción {newReception.Id} se guardó pero no pudo ser consultada.");
+                return CreateReceptionErrors.ReceptionQueryFailed;
 
             return result;
         }
-        catch
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            throw;
+            logger.LogError(ex, "Error al crear recepción para sucursal {BranchId}", branchId);
+            return CreateReceptionErrors.CreationFailed;
         }
     }
 }

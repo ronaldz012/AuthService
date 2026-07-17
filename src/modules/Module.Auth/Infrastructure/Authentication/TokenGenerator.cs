@@ -11,7 +11,7 @@ namespace Module.Auth.Infrastructure.Authentication;
 
 public class JwtTokenGenerator(IConfiguration configuration) : ITokenGenerator
 {
-    public string GenerateAccessToken(Guid userId, Guid tenantId, UserType userType)
+    public string GenerateAccessToken(Guid userId, Guid tenantId, UserType userType, string fullName)
     {
         var keyString = configuration["TokenSettings:SecretKey"] ?? throw new InvalidOperationException("JWT Key is missing in config.");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
@@ -20,6 +20,7 @@ public class JwtTokenGenerator(IConfiguration configuration) : ITokenGenerator
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim(ClaimTypes.Name, fullName),
             new Claim("tenantId", tenantId.ToString()),
             new Claim("user_type", ((int)userType).ToString()),
         };

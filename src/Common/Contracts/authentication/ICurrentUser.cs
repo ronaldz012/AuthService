@@ -9,6 +9,7 @@ public interface ICurrentUser
     Guid BranchId { get; } //for most operations
     IReadOnlyList<Guid> BranchIds { get; }  //for some operations like reports
     
+    string FullName { get; }
     string Username { get; }
     int UserType { get; }
     bool IsAdmin { get; }

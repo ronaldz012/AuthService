@@ -81,7 +81,7 @@ public class LoginTests
         sessionState ??= new Mock<ISessionStateService>().Object;
         var tokenGeneratorMock = new Mock<ITokenGenerator>();
         tokenGeneratorMock
-            .Setup(t => t.GenerateAccessToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<UserType>()))
+            .Setup(t => t.GenerateAccessToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<UserType>(), It.IsAny<string>()))
             .Returns("fake-access-token");
         tokenGeneratorMock
             .Setup(t => t.GenerateRefreshToken())

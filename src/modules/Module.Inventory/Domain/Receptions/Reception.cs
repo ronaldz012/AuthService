@@ -8,12 +8,25 @@ public class StockReception : Params, IMustHaveTenant
 {
     public Guid Id { get; set; }
     public Guid TenantId { get; set; }
-    public Guid BranchId { get; set; } // External ID
+    public Guid BranchId { get; set; }
     public DateTime ReceivedAt { get; set; }
     public ReceptionStatus Status { get; set; } = ReceptionStatus.Confirmed;
     public string? Notes { get; set; }
 
     public ICollection<StockReceptionItem> Items { get; set; } = new List<StockReceptionItem>();
+
+    public static StockReception Create(Guid branchId, string? notes)
+    {
+        return new StockReception
+        {
+            Id = Guid.NewGuid(),
+            BranchId = branchId,
+            Notes = notes,
+            ReceivedAt = DateTime.UtcNow,
+            Status = ReceptionStatus.Confirmed
+        };
+    }
+
     public void AddExistingVariant(Guid variantId, int quantity, decimal unitCost)
     {
         Items.Add(new StockReceptionItem

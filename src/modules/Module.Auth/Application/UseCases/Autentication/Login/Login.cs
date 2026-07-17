@@ -30,10 +30,12 @@ public class Login(
         var session = await sessionState.GetOrBuildAsync(user.Id, user.TenantId, user.Type);
 
         var expirationMinutes = tokenGenerator.GetExpirationMinutes();
+        var fullName = $"{user.FirstName} {user.LastName}".Trim();
         var accessToken = tokenGenerator.GenerateAccessToken(
             user.Id,
             user.TenantId,
-            user.Type);
+            user.Type,
+            fullName);
 
         var refreshToken = tokenGenerator.GenerateRefreshToken();
 

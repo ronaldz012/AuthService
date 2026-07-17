@@ -55,6 +55,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantConnect
         modelBuilder.Entity<CashRegisterClosure>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+            entity.HasIndex(e => new { e.TenantId, e.BranchId })
+                .IsUnique()
+                .HasFilter("\"IsOpen\" = true")
+                .HasDatabaseName("IX_CashRegisterClosures_Tenant_Branch_OpenOnly");
             entity.HasMany(c => c.Movements)
                 .WithOne(m => m.CashRegisterClosure)
                 .HasForeignKey(m => m.CashRegisterClosureId);

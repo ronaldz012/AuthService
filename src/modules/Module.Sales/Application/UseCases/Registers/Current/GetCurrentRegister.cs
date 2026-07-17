@@ -2,7 +2,6 @@ using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Sales.Application.Abstraction;
-using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Registers.Current;
 
@@ -12,7 +11,7 @@ public class GetCurrentRegister(ISalesDbContext context, ICurrentUser currentUse
     {
         var closure = await context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.BranchId == currentUser.BranchId && c.Status == CashRegisterClosureStatus.Open)
+            .Where(c => c.BranchId == currentUser.BranchId && c.IsOpen)
             .Select(c => new CurrentRegisterDto
             {
                 IsOpen = true,

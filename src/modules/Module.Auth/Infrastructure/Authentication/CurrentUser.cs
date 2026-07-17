@@ -13,6 +13,7 @@ public class CurrentUserService : ICurrentUser
     public Guid TenantId { get; }
     public Guid BranchId { get; }
     public IReadOnlyList<Guid> BranchIds { get; }
+    public string FullName { get; }
     public string Username { get; }
     public int UserType { get; }
     public bool IsAdmin => UserType is 1 or 2;
@@ -28,6 +29,7 @@ public class CurrentUserService : ICurrentUser
 
         if (!IsAuthenticated)
         {
+            FullName = "";
             Username = "Anonymous";
             BranchIds = [];
             return;
@@ -35,7 +37,8 @@ public class CurrentUserService : ICurrentUser
 
         UserId = Guid.TryParse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var uGuid) ? uGuid : Guid.Empty;
         TenantId = Guid.TryParse(user?.FindFirst("tenantId")?.Value, out var tGuid) ? tGuid : Guid.Empty;
-        Username = user?.FindFirst(ClaimTypes.Name)?.Value ?? "Anonymous";
+        FullName = user?.FindFirst(ClaimTypes.Name)?.Value ?? "";
+        Username = user?.FindFirst("username")?.Value ?? FullName;
         UserType = int.TryParse(user?.FindFirst("user_type")?.Value, out var ut) ? ut : 0;
         Token = context?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 

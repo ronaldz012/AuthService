@@ -34,7 +34,6 @@ public class CreateSaleTests
 
         var result = await sut.Execute(new CreateSaleDto
         {
-            CashRegisterClosureId = CashClosureId,
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
             Items = [new CreateSaleItemDto { ProductVariantId = VariantId, Quantity = 1 }]
@@ -45,7 +44,7 @@ public class CreateSaleTests
     }
 
     [Fact]
-    public async Task Execute_ShouldReturnError_WhenCashClosureNotFound()
+    public async Task Execute_ShouldReturnError_WhenNoOpenCashRegister()
     {
         var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
         using var dbContext = TestSalesDbContextFactory.Create(tenantCtx);
@@ -55,20 +54,19 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", 100m, 10)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10)
             });
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
 
         var result = await sut.Execute(new CreateSaleDto
         {
-            CashRegisterClosureId = Guid.NewGuid(),
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
             Items = [new CreateSaleItemDto { ProductVariantId = VariantId, Quantity = 1 }]
         });
 
-        Assert.Equal(CreateSaleErrors.CashClosureNotFound, result.Error);
+        Assert.Equal(CreateSaleErrors.NoOpenCashRegister, result.Error);
     }
 
     [Fact]
@@ -83,20 +81,19 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", 100m, 10)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10)
             });
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
 
         var result = await sut.Execute(new CreateSaleDto
         {
-            CashRegisterClosureId = CashClosureId,
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
             Items = [new CreateSaleItemDto { ProductVariantId = VariantId, Quantity = 1 }]
         });
 
-        Assert.Equal(CreateSaleErrors.CashClosureNotOpen, result.Error);
+        Assert.Equal(CreateSaleErrors.NoOpenCashRegister, result.Error);
     }
 
     [Fact]
@@ -111,7 +108,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", 100m, 10)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10)
             });
         var deductError = new Error(ErrorCode.InvalidState, "Insufficient stock for product SKU-001.");
         inventoryMock
@@ -122,7 +119,6 @@ public class CreateSaleTests
 
         var result = await sut.Execute(new CreateSaleDto
         {
-            CashRegisterClosureId = CashClosureId,
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
             Items = [new CreateSaleItemDto { ProductVariantId = VariantId, Quantity = 1 }]
@@ -143,7 +139,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", 100m, 10)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10)
             });
         inventoryMock
             .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<Guid>()))
@@ -153,7 +149,6 @@ public class CreateSaleTests
 
         var result = await sut.Execute(new CreateSaleDto
         {
-            CashRegisterClosureId = CashClosureId,
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
             TransactionCode = null,
@@ -171,6 +166,10 @@ public class CreateSaleTests
         Assert.Equal(200m, saved.TotalAmount); // 100 * 2
         Assert.Single(saved.SaleItems);
         Assert.Equal(TenantId, saved.TenantId);
+        Assert.Equal("Test User", saved.SoldByName);
+        var savedItem = saved.SaleItems.First();
+        Assert.Equal("SKU-001", savedItem.ProductSku);
+        Assert.Equal("Test Product - Negro / 42", savedItem.ProductDisplayName);
     }
 
     private static CreateSale CreateSut(
@@ -179,6 +178,7 @@ public class CreateSaleTests
     {
         var currentUser = new Mock<ICurrentUser>();
         currentUser.Setup(u => u.UserId).Returns(UserId);
+        currentUser.Setup(u => u.FullName).Returns("Test User");
         currentUser.Setup(u => u.BranchId).Returns(BranchId);
         currentUser.Setup(u => u.BranchIds).Returns([BranchId]);
 
@@ -195,7 +195,7 @@ public class CreateSaleTests
         {
             Id = CashClosureId,
             BranchId = BranchId,
-            Status = CashRegisterClosureStatus.Open,
+            IsOpen = true,
             OpenAt = DateTime.UtcNow,
             OpeningBalance = 500m,
         });
@@ -208,7 +208,7 @@ public class CreateSaleTests
         {
             Id = CashClosureId,
             BranchId = BranchId,
-            Status = CashRegisterClosureStatus.Closed,
+            IsOpen = false,
             OpenAt = DateTime.UtcNow.AddHours(-8),
             ClosedAt = DateTime.UtcNow,
             OpeningBalance = 500m,

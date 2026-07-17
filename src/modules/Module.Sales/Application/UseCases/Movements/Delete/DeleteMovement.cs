@@ -1,7 +1,6 @@
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Sales.Application.Abstraction;
-using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Movements.Delete;
 
@@ -16,7 +15,7 @@ public class DeleteMovement(ISalesDbContext context)
         if (movement is null)
             return DeleteMovementErrors.NotFound;
 
-        if (movement.CashRegisterClosure.Status != CashRegisterClosureStatus.Open)
+        if (!movement.CashRegisterClosure.IsOpen)
             return DeleteMovementErrors.ClosureClosed;
 
         context.CashRegisterMovements.Remove(movement);

@@ -1,7 +1,6 @@
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Sales.Application.Abstraction;
-using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Movements.Update;
 
@@ -16,7 +15,7 @@ public class UpdateMovement(ISalesDbContext context)
         if (movement is null)
             return UpdateMovementErrors.NotFound;
 
-        if (movement.CashRegisterClosure.Status != CashRegisterClosureStatus.Open)
+        if (!movement.CashRegisterClosure.IsOpen)
             return UpdateMovementErrors.ClosureClosed;
 
         movement.Update(dto.Amount, dto.Description);

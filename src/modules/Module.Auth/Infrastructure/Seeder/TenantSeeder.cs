@@ -12,7 +12,17 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
 
     public async Task SeedAsync()
     {
-        if (await context.Tenants.AnyAsync()) return;
+        if (await context.Tenants.AnyAsync())
+        {
+            // Configurar connection context para seeders posteriores (Inventory, Sales, etc.)
+            var existing = await context.Tenants
+                .Include(t => t.TenantDataBase)
+                .FirstAsync();
+            tenantConnectionContext.TenantId = existing.Id;
+            tenantConnectionContext.DatabaseName = existing.TenantDataBase.Name;
+            tenantConnectionContext.Schema = existing.TenantDataBase.Schema;
+            return;
+        }
 
         var db = await context.TenantDatabases.FirstAsync(x => x.Name == "erp_db");
         var plan = await context.Plans.FirstAsync(p => p.Name == "Basic");
@@ -22,6 +32,8 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
         var mainBranchId = Guid.NewGuid();
 
         tenantConnectionContext.TenantId = tenantId;
+        tenantConnectionContext.DatabaseName = db.Name;
+        tenantConnectionContext.Schema = db.Schema;
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword("1234");
 

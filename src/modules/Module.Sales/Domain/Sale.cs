@@ -8,6 +8,7 @@ public class Sale : IMustHaveTenant
     public Guid TenantId { get; set; }
     public Guid BranchId { get; set; }
     public Guid SoldById { get; set; }
+    public string SoldByName { get; set; } = string.Empty;
     public Guid CashRegisterClosureId { get; set; } 
     public PaymentMethod PaymentMethod { get; set; }
     public string? TransactionCode { get; set; }
@@ -15,8 +16,7 @@ public class Sale : IMustHaveTenant
     public int? InvoiceNumber { get; set; }
     public SaleType Type { get; set; }        
     public DocumentType DocumentType { get; set; }
-    public SaleStatus Status { get; set; }    
-    public DateTime? CancelledAt { get; set; }
+
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
@@ -26,26 +26,28 @@ public class Sale : IMustHaveTenant
     public static Sale CreateSaleWithTicket(
         Guid branchId,
         Guid soldById,
+        string soldByName,
         Guid cashRegisterClosureId,
         PaymentMethod paymentMethod,
         string? transactionCode,
         string? notes,
-        List<(Guid ProductVariantId, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
+        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
     {
-        return CreateBase(branchId, soldById, cashRegisterClosureId, paymentMethod, 
+        return CreateBase(branchId, soldById, soldByName, cashRegisterClosureId, paymentMethod, 
             DocumentType.Ticket, transactionCode, notes, null, items);
     }
 
     public static Sale CreateSaleWithInvoice(
         Guid branchId,
         Guid soldById,
+        string soldByName,
         Guid cashRegisterClosureId,
         PaymentMethod paymentMethod,
         DocumentType documentType, 
         int? invoiceNumber,
         string? transactionCode,
         string? notes,
-        List<(Guid ProductVariantId, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
+        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
     {
         if (documentType == DocumentType.Ticket)
             throw new InvalidOperationException("Cannot create an invoice with document type 'Ticket'.");
@@ -53,7 +55,7 @@ public class Sale : IMustHaveTenant
         if (documentType == DocumentType.Invoice && (!invoiceNumber.HasValue || invoiceNumber <= 0))
             throw new InvalidOperationException("Invoice number is required for completed invoices.");
 
-        return CreateBase(branchId, soldById, cashRegisterClosureId, paymentMethod, 
+        return CreateBase(branchId, soldById, soldByName, cashRegisterClosureId, paymentMethod, 
             documentType, transactionCode, notes, invoiceNumber, items);
     }
 
@@ -61,13 +63,14 @@ public class Sale : IMustHaveTenant
     private static Sale CreateBase(
         Guid branchId,
         Guid soldById,
+        string soldByName,
         Guid cashRegisterClosureId,
         PaymentMethod paymentMethod,
         DocumentType documentType,
         string? transactionCode,
         string? notes,
         int? invoiceNumber,
-        List<(Guid ProductVariantId, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
+        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
     {
         if (items == null || !items.Any())
             throw new InvalidOperationException("Cannot create a sale without products.");
@@ -77,6 +80,7 @@ public class Sale : IMustHaveTenant
             Id = Guid.NewGuid(),
             BranchId = branchId,
             SoldById = soldById,
+            SoldByName = soldByName,
             CashRegisterClosureId = cashRegisterClosureId,
             PaymentMethod = paymentMethod,
             DocumentType = documentType,
@@ -84,7 +88,7 @@ public class Sale : IMustHaveTenant
             TransactionCode = transactionCode,
             Notes = notes,
             InvoiceNumber = invoiceNumber,
-            Status = SaleStatus.Completed,
+
             CreatedAt = DateTime.UtcNow
         };
 
@@ -95,6 +99,8 @@ public class Sale : IMustHaveTenant
             sale.SaleItems.Add(new SaleItem
             {
                 ProductVariantId = item.ProductVariantId,
+                ProductSku = item.ProductSku,
+                ProductDisplayName = item.ProductDisplayName,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
                 DiscountAmount = item.DiscountAmount,
@@ -128,8 +134,3 @@ public enum DocumentType
     PendingInvoice  // Con factura pendiente en caso de que salga mal
 }
 
-public enum SaleStatus
-{
-    Completed,
-    Cancelled,
-}

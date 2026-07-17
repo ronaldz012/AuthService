@@ -20,7 +20,7 @@ public class OpenCashRegister(ISalesDbContext context, ICurrentUser currentUser)
         var branchId = currentUser.BranchId;
 
         var alreadyOpen = await context.CashRegisterClosures
-            .AnyAsync(c => c.BranchId == branchId && c.Status == CashRegisterClosureStatus.Open);
+            .AnyAsync(c => c.BranchId == branchId && c.IsOpen);
 
         if (alreadyOpen)
             return OpenCashRegisterErrors.AlreadyOpen;
@@ -32,7 +32,7 @@ public class OpenCashRegister(ISalesDbContext context, ICurrentUser currentUser)
             OpenById = currentUser.UserId,
             OpenAt = DateTime.UtcNow,
             OpeningBalance = dto.OpeningBalance,
-            Status = CashRegisterClosureStatus.Open
+            IsOpen = true
         };
 
         context.CashRegisterClosures.Add(closure);

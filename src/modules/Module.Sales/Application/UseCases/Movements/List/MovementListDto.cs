@@ -8,6 +8,6 @@ public class MovementListDto
     public Guid CashRegisterClosureId { get; set; }
     public decimal Amount { get; set; }
     public string Description { get; set; } = string.Empty;
-    public CashRegisterMovementType Type { get; set; }
+    public string Type { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }

@@ -6,27 +6,29 @@ namespace Module.Sales.Application.UseCases.Sales.GetById;
 
 public class SaleDetailDto
 {
-    public int Id { get; set; }
-    public int BranchId { get; set; }
-    public int SoldById { get; set; }
+    public Guid Id { get; set; }
+    public Guid BranchId { get; set; }
+    public Guid SoldById { get; set; }
+    public string SoldByName { get; set; } = string.Empty;
+    public SaleType Type { get; set; }
+    public DocumentType DocumentType { get; set; }
     public PaymentMethod PaymentMethod { get; set; }
     public string? TransactionCode { get; set; }
     public decimal TotalAmount { get; set; }
+    public int TotalItems { get; set; }
     public int? InvoiceNumber { get; set; }
-    public SaleStatus Status { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime? CancelledAt { get; set; }
 
-    // Detalle de los artículos vendidos
     public List<SaleItemDetailDto> Items { get; set; } = [];
 }
 
 public class SaleItemDetailDto
 {
-    public int Id { get; set; }
-    public int ProductVariantId { get; set; }
-    public string? ProductDisplayName { get; set; } 
+    public Guid Id { get; set; }
+    public Guid ProductVariantId { get; set; }
+    public string ProductDisplayName { get; set; } = string.Empty;
+    public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal FinalPrice { get; set; }

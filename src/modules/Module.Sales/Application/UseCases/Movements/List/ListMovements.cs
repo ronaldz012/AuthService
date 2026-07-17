@@ -2,7 +2,6 @@ using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Sales.Application.Abstraction;
-using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Movements.List;
 
@@ -12,7 +11,7 @@ public class ListMovements(ISalesDbContext context, ICurrentUser currentUser)
     {
         var closure = await context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.BranchId == currentUser.BranchId && c.Status == CashRegisterClosureStatus.Open)
+            .Where(c => c.BranchId == currentUser.BranchId && c.IsOpen)
             .Select(c => c.Id)
             .FirstOrDefaultAsync();
 
@@ -29,7 +28,7 @@ public class ListMovements(ISalesDbContext context, ICurrentUser currentUser)
                 CashRegisterClosureId = m.CashRegisterClosureId,
                 Amount = m.Amount,
                 Description = m.Description,
-                Type = m.Type,
+                Type = m.Type.ToString(),
                 CreatedAt = m.CreatedAt
             })
             .ToListAsync();

@@ -38,5 +38,6 @@ public class CashRegisterMovement : IMustHaveTenant
 
 public enum CashRegisterMovementType
 {
-    Outflow
+    Outflow,
+    Inflow
 }

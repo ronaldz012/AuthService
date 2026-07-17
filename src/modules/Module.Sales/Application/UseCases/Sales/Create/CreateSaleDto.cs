@@ -8,7 +8,6 @@ public class CreateSaleDto
     public PaymentMethod PaymentMethod { get; set; }
     public int? InvoiceNumber { get; set; }
     public DocumentType DocumentType { get; set; }
-    public Guid CashRegisterClosureId { get; set; }
     public string? TransactionCode { get; set; }
     public string? Notes { get; set; }
     

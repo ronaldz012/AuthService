@@ -13,7 +13,7 @@ public class CloseCashRegister(ISalesDbContext context, ICurrentUser currentUser
         var closure = await context.CashRegisterClosures
             .Include(c => c.Sales)
             .Include(c => c.Movements)
-            .FirstOrDefaultAsync(c => c.BranchId == currentUser.BranchId && c.Status == CashRegisterClosureStatus.Open);
+            .FirstOrDefaultAsync(c => c.BranchId == currentUser.BranchId && c.IsOpen);
 
         if (closure is null)
             return CloseCashRegisterErrors.NotFound;

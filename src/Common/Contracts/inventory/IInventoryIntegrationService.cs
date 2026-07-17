@@ -16,6 +16,7 @@ public interface IInventoryIntegrationService
 public record ProductVariantStockDto(
     Guid Id,
     string Sku,
+    string DisplayName,
     decimal Price,
     int Stock);
 

@@ -1,6 +1,7 @@
 using Common.Contracts.authentication;
 using Common.Contracts.inventory;
 using Common.Utilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Module.Sales.Application.Abstraction;
 using Module.Sales.Domain;
@@ -21,12 +22,11 @@ public class CreateSale(
         var stockResult = await inventoryService.GetVariantsWithStock(variantIds, branchId);
         if (!stockResult.IsSuccess) return stockResult.Error;
 
-        var cashClosure = await context.CashRegisterClosures.FindAsync(dto.CashRegisterClosureId);
-        if (cashClosure == null || cashClosure.BranchId != branchId)
-            return CreateSaleErrors.CashClosureNotFound;
+        var cashClosure = await context.CashRegisterClosures
+            .FirstOrDefaultAsync(c => c.BranchId == branchId && c.IsOpen);
 
-        if (cashClosure.Status != CashRegisterClosureStatus.Open)
-            return CreateSaleErrors.CashClosureNotOpen;
+        if (cashClosure is null)
+            return CreateSaleErrors.NoOpenCashRegister;
 
         var variants = stockResult.Value;
         if (variants.Count != variantIds.Count)
@@ -39,7 +39,7 @@ public class CreateSale(
             var factoryItems = dto.Items.Select(itemDto =>
             {
                 var variant = variants.First(v => v.Id == itemDto.ProductVariantId);
-                return (itemDto.ProductVariantId, variant.Price, itemDto.Quantity, itemDto.DiscountAmount);
+                return (itemDto.ProductVariantId, variant.Sku, variant.DisplayName, variant.Price, itemDto.Quantity, itemDto.DiscountAmount);
             }).ToList();
 
             Sale sale;
@@ -48,7 +48,8 @@ public class CreateSale(
                 sale = Sale.CreateSaleWithTicket(
                     branchId,
                     currentUser.UserId,
-                    dto.CashRegisterClosureId,
+                    currentUser.FullName,
+                    cashClosure.Id,
                     dto.PaymentMethod,
                     dto.TransactionCode,
                     dto.Notes,
@@ -60,7 +61,8 @@ public class CreateSale(
                 sale = Sale.CreateSaleWithInvoice(
                     branchId,
                     currentUser.UserId,
-                    dto.CashRegisterClosureId,
+                    currentUser.FullName,
+                    cashClosure.Id,
                     dto.PaymentMethod,
                     dto.DocumentType, 
                     dto.InvoiceNumber,
