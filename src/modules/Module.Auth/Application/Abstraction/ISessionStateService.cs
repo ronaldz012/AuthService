@@ -7,4 +7,5 @@ public interface ISessionStateService
 {
     Task<SessionStateDto> GetOrBuildAsync(Guid userId, Guid tenantId, UserType userType);
     void Invalidate(Guid userId);
+    void InvalidateTenant(Guid tenantId);
 }

@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using Common.Contracts.authentication.dtos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
 
@@ -10,6 +12,8 @@ public class SessionStateService(
     IMemoryCache cache,
     IAuthDbContext context) : ISessionStateService
 {
+    private static readonly ConcurrentDictionary<Guid, CancellationTokenSource> TenantCts = new();
+
     private static readonly MemoryCacheEntryOptions CacheOpts =
         new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
 
@@ -21,11 +25,27 @@ public class SessionStateService(
             return cached;
 
         var session = await BuildAsync(userId, tenantId, userType);
-        cache.Set(Key(userId), session, CacheOpts);
+
+        var cts = TenantCts.GetOrAdd(tenantId, _ => new CancellationTokenSource());
+        var opts = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(30))
+            .AddExpirationToken(new CancellationChangeToken(cts.Token));
+
+        cache.Set(Key(userId), session, opts);
         return session;
     }
 
     public void Invalidate(Guid userId) => cache.Remove(Key(userId));
+
+    public void InvalidateTenant(Guid tenantId)
+    {
+        if (TenantCts.TryGetValue(tenantId, out var oldCts))
+        {
+            oldCts.Cancel();
+            oldCts.Dispose();
+            TenantCts.TryUpdate(tenantId, new CancellationTokenSource(), oldCts);
+        }
+    }
 
     private async Task<SessionStateDto> BuildAsync(Guid userId, Guid tenantId, UserType userType)
     {
