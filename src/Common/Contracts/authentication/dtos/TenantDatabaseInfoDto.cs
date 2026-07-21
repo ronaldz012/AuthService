@@ -7,4 +7,5 @@ public class TenantDatabaseInfoDto
     public Guid TenantId { get; set; }
     public Guid MainBranchId { get; set; }
     public Guid OwnerUserId { get; set; }
+    public List<Guid> BranchIds { get; set; } = [];
 }

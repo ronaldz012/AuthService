@@ -14,7 +14,6 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
     {
         if (await context.Tenants.AnyAsync())
         {
-            // Configurar connection context para seeders posteriores (Inventory, Sales, etc.)
             var existing = await context.Tenants
                 .Include(t => t.TenantDataBase)
                 .FirstAsync();
@@ -29,7 +28,6 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
 
         var tenantId = Guid.NewGuid();
         var ownerUserId = Guid.NewGuid();
-        var mainBranchId = Guid.NewGuid();
 
         tenantConnectionContext.TenantId = tenantId;
         tenantConnectionContext.DatabaseName = db.Name;
@@ -42,7 +40,7 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
             Id = ownerUserId,
             Email = "admin@drivecore.com",
             Username = "admin",
-            FirstName =  "Admin",
+            FirstName = "Admin",
             LastName = "Admin",
             PasswordHash = passwordHash,
             Status = UserStatus.Ready,
@@ -54,8 +52,10 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
         var tenant = Tenant.Create(tenantId, "default", db.Id, plan.Id, ownerUser);
         context.Tenants.Add(tenant);
 
-        var mainBranch = Branch.Create(mainBranchId, "Main Branch", "Default location", "000000000");
+        var mainBranch = Branch.Create(Guid.NewGuid(), "Main Branch", "Av. Principal 123", "000000000");
+        var secondaryBranch = Branch.Create(Guid.NewGuid(), "Secondary Branch", "Av. Secundaria 456", "000000001");
         context.Branches.Add(mainBranch);
+        context.Branches.Add(secondaryBranch);
 
         foreach (var roleTemplate in plan.DefaultRolesTemplate)
         {

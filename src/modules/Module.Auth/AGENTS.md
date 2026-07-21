@@ -8,9 +8,9 @@ This document describes the architecture and business rules governing access con
 
 The system uses a hybrid relational/JSON approach that guarantees data consistency, referential integrity, and flexibility in individual permission assignment.
 
-*   **User:** Global user entity.
-*   **UserBranchRoles:** Junction table breaking the many-to-many relationship. **A user has exactly one (1) Role per Branch** they belong to.
-*   **Role:** Role definition within the organization (e.g. Administrator, Cashier, Warehouse).
+*   **User:** Global user entity. `UserType.Owner` and `UserType.TenantAdmin` are `IsAdmin` — they **bypass** all permission checks and have implicit access to all branches without needing `UserBranchRole` records.
+*   **UserBranchRoles:** Junction table for **non-admin users** only. A non-admin user has exactly **one (1) Role per Branch** they are assigned to. Users with no `UserBranchRole` records have access to no branches.
+*   **Role:** Role definition within the organization (e.g. Vendedor, Almacenero, Supervisor). Seeded via `Plan.DefaultRolesTemplate` — not hardcoded.
 *   **Feature:** Catalog of available modules and screens (e.g. `products`, `sales`, `pos`). Managed via Seeders in code.
 *   **RoleFeaturePermission:** Connects a Role to a specific Feature under the Tenant's schema. Stores granted actions as a primitive string list (`List<string> Permissions`).
 

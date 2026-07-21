@@ -10,41 +10,46 @@ public class GetListSales(ISalesDbContext context, ICurrentUser currentUser)
     public async Task<Result<PagedResultDto<SaleListDto>>> Execute(SalesQueryDto queryDto)
     {
         var currentBranch = currentUser.BranchIds[0];
-        
-        var query = context.Sales
-            .AsNoTracking() 
-            .Where(s => s.BranchId == currentBranch);
 
+        var query = context.Sales
+            .AsNoTracking()
+            .Where(s => s.BranchId == currentBranch);
 
         if (queryDto.DateFrom.HasValue)
             query = query.Where(s => s.CreatedAt >= queryDto.DateFrom.Value);
-        
+
         if (queryDto.DateTo.HasValue)
             query = query.Where(s => s.CreatedAt <= queryDto.DateTo.Value);
 
+        var totalCount = await query.CountAsync();
 
         var items = await query
             .OrderByDescending(s => s.CreatedAt)
+            .ApplyPagination(queryDto)
             .Select(s => new SaleListDto
             {
                 Id = s.Id,
                 CreatedAt = s.CreatedAt,
                 TotalAmount = s.TotalAmount,
-                DocumentType = s.DocumentType,
+                SoldByName = s.SoldByName,
+                FirstItemDisplayName = s.SaleItems
+                    .OrderBy(si => si.Id)
+                    .Select(si => si.ProductDisplayName)
+                    .FirstOrDefault() ?? "",
+                TotalQuantity = s.SaleItems.Sum(si => si.Quantity),
                 PaymentMethod = s.PaymentMethod,
+                DocumentType = s.DocumentType,
                 InvoiceNumber = s.InvoiceNumber,
                 TransactionCode = s.TransactionCode,
-                ItemCount = s.SaleItems.Count
             })
             .ToListAsync();
 
         return new PagedResultDto<SaleListDto>
         {
             Items = items,
-            TotalCount = items.Count,
+            TotalCount = totalCount,
             PageSize = queryDto.GetPageSizeValue(),
             Page = queryDto.GetPageValue()
         };
     }
-    
 }

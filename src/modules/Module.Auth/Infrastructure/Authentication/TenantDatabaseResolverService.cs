@@ -50,7 +50,8 @@ public class TenantDatabaseResolverService(
                 DatabaseName = t.TenantDataBase.Name,
                 TenantId = t.Id,
                 MainBranchId = t.Branches.Select(b => b.Id).FirstOrDefault(),
-                OwnerUserId = t.OwnerId
+                OwnerUserId = t.OwnerId,
+                BranchIds = t.Branches.Select(b => b.Id).ToList()
             })
             .FirstOrDefaultAsync();
 

@@ -17,55 +17,59 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
 
         if (await context.StockReceptions.AnyAsync()) return;
 
+        var tenantInfo = await serviceProvider
+            .GetRequiredService<Common.Contracts.authentication.ITenantDatabaseResolver>()
+            .GetByDisplayName("default");
+
+        if (tenantInfo is null || tenantInfo.BranchIds.Count == 0) return;
+
         var productNames = InventorySeedData.Products.Select(p => p.Name).ToList();
 
         var variants = await context.ProductVariants
             .Include(pv => pv.Product)
             .Include(pv => pv.Color)
-            .Include(pv => pv.BranchInventories)
             .Where(pv => productNames.Contains(pv.Product.Name))
             .ToListAsync();
 
-        var branchId = variants
-            .SelectMany(pv => pv.BranchInventories)
-            .Select(bi => bi.BranchId)
-            .FirstOrDefault();
-
-        if (branchId == Guid.Empty)
-        {
-            var tenantInfo = await serviceProvider
-                .GetRequiredService<Common.Contracts.authentication.ITenantDatabaseResolver>()
-                .GetByDisplayName("default");
-            branchId = tenantInfo?.MainBranchId ?? Guid.Empty;
-        }
+        var branchIds = tenantInfo.BranchIds;
+        var stockSplit = DistributeStock(InventorySeedData.Products, branchIds.Count);
 
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
-            var reception = StockReception.Create(branchId, "Stock inicial");
-            var stockMovements = new List<StockMovement>();
+            var allMovements = new List<StockMovement>();
 
-            foreach (var prodSeed in InventorySeedData.Products)
+            for (var i = 0; i < branchIds.Count; i++)
             {
-                foreach (var varSeed in prodSeed.Variants)
+                var branchId = branchIds[i];
+                var reception = StockReception.Create(branchId, "Stock inicial");
+
+                foreach (var prodSeed in InventorySeedData.Products)
                 {
-                    var variant = variants.FirstOrDefault(pv =>
-                        pv.Product.Name == prodSeed.Name &&
-                        pv.Color.Name == varSeed.Color &&
-                        pv.Size == varSeed.Size);
+                    foreach (var varSeed in prodSeed.Variants)
+                    {
+                        var variant = variants.FirstOrDefault(pv =>
+                            pv.Product.Name == prodSeed.Name &&
+                            pv.Color.Name == varSeed.Color &&
+                            pv.Size == varSeed.Size);
 
-                    if (variant == null) continue;
+                        if (variant == null) continue;
 
-                    reception.AddExistingVariant(variant.Id, varSeed.InitialStock, varSeed.UnitCost);
-                    variant.AddQuantity(varSeed.InitialStock, branchId);
-                    stockMovements.Add(StockMovement.CreateReception(
-                        branchId, variant.Id, Guid.Empty, varSeed.InitialStock, reception.Id, "Stock inicial"));
+                        var qty = stockSplit[(prodSeed.Name, varSeed.Color, varSeed.Size)][i];
+                        if (qty <= 0) continue;
+
+                        reception.AddExistingVariant(variant.Id, qty, varSeed.UnitCost);
+                        variant.AddQuantity(qty, branchId);
+                        allMovements.Add(StockMovement.CreateReception(
+                            branchId, variant.Id, Guid.Empty, qty, reception.Id, "Stock inicial"));
+                    }
                 }
+
+                context.StockReceptions.Add(reception);
             }
 
-            context.StockReceptions.Add(reception);
-            context.StockMovements.AddRange(stockMovements);
+            context.StockMovements.AddRange(allMovements);
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
@@ -74,5 +78,41 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    private static Dictionary<(string Product, string Color, string Size), int[]> DistributeStock(
+        InventorySeedData.ProductSeed[] products, int branchCount)
+    {
+        var distribution = new Dictionary<(string, string, string), int[]>();
+
+        foreach (var prodSeed in products)
+        {
+            foreach (var varSeed in prodSeed.Variants)
+            {
+                var key = (prodSeed.Name, varSeed.Color, varSeed.Size);
+                var total = varSeed.InitialStock;
+                var perBranch = new int[branchCount];
+
+                if (branchCount == 1)
+                {
+                    perBranch[0] = total;
+                }
+                else
+                {
+                    var main = (int)(total * 0.6);
+                    perBranch[0] = main;
+
+                    var remainder = total - main;
+                    for (var i = 1; i < branchCount; i++)
+                    {
+                        perBranch[i] = remainder / (branchCount - 1);
+                    }
+                }
+
+                distribution[key] = perBranch;
+            }
+        }
+
+        return distribution;
     }
 }

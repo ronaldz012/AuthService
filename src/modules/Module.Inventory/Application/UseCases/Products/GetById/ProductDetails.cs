@@ -9,7 +9,7 @@ public class ProductDetails(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<ProductDetailDto>> Execute(Guid productId)
     {
-        var currentBranch = currentUser.BranchIds[0];
+        var userBranches = currentUser.BranchIds;
 
         var result = await context.Products.Select(p => new ProductDetailDto
         {
@@ -32,17 +32,19 @@ public class ProductDetails(IInvDbContext context, ICurrentUser currentUser)
                 Color = pv.Color.Name,
                 ColorId = pv.ColorId,
                 Price = pv.Price,
-                Stock = pv.BranchInventories
-                    .Where(x => x.BranchId == currentBranch)
-                    .Select(x => (int?)x.Stock) // Casteo preventivo a nullable
-                    .FirstOrDefault() ?? 0,
+                BranchStocks = pv.BranchInventories
+                    .Where(bi => userBranches.Contains(bi.BranchId))
+                    .Select(bi => new BranchStockDto
+                    {
+                        BranchId = bi.BranchId,
+                        Stock = bi.Stock,
+                    }).ToList()
             }).ToList()
         }).FirstOrDefaultAsync(x => x.Id == productId);
 
-
         if (result is null) return ProductDetailsErrors.ProductNotFound;
 
-        result.TotalStock = result.Variants.Sum(x => x.Stock);
+        result.TotalAvailable = result.Variants.Sum(v => v.TotalAvailable);
         return result;
     }
 }
