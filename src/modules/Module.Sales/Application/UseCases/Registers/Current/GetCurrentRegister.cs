@@ -17,7 +17,8 @@ public class GetCurrentRegister(ISalesDbContext context, ICurrentUser currentUse
                 IsOpen = true,
                 ClosureId = c.Id,
                 OpeningBalance = c.OpeningBalance,
-                OpenedAt = c.OpenAt
+                OpenedAt = c.OpenAt,
+                OpenByName = c.OpenByName
             })
             .FirstOrDefaultAsync();
 

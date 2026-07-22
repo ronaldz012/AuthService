@@ -27,10 +27,13 @@ public class ListReceptions(IInvDbContext context, ICurrentUser currentUser)
             query = query.Where(x =>
                 x.Items.Any(i => i.ProductVariant.Product.BrandId == queryDto.BrandId));
 
-        var (queryFiltered, totalCount) = query.ApplyFilters(queryDto);
+        var totalCount = await query.CountAsync();
 
 
-        var receptions = await queryFiltered.Where(x => x.BranchId == currentUser.BranchIds[0])
+        var receptions = await query
+            .Where(x => x.BranchId == currentUser.BranchIds[0])
+            .OrderByDescending(r => r.ReceivedAt)
+            .ApplyPagination(queryDto)
             .Select(r => new StockReceptionListDto
             {
                 Id = r.Id,
@@ -49,8 +52,8 @@ public class ListReceptions(IInvDbContext context, ICurrentUser currentUser)
         {
             Items = receptions,
             TotalCount = totalCount,
-            Page = queryDto.GetPageValue(),
-            PageSize = queryDto.GetPageSizeValue()
+            Page = queryDto.Page,
+            PageSize = queryDto.PageSize
         };
 
     }

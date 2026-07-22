@@ -10,4 +10,6 @@ public class CloseCashRegisterResponseDto
     public decimal RealCountedAmount { get; set; }
     public decimal Difference { get; set; }
     public DateTime ClosedAt { get; set; }
+    public string OpenByName { get; set; } = string.Empty;
+    public string? CloseByName { get; set; }
 }

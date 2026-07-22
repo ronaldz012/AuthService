@@ -1,9 +1,9 @@
 using Common.Utilities;
-using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Users.GetAllUsers;
 
-public class UserQueryDto : GenericPaginationQueryDto
+public class UserQueryDto : PaginationQueryDto
 {
     public bool? IsActive { get; set; }
+    public string? Filter { get; set; }
 }

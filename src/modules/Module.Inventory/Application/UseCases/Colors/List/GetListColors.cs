@@ -6,23 +6,18 @@ namespace Module.Inventory.Application.UseCases.Colors.List;
 
 public class GetListColors(IInvDbContext context)
 {
-    public async Task<Result<PagedResultDto<ListColorResponse>>> Execute(ColoreQueryDto queryDto)
+    public async Task<Result<List<ListColorResponse>>> Execute()
     {
-        var query = context.Colors.AsQueryable();
+        var colors = await context.Colors
+            .AsNoTracking()
+            .OrderBy(c => c.Name)
+            .Select(c => new ListColorResponse
+            {
+                Id = c.Id,
+                Name = c.Name,
+            })
+            .ToListAsync();
 
-        var (pagedQuery, totalCount)= query.ApplyFilters(queryDto);
-        
-        var colors = await  pagedQuery.Select(c => new ListColorResponse
-        {
-            Id = c.Id,
-            Name = c.Name,
-        }).ToListAsync();
-        return new PagedResultDto<ListColorResponse>
-        {
-            Items = colors,
-            TotalCount = totalCount,
-            Page = queryDto.GetPageValue(),
-            PageSize = queryDto.GetPageSizeValue()
-        };
+        return colors;
     }
 }

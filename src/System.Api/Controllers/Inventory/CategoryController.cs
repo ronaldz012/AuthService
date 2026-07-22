@@ -20,9 +20,9 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCategories([FromQuery] CategoryQueryDto query)
+        public async Task<IActionResult> GetCategories()
         {
-            return await categoryUseCases.GetCategories.Execute(query).ToValueOrProblemDetails();
+            return await categoryUseCases.GetCategories.Execute().ToValueOrProblemDetails();
         }
     }
 }

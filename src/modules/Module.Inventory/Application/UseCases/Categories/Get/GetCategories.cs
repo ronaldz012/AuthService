@@ -5,28 +5,20 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Categories.Get;
 
-
 public class GetCategories(IInvDbContext context)
 {
-    public async Task<Result<PagedResultDto<GetCategoriesResponse>>> Execute(CategoryQueryDto queryDto)
+    public async Task<Result<List<GetCategoriesResponse>>> Execute()
     {
-        IQueryable<Category> query = context.Categories;
+        var result = await context.Categories
+            .AsNoTracking()
+            .OrderBy(x => x.Name)
+            .Select(x => new GetCategoriesResponse
+            {
+                Id = x.Id,
+                Name = x.Name,
+            })
+            .ToListAsync();
 
-        var (filteredQuery, totalCount) = query.ApplyFilters(queryDto);
-
-        var result = await filteredQuery.Select(x => new GetCategoriesResponse()
-        {
-            Id = x.Id,
-            Name = x.Name,
-        }).ToListAsync();
-
-        return new PagedResultDto<GetCategoriesResponse>()
-        {
-            TotalCount = totalCount,
-            Items = result,
-            Page = queryDto.GetPageSizeValue(),
-            PageSize = queryDto.GetPageSizeValue()
-        };
-
+        return result;
     }
 }

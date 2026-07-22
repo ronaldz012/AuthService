@@ -32,10 +32,12 @@ public class ListStockTransfers(IInvDbContext context, IUserIntegrationService u
                                    || st.FromBranchId == currentBranchId)
         };
 
-        var (pagedQuery, totalCount) = query.ApplyFilters(queryDto);
+        var totalCount = await query.CountAsync();
 
         // Materializar solo lo necesario antes de llamadas externas
-        var rawTransfers = await pagedQuery
+        var rawTransfers = await query
+            .OrderByDescending(st => st.CreatedAt)
+            .ApplyPagination(queryDto)
             .Select(st => new
             {
                 st.Id,
@@ -55,8 +57,8 @@ public class ListStockTransfers(IInvDbContext context, IUserIntegrationService u
             {
                 TotalCount = totalCount,
                 Items = [],
-                Page = queryDto.GetPageValue(),
-                PageSize = queryDto.GetPageSizeValue()
+                Page = queryDto.Page,
+                PageSize = queryDto.PageSize
             };
 
         // Llamadas externas con Ids reales
@@ -104,8 +106,8 @@ public class ListStockTransfers(IInvDbContext context, IUserIntegrationService u
         {
             TotalCount = totalCount,
             Items = dtos,
-            Page = queryDto.GetPageValue(),
-            PageSize = queryDto.GetPageSizeValue()
+            Page = queryDto.Page,
+            PageSize = queryDto.PageSize
         };
 
 

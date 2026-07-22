@@ -25,15 +25,7 @@ public class OpenCashRegister(ISalesDbContext context, ICurrentUser currentUser)
         if (alreadyOpen)
             return OpenCashRegisterErrors.AlreadyOpen;
 
-        var closure = new CashRegisterClosure
-        {
-            Id = Guid.NewGuid(),
-            BranchId = branchId,
-            OpenById = currentUser.UserId,
-            OpenAt = DateTime.UtcNow,
-            OpeningBalance = dto.OpeningBalance,
-            IsOpen = true
-        };
+        var closure = CashRegisterClosure.Open(branchId, dto.OpeningBalance, currentUser.UserId, currentUser.FullName);
 
         context.CashRegisterClosures.Add(closure);
         await context.SaveChangesAsync();

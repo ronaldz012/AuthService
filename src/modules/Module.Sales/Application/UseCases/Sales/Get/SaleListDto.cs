@@ -17,7 +17,7 @@ public class SaleListDto
     public string? TransactionCode { get; set; }
 }
 
-public class SalesQueryDto : GenericPaginationQueryDto
+public class SalesQueryDto : PaginationQueryDto
 {
     public DateTime? DateFrom { get; set; }
     public DateTime? DateTo { get; set; }

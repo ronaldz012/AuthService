@@ -16,7 +16,7 @@ public class ListStockTransferDto
     public DateTime? ResolvedAt { get; set; }
 }
 
-public class StockTransferQueryDto : GenericPaginationQueryDto
+public class StockTransferQueryDto : PaginationQueryDto
 {
     public List<TransferStatus> Status { get; set; } = [];
     public TransferDirection? Direction { get; set; }

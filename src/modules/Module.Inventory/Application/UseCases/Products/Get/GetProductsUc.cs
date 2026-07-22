@@ -29,8 +29,11 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
         }
         //if(queryDto.LowStock.HasValue) PARA IMPLEMENTAR::::
         
-        var (filteredQuery, totalCount) = query.ApplyFilters(queryDto);
-        var items = await filteredQuery.Select(p => new ListProductRequest()
+        var totalCount = await query.CountAsync();
+        var items = await query
+            //.OrderByDescending(p => p.CreatedAt)
+            .ApplyPagination(queryDto)
+            .Select(p => new ListProductRequest()
         {
             Id = p.Id,
             Name = p.Name,
@@ -49,8 +52,8 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
         {
             TotalCount = totalCount,
             Items = items,
-            Page = queryDto.GetPageValue(),
-            PageSize = queryDto.GetPageSizeValue()
+            Page = queryDto.Page,
+            PageSize = queryDto.PageSize
         };
     }
 

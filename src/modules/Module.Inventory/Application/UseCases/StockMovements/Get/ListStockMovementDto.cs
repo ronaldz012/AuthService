@@ -16,6 +16,6 @@ public class ListStockMovementDto
     public string? ReferenceId { get; set; }
 }
 
-public class StockMovementQueryDto : GenericPaginationQueryDto
+public class StockMovementQueryDto : PaginationQueryDto
 {
 }

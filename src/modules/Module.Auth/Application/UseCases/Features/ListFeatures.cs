@@ -12,8 +12,11 @@ public class ListFeatures(IAuthDbContext dbContext)
         if (!string.IsNullOrEmpty(queryDto.Filter))
             query = query.Where(m => m.Key.Contains(queryDto.Filter ?? string.Empty));
 
-        (query, var totalCount) = query.ApplyFilters(queryDto);
-        var result = await query.Select(x => new FeatureDto
+        var totalCount = await query.CountAsync();
+        var result = await query
+            .OrderBy(f => f.Key)
+            .ApplyPagination(queryDto)
+            .Select(x => new FeatureDto
         {
     
             Name = x.Key,
@@ -23,8 +26,8 @@ public class ListFeatures(IAuthDbContext dbContext)
         return new PagedResultDto<FeatureDto>
         {
             Items = result,
-            Page = queryDto.GetPageValue(),
-            PageSize = queryDto.GetPageSizeValue(),
+            Page = queryDto.Page,
+            PageSize = queryDto.PageSize,
             TotalCount = totalCount
         };
                     

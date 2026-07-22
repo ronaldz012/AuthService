@@ -14,9 +14,9 @@ namespace System.Api.Controllers.Inventory
     public class ColorController(ColoreUseCases useCases) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] ColoreQueryDto dto)
+        public async Task<IActionResult> Get()
         {
-            return await useCases.getListColors.Execute(dto).ToValueOrProblemDetails();
+            return await useCases.getListColors.Execute().ToValueOrProblemDetails();
         }
 
         [HttpPost]

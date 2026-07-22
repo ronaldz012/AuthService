@@ -21,9 +21,9 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBrands([FromQuery]  QueryBrandDto query)
+        public async Task<IActionResult> GetBrands()
         {
-            return await  service.GetBrands.Execute(query).ToValueOrProblemDetails();
+            return await  service.GetBrands.Execute().ToValueOrProblemDetails();
         }
     }
 }

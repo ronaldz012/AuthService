@@ -13,7 +13,7 @@ public class FeatureDto
     public string ModuleName { get; set; } = string.Empty;
 }
 
-public class FeatureQueryDto : GenericPaginationQueryDto
+public class FeatureQueryDto : PaginationQueryDto
 {
-    
+    public string? Filter { get; set; }
 }

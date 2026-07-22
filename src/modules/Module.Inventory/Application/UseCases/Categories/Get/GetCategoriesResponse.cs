@@ -1,5 +1,3 @@
-using Common.Utilities;
-
 namespace Module.Inventory.Application.UseCases.Categories.Get;
 
 public class GetCategoriesResponse
@@ -7,8 +5,4 @@ public class GetCategoriesResponse
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-}
-public class CategoryQueryDto : GenericPaginationQueryDto
-{
-
 }

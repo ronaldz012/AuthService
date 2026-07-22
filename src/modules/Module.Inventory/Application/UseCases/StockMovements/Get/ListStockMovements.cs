@@ -23,9 +23,11 @@ public class ListStockMovements(
             .Where(sm => sm.ProductVariantId == productVariantId
                       && sm.BranchId == currentBranchId);
 
-        var (pagedQuery, totalCount) = query.ApplyFilters(queryDto);
+        var totalCount = await query.CountAsync();
 
-        var rawMovements = await pagedQuery
+        var rawMovements = await query
+            .OrderByDescending(sm => sm.CreatedAt)
+            .ApplyPagination(queryDto)
             .Select(sm => new
             {
                 sm.Id,
@@ -47,8 +49,8 @@ public class ListStockMovements(
             {
                 TotalCount = totalCount,
                 Items = [],
-                Page = queryDto.GetPageValue(),
-                PageSize = queryDto.GetPageSizeValue()
+                Page = queryDto.Page,
+                PageSize = queryDto.PageSize
             };
 
         var branchIds = rawMovements
@@ -94,8 +96,8 @@ public class ListStockMovements(
         {
             Items = dtos,
             TotalCount = totalCount,
-            Page = queryDto.GetPageValue(),
-            PageSize = queryDto.GetPageSizeValue()
+            Page = queryDto.Page,
+            PageSize = queryDto.PageSize
         };
     }
 }

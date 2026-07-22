@@ -35,6 +35,7 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet("{id:guid}")]
+        [RequireFeature("products", "read", true)]
         public async Task<IActionResult> GetProduct([FromRoute] Guid id)
         {
             return await productUseCases.ProductDetails.Execute(id).ToValueOrProblemDetails();

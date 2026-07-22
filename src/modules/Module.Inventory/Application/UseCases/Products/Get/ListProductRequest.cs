@@ -16,11 +16,11 @@ public class ListProductRequest
     public decimal TotalStock { get; set; }
     public decimal BasePrice { get; set; } // Puede ser el BasePrice o el Min(Price) de variantes
 }
-public class ProductQueryDto : GenericPaginationQueryDto
+public class ProductQueryDto : PaginationQueryDto
 {
+    public string? Filter { get; set; }
     public Guid? CategoryId { get; set; }
     public Guid? BrandId { get; set; }
     public Gender? Gender { get; set; }
     public bool? LowStock { get; set; }
-
 }

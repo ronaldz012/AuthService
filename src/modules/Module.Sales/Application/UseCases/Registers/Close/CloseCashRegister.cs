@@ -18,7 +18,7 @@ public class CloseCashRegister(ISalesDbContext context, ICurrentUser currentUser
         if (closure is null)
             return CloseCashRegisterErrors.NotFound;
 
-        closure.Close(dto.RealCountedAmount, currentUser.UserId);
+        closure.Close(dto.RealCountedAmount, currentUser.UserId, currentUser.FullName);
 
         await context.SaveChangesAsync();
 
@@ -39,7 +39,9 @@ public class CloseCashRegister(ISalesDbContext context, ICurrentUser currentUser
             ExpectedCash = closure.SystemSalesAmount,
             RealCountedAmount = closure.RealCountedAmount,
             Difference = closure.RealCountedAmount - closure.SystemSalesAmount,
-            ClosedAt = closure.ClosedAt!.Value
+            ClosedAt = closure.ClosedAt!.Value,
+            OpenByName = closure.OpenByName,
+            CloseByName = closure.CloseByName
         };
     }
 }

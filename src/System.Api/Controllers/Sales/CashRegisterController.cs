@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Sales.Application.UseCases;
 using Module.Sales.Application.UseCases.Registers.Close;
+using Module.Sales.Application.UseCases.Registers.List;
 using Module.Sales.Application.UseCases.Registers.Open;
 
 namespace System.Api.Controllers.Sales
@@ -29,6 +30,12 @@ namespace System.Api.Controllers.Sales
         public async Task<IActionResult> Current()
         {
             return await registerUseCases.GetCurrentRegister.Execute().ToValueOrProblemDetails();
+        }
+
+        [HttpGet("Closures")]
+        public async Task<IActionResult> ListClosures([FromQuery] ClosuresQueryDto queryDto)
+        {
+            return await registerUseCases.ListClosures.Execute(queryDto).ToValueOrProblemDetails();
         }
     }
 }

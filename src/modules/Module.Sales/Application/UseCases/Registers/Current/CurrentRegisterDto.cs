@@ -6,4 +6,5 @@ public class CurrentRegisterDto
     public Guid? ClosureId { get; set; }
     public decimal? OpeningBalance { get; set; }
     public DateTime? OpenedAt { get; set; }
+    public string OpenByName { get; set; } = string.Empty;
 }

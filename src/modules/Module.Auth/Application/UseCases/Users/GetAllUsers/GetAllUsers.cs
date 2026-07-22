@@ -27,8 +27,11 @@ public class GetAllUsers(IAuthDbContext context, ICurrentUser currentUser)
         if(request.IsActive is not null)
             query = query.Where(u => u.IsActive == request.IsActive);
 
-        var (pagedQuery, totalCount) = query.ApplyFilters(request);
-        var items = await pagedQuery.Select(x => new GetUser
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .ApplyPagination(request)
+            .Select(x => new GetUser
         {
             Id = x.Id,
             Username = x.Username,
@@ -48,8 +51,8 @@ public class GetAllUsers(IAuthDbContext context, ICurrentUser currentUser)
         return new GetUsersResponse
         {
             Items = items,
-            Page = request.GetPageValue(),
-            PageSize = request.GetPageSizeValue(),
+            Page = request.Page,
+            PageSize = request.PageSize,
             TotalCount = totalCount,
             ActiveUsers = activeUsers,
         };

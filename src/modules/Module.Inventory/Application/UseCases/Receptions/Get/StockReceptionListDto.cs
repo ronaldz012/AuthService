@@ -17,7 +17,7 @@ public class StockReceptionListDto
 
 }
 
-public class ReceptionQueryDto : GenericPaginationQueryDto
+public class ReceptionQueryDto : PaginationQueryDto
 {
     public DateTime? DateFrom { get; set; }
     public DateTime? DateTo { get; set; }

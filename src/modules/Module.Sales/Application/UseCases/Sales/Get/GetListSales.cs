@@ -48,8 +48,8 @@ public class GetListSales(ISalesDbContext context, ICurrentUser currentUser)
         {
             Items = items,
             TotalCount = totalCount,
-            PageSize = queryDto.GetPageSizeValue(),
-            Page = queryDto.GetPageValue()
+            PageSize = queryDto.PageSize,
+            Page = queryDto.Page
         };
     }
 }
