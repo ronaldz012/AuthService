@@ -5,21 +5,26 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Autentication.VerifiUser;
 
-public class VerifyUser(IAuthDbContext dbContext )
+public class VerifyUser(IAuthDbContext dbContext)
 {
     public async Task<Result<bool>> Execute(string verifyCode)
     {
-        EmailVerificationCode? code = dbContext.EmailVerificationCodes.Include(u => u.User).FirstOrDefault(c => c.Code == verifyCode
-                                                                                            && !c.IsUsed
-                                                                                            && c.Purpose == VerificationCodePurpose.AccountVerification);
+        EmailVerificationCode? code = await dbContext.EmailVerificationCodes
+            .Include(u => u.User)
+            .FirstOrDefaultAsync(c => c.Code == verifyCode
+                                   && !c.IsUsed
+                                   && c.Purpose == VerificationCodePurpose.AccountVerification);
+
         if (code == null)
             return VerifyUserErrors.CodeNotFound;
-        if (code.ExpiresAt < DateTime.UtcNow)
+
+        if (code.IsExpired)
             return VerifyUserErrors.CodeExpired;
-        code.IsUsed = true;
-        code.User.Status = UserStatus.Ready;
-        code.User.IsActive = true;
+
+        code.MarkAsUsed();
+        code.User.MarkAsVerified();
+
         await dbContext.SaveChangesAsync();
         return true;
-    } 
+    }
 }

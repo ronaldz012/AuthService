@@ -47,19 +47,21 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
             IsActive = true,
             Type = UserType.Owner,
             CreatedAt = DateTime.UtcNow,
+            CreatedBy = ownerUserId,
+            CreatedByName = "Admin Admin",
         };
 
-        var tenant = Tenant.Create(tenantId, "default", db.Id, plan.Id, ownerUser);
+        var tenant = Tenant.Create(tenantId, "default", db.Id, plan.Id, ownerUser, ownerUserId, "Admin Admin");
         context.Tenants.Add(tenant);
 
-        var mainBranch = Branch.Create(Guid.NewGuid(), "Main Branch", "Av. Principal 123", "000000000");
-        var secondaryBranch = Branch.Create(Guid.NewGuid(), "Secondary Branch", "Av. Secundaria 456", "000000001");
+        var mainBranch = Branch.Create(Guid.NewGuid(), "Main Branch", "Av. Principal 123", "000000000", ownerUserId, "Admin Admin");
+        var secondaryBranch = Branch.Create(Guid.NewGuid(), "Secondary Branch", "Av. Secundaria 456", "000000001", ownerUserId, "Admin Admin");
         context.Branches.Add(mainBranch);
         context.Branches.Add(secondaryBranch);
 
         foreach (var roleTemplate in plan.DefaultRolesTemplate)
         {
-            var role = Role.CreateFromTemplate(roleTemplate);
+            var role = Role.CreateFromTemplate(roleTemplate, ownerUserId, "Admin Admin");
             context.Roles.Add(role);
         }
 

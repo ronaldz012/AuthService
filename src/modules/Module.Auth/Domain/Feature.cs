@@ -1,21 +1,25 @@
+using Common.Domain;
 using Module.Auth.Domain;
 namespace Module.Auth.Domain;
 
-public class Feature 
+public class Feature : ICreatedAt, ICreatedBy, IUpdatedAt, IUpdatedBy
 {
-    public string Key { get; set; } = string.Empty; 
+    public string Key { get; set; } = string.Empty;
     public string Route { get; set; } = string.Empty;
     public bool IsMenu { get; set; } = false;
-    public string DisplayName { get; set; } = string.Empty; 
+    public string DisplayName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Icon { get; set; } = string.Empty;
     public required Module Module { get; set; }
 
-    // Audit fields
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Guid CreatedBy { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
     public DateTime? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
+    public string? UpdatedByName { get; set; }
+
     public List<FeatureAction> AvailableActions { get; set; } = [];
-    
     public ICollection<RoleFeaturePermission> RoleFeaturePermissions { get; set; } = new List<RoleFeaturePermission>();
 }
 public class FeatureAction

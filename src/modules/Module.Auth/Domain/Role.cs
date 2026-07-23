@@ -2,7 +2,7 @@ using Common.Domain;
 
 namespace Module.Auth.Domain;
 
-public class Role :  IMustHaveTenant
+public class Role : IMustHaveTenant, ICreatedAt, ICreatedBy, ISoftDelete
 {
     public Guid Id { get; set; }
     public Guid TenantId { get; set; }
@@ -10,17 +10,17 @@ public class Role :  IMustHaveTenant
     public string Description { get; set; } = string.Empty;
     public bool Public { get; set; } = false;
 
-        //Audit fields
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? DeletedAt { get; set; }
-        public int CreatedBy { get; set; }  
-        public int? DeletedBy { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Guid CreatedBy { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    public string? DeletedByName { get; set; }
 
-    //Navigation property
     public ICollection<UserBranchRole> UserRoles { get; set; } = default!;
     public ICollection<RoleFeaturePermission> RoleFeaturePermissions { get; set; } = default!;
 
-    public static Role CreateFromTemplate(DefaultRoleTemplate template)
+    public static Role CreateFromTemplate(DefaultRoleTemplate template, Guid createdBy, string createdByName)
     {
         return new Role
         {
@@ -28,11 +28,15 @@ public class Role :  IMustHaveTenant
             Name = template.Name,
             Description = template.Description,
             CreatedAt = DateTime.UtcNow,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName,
             RoleFeaturePermissions = template.Permissions.Select(permTemplate => new RoleFeaturePermission
             {
                 FeatureKey = permTemplate.FeatureKey,
                 Permissions = permTemplate.Actions,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = createdBy,
+                CreatedByName = createdByName,
             }).ToList()
         };
     }

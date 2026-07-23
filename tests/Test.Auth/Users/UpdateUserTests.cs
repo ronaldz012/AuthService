@@ -1,6 +1,7 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Users.UpdateUser;
 using Module.Auth.Domain;
@@ -9,9 +10,10 @@ namespace Test.Auth.Users;
 
 public class UpdateUserTests
 {
-    private static UpdateUser CreateSut(IAuthDbContext dbContext)
+    private static UpdateUser CreateSut(IAuthDbContext dbContext, ICurrentUser? currentUser = null)
     {
-        return new UpdateUser(dbContext);
+        currentUser ??= Mock.Of<ICurrentUser>(u => u.UserId == Guid.NewGuid() && u.FullName == "Test User");
+        return new UpdateUser(dbContext, currentUser);
     }
 
     private static (Guid TenantId, Guid BranchId, Guid RoleId, Guid UserId) Seed(IAuthDbContext dbContext, Guid tenantId)

@@ -1,6 +1,8 @@
+using Common.Domain;
+
 namespace Module.Auth.Domain;
 
-public class Plan
+public class Plan : ICreatedAt, ICreatedBy
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -9,8 +11,12 @@ public class Plan
     public int MaxUsers { get; set; }
     public int MaxBranches { get; set; }
     public int MaxExtraRoles { get; set; }
-    public  List<string> AllowedFeatureKeys { get; set; } = new List<string>();
+    public List<string> AllowedFeatureKeys { get; set; } = new List<string>();
     public List<DefaultRoleTemplate> DefaultRolesTemplate { get; set; } = [];
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Guid CreatedBy { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
 }
 
 public class DefaultRoleTemplate

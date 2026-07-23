@@ -1,3 +1,4 @@
+using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
@@ -5,7 +6,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Users.ToggleUserType;
 
-public class ToggleUserType(IAuthDbContext context)
+public class ToggleUserType(IAuthDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<bool>> Execute(Guid id)
     {
@@ -19,16 +20,18 @@ public class ToggleUserType(IAuthDbContext context)
         if (user.Type == UserType.Owner)
             return ToggleUserTypeErrors.CannotToggleOwner;
 
-        if (user.Type == UserType.TenantAdmin && user.UserBranchRoles.Count == 0)
-            return ToggleUserTypeErrors.NoBranchRolesAssigned;
+        if (user.Type == UserType.TenantAdmin)
+        {
+            if (!user.CanDemoteToStandard())
+                return ToggleUserTypeErrors.NoBranchRolesAssigned;
+            user.DemoteToStandard(currentUser.UserId, currentUser.FullName);
+        }
+        else
+        {
+            user.PromoteToAdmin(currentUser.UserId, currentUser.FullName);
+        }
 
-        user.Type = user.Type == UserType.TenantAdmin
-            ? UserType.Standard
-            : UserType.TenantAdmin;
-
-        user.UpdatedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();
-
         return true;
     }
 }

@@ -10,6 +10,7 @@ namespace Module.Auth.Application.UseCases.Users.CreateUser;
 public class CreateUser(
     IAuthDbContext context,
     ITenantConnectionContext tenantConnectionContext,
+    ICurrentUser currentUser,
     IEmailVerificationService emailVerificationService,
     IOptions<ProjectInfo> projectInfo)
 {
@@ -50,12 +51,8 @@ public class CreateUser(
         if (!rolesResult.IsSuccess)
             return CreateUserErrors.MissingRoles;
 
-        var newUser = User.CreateStandard(dto.Email, globalUsername, dto.FirstName, dto.LastName, dto.Ci, dto.Nationality, dto.BirthDate);
-        newUser.UserBranchRoles = dto.BranchRoles.Select(br => new UserBranchRole
-        {
-            BranchId = br.BranchId,
-            RoleId = br.RoleId,
-        }).ToList();
+        var newUser = User.CreateStandard(dto.Email, globalUsername, dto.FirstName, dto.LastName, dto.Ci, dto.Nationality, dto.BirthDate, currentUser.UserId, currentUser.FullName);
+        newUser.UserBranchRoles = dto.BranchRoles.Select(br => UserBranchRole.Create(newUser.Id, br.BranchId, br.RoleId, currentUser.UserId, currentUser.FullName)).ToList();
 
         var verificationCode = EmailVerificationCode.CreateForAccountSetup(dto.Email ?? string.Empty);
         newUser.EmailVerificationCodes.Add(verificationCode);

@@ -3,8 +3,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Domain;
 
-public class Branch: IMustHaveTenant
-
+public class Branch : IMustHaveTenant, ICreatedAt, ICreatedBy
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -12,14 +11,16 @@ public class Branch: IMustHaveTenant
     public string PhoneNumber { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
     public string BranchCode { get; set; } = string.Empty;
-    
+
     public Guid TenantId { get; set; }
     public DateTime CreatedAt { get; set; }
-    public ICollection<UserBranchRole> UserBranchRoles { get; set; } = new List<UserBranchRole>();
+    public Guid CreatedBy { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
 
+    public ICollection<UserBranchRole> UserBranchRoles { get; set; } = new List<UserBranchRole>();
     public Tenant Tenant { get; set; } = null!;
 
-    public static Branch Create(Guid id, string name, string place, string phoneNumber)
+    public static Branch Create(Guid id, string name, string place, string phoneNumber, Guid createdBy, string createdByName)
     {
         return new Branch
         {
@@ -27,7 +28,36 @@ public class Branch: IMustHaveTenant
             Name = name,
             Place = place,
             PhoneNumber = phoneNumber,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName,
         };
+    }
+
+    public bool CanDeactivate()
+    {
+        return IsActive;
+    }
+
+    public void Deactivate()
+    {
+        if (!CanDeactivate())
+            throw new InvalidOperationException($"Branch {Id} is already inactive.");
+        IsActive = false;
+    }
+
+    public void Activate()
+    {
+        if (IsActive)
+            throw new InvalidOperationException($"Branch {Id} is already active.");
+        IsActive = true;
+    }
+
+    public void UpdateDetails(string name, string place, string phoneNumber, string branchCode)
+    {
+        Name = name;
+        Place = place;
+        PhoneNumber = phoneNumber;
+        BranchCode = branchCode;
     }
 }

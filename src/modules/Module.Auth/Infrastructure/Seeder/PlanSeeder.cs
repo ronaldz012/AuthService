@@ -25,7 +25,7 @@ public class PlanSeeder(IAuthDbContext context) : IDataSeeder
             MaxUsers      = 5,
             MaxBranches   = 3,
             MaxExtraRoles = 1,
-            AllowedFeatureKeys = ["products", "receptions","transfers","pos","sales"],
+            AllowedFeatureKeys = ["products", "receptions","transfers","pos","sales","closures"],
             DefaultRolesTemplate =
             [
                 new DefaultRoleTemplate
@@ -37,7 +37,8 @@ public class PlanSeeder(IAuthDbContext context) : IDataSeeder
                         new() { FeatureKey = "products",  Actions = ["read"] },
                         new() { FeatureKey = "transfers", Actions = ["read"] },
                         new() { FeatureKey = "pos",       Actions = ["read", "create", "update"] },
-                        new() { FeatureKey = "sales",     Actions = ["read"] }
+                        new() { FeatureKey = "sales",     Actions = ["read"] },
+                        new() { FeatureKey = "closures",  Actions = ["read"] }
                     ]
                 },
                 new DefaultRoleTemplate
@@ -61,7 +62,8 @@ public class PlanSeeder(IAuthDbContext context) : IDataSeeder
                         new() { FeatureKey = "transfers",  Actions = ["read", "create", "update", "delete"] },
                         new() { FeatureKey = "receptions", Actions = ["read", "create", "update", "delete"] },
                         new() { FeatureKey = "pos",        Actions = ["read", "create", "update"] },
-                        new() { FeatureKey = "sales",      Actions = ["read", "refund", "void_invoice", "export"] }
+                        new() { FeatureKey = "sales",      Actions = ["read", "refund", "void_invoice", "export"] },
+                        new() { FeatureKey = "closures",   Actions = ["read", "export"] }
                     ]
                 },
             ]

@@ -10,7 +10,7 @@ namespace Module.Auth.Domain;
         EmailChange,        
     }
 
-    public class EmailVerificationCode : IMustHaveTenant
+    public class EmailVerificationCode : IMustHaveTenant, ICreatedAt
     {
         public int Id { get; set; }
         public Guid UserId { get; set; }
@@ -22,7 +22,13 @@ namespace Module.Auth.Domain;
         public bool IsUsed { get; set; } = false;
         public int Attempts { get; set; } = 0;
         public VerificationCodePurpose Purpose { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         public User User { get; set; } = default!;
+
+        public bool IsExpired => ExpiresAt < DateTime.UtcNow;
+
         public static EmailVerificationCode CreateForAccountSetup(string email, Guid? userId = null)
         {
             return new EmailVerificationCode
@@ -33,8 +39,18 @@ namespace Module.Auth.Domain;
                 ExpiresAt = DateTime.UtcNow.AddHours(48),
                 Purpose = VerificationCodePurpose.AccountVerification,
                 IsUsed = false,
-                UserId = userId ?? Guid.Empty
-
+                UserId = userId ?? Guid.Empty,
+                CreatedAt = DateTime.UtcNow,
             };
+        }
+
+        public void MarkAsUsed()
+        {
+            IsUsed = true;
+        }
+
+        public void IncrementAttempts()
+        {
+            Attempts++;
         }
     }

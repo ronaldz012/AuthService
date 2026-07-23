@@ -27,7 +27,11 @@ public class ToggleBranchStatus(
                 return ToggleBranchStatusErrors.BranchHasOpenClosures;
         }
 
-        branch.IsActive = !branch.IsActive;
+        if (branch.IsActive)
+            branch.Deactivate();
+        else
+            branch.Activate();
+
         await context.SaveChangesAsync();
         return true;
     }

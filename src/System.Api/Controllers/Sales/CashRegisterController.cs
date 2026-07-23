@@ -32,7 +32,13 @@ namespace System.Api.Controllers.Sales
             return await registerUseCases.GetCurrentRegister.Execute().ToValueOrProblemDetails();
         }
 
-        [HttpGet("Closures")]
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetClosureDetail([FromRoute] Guid id)
+        {
+            return await registerUseCases.GetClosureDetail.Execute(id).ToValueOrProblemDetails();
+        }
+
+        [HttpGet]
         public async Task<IActionResult> ListClosures([FromQuery] ClosuresQueryDto queryDto)
         {
             return await registerUseCases.ListClosures.Execute(queryDto).ToValueOrProblemDetails();

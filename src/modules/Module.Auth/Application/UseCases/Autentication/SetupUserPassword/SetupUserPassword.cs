@@ -6,13 +6,12 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 
-public class SetupUserPassword(IAuthDbContext  context, ITenantConnectionContext tenantConnectionContext)
+public class SetupUserPassword(IAuthDbContext context, ITenantConnectionContext tenantConnectionContext)
 {
     public async Task<Result<bool>> ExecuteAsync(SetupUserPasswordRequest request)
     {
-        // 1. Buscar el código de verificación e incluir al usuario dueño
         var verificationCode = await context.EmailVerificationCodes.IgnoreQueryFilters()
-        .Include(c => c.User)
+            .Include(c => c.User)
             .FirstOrDefaultAsync(c => c.Code == request.Token && !c.IsUsed);
 
         if (verificationCode == null)
@@ -20,7 +19,7 @@ public class SetupUserPassword(IAuthDbContext  context, ITenantConnectionContext
 
         tenantConnectionContext.TenantId = verificationCode.User.TenantId;
 
-        if (verificationCode.ExpiresAt < DateTime.UtcNow)
+        if (verificationCode.IsExpired)
             return SetupUserPasswordErrors.TokenExpired;
 
         var ownerUser = verificationCode.User;
@@ -28,11 +27,8 @@ public class SetupUserPassword(IAuthDbContext  context, ITenantConnectionContext
         using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
-            ownerUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-            ownerUser.Status = UserStatus.Ready;
-            ownerUser.IsActive = true;
-            ownerUser.UpdatedAt = DateTime.UtcNow;
-            verificationCode.IsUsed = true;
+            ownerUser.SetPassword(BCrypt.Net.BCrypt.HashPassword(request.Password));
+            verificationCode.MarkAsUsed();
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();

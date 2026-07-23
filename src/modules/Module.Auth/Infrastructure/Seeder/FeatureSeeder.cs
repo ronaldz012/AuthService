@@ -97,6 +97,22 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                     new() { Key = "export", DisplayName = "Exportar Reportes", Description = "Permite descargar listados de ventas en formatos externos (Excel/PDF)." }
                 ]
             },
+            new()
+            {
+                Key         = "closures",
+                DisplayName = "Cierres de Caja",
+                Route       = "/closures",
+                Description = "View and manage cash register closures",
+                Icon        = "lock",
+                Module      = Domain.Module.Sales,
+                IsMenu = true,
+                CreatedAt   = DateTime.UtcNow,
+                AvailableActions =
+                [
+                    new() { Key = "read",   DisplayName = "Ver",     Description = "Permite listar y ver detalle de cierres de caja." },
+                    new() { Key = "export", DisplayName = "Exportar", Description = "Permite descargar reportes de cierres." }
+                ]
+            },
         };
 
         await context.Features.AddRangeAsync(features);

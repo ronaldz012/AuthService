@@ -1,3 +1,4 @@
+using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
@@ -5,7 +6,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Users.UpdateUser;
 
-public class UpdateUser(IAuthDbContext context)
+public class UpdateUser(IAuthDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<UpdateUserResponse>> Execute(Guid id, UpdateUserRequest dto)
     {
@@ -45,12 +46,7 @@ public class UpdateUser(IAuthDbContext context)
 
             var toAdd = dto.BranchRoles
                 .Where(br => !existing.Any(e => e.BranchId == br.BranchId && e.RoleId == br.RoleId))
-                .Select(br => new UserBranchRole
-                {
-                    UserId = user.Id,
-                    BranchId = br.BranchId,
-                    RoleId = br.RoleId,
-                })
+                .Select(br => UserBranchRole.Create(user.Id, br.BranchId, br.RoleId, currentUser.UserId, currentUser.FullName))
                 .ToList();
 
             foreach (var item in toRemove)
@@ -60,22 +56,7 @@ public class UpdateUser(IAuthDbContext context)
                 user.UserBranchRoles.Add(item);
         }
 
-        if (dto.FirstName is not null)
-            user.FirstName = dto.FirstName;
-
-        if (dto.LastName is not null)
-            user.LastName = dto.LastName;
-
-        if (dto.Ci is not null)
-            user.Ci = dto.Ci;
-
-        if (dto.Nationality is not null)
-            user.Nationality = dto.Nationality;
-
-        if (dto.BirthDate is not null)
-            user.BirthDate = dto.BirthDate.Value;
-
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdateProfile(dto.FirstName, dto.LastName, dto.Ci, dto.Nationality, dto.BirthDate, currentUser.UserId, currentUser.FullName);
 
         await context.SaveChangesAsync();
 

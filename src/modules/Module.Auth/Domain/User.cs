@@ -4,7 +4,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Domain;
 
-public class User : IMustHaveTenant
+public class User : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdatedBy, ISoftDelete
 {
     [Key]
     public Guid Id { get; set; }
@@ -28,23 +28,26 @@ public class User : IMustHaveTenant
     public bool IsActive { get; set; }
     public string? GoogleId { get; set; }
     public DateTime LastActive { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Guid CreatedBy { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
     public DateTime? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
+    public string? UpdatedByName { get; set; }
     public DateTime? DeletedAt { get; set; }
-    public int? UpdatedBy { get; set; }
-    public int? DeletedBy { get; set; }
-    public int CreatedBy { get; set; }
-    
+    public Guid? DeletedBy { get; set; }
+    public string? DeletedByName { get; set; }
+
     public Guid TenantId { get; set; }
 
     public AuthProvider AuthProvider { get; set; }
-    public string? ExternalAuthId { get; set; } 
+    public string? ExternalAuthId { get; set; }
 
-    // Navigation property
     public ICollection<EmailVerificationCode> EmailVerificationCodes { get; set; } = [];
     public ICollection<UserBranchRole> UserBranchRoles { get; set; } = [];
 
-    public static User CreateOwner(Guid id, string email, string username)
+    public static User CreateOwner(Guid id, string email, string username, Guid createdBy, string createdByName)
     {
         return new User
         {
@@ -56,10 +59,12 @@ public class User : IMustHaveTenant
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             Type = UserType.Owner,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName,
         };
     }
 
-    public static User CreateTenantAdmin(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate)
+    public static User CreateTenantAdmin(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate, Guid createdBy, string createdByName)
     {
         return new User
         {
@@ -75,10 +80,12 @@ public class User : IMustHaveTenant
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             Type = UserType.TenantAdmin,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName,
         };
     }
 
-    public static User CreateStandard(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate)
+    public static User CreateStandard(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate, Guid createdBy, string createdByName)
     {
         return new User
         {
@@ -94,7 +101,85 @@ public class User : IMustHaveTenant
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             Type = UserType.Standard,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName,
         };
+    }
+
+    public void SetPassword(string passwordHash)
+    {
+        PasswordHash = passwordHash;
+        Status = UserStatus.Ready;
+        IsActive = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void MarkAsVerified()
+    {
+        Status = UserStatus.Ready;
+        IsActive = true;
+    }
+
+    public void Activate(Guid updatedBy, string updatedByName)
+    {
+        if (IsActive)
+            throw new InvalidOperationException($"User {Id} is already active.");
+        IsActive = true;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+    }
+
+    public void Deactivate(Guid updatedBy, string updatedByName)
+    {
+        if (!IsActive)
+            throw new InvalidOperationException($"User {Id} is already inactive.");
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+    }
+
+    public bool CanPromoteToAdmin()
+    {
+        return Type is UserType.Standard;
+    }
+
+    public void PromoteToAdmin(Guid updatedBy, string updatedByName)
+    {
+        if (!CanPromoteToAdmin())
+            throw new InvalidOperationException($"User {Id} cannot be promoted to admin. Current type: {Type}.");
+        Type = UserType.TenantAdmin;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+    }
+
+    public bool CanDemoteToStandard()
+    {
+        return Type is UserType.TenantAdmin && UserBranchRoles.Count != 0;
+    }
+
+    public void DemoteToStandard(Guid updatedBy, string updatedByName)
+    {
+        if (!CanDemoteToStandard())
+            throw new InvalidOperationException($"User {Id} cannot be demoted to standard. Current type: {Type}, branch roles: {UserBranchRoles.Count}.");
+        Type = UserType.Standard;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+    }
+
+    public void UpdateProfile(string? firstName, string? lastName, string? ci, string? nationality, DateTime? birthDate, Guid updatedBy, string updatedByName)
+    {
+        if (firstName is not null) FirstName = firstName;
+        if (lastName is not null) LastName = lastName;
+        if (ci is not null) Ci = ci;
+        if (nationality is not null) Nationality = nationality;
+        if (birthDate is not null) BirthDate = birthDate.Value;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
     }
 }
 

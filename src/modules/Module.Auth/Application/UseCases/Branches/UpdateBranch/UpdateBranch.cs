@@ -12,10 +12,7 @@ public class UpdateBranch(IAuthDbContext context)
         var branch = await context.Branches.FirstOrDefaultAsync(b => b.Id == id);
         if (branch == null) return UpdateBranchErrors.BranchNotFound;
 
-        branch.Name = request.Name;
-        branch.Place = request.Place;
-        branch.PhoneNumber = request.PhoneNumber;
-        branch.BranchCode = request.BranchCode;
+        branch.UpdateDetails(request.Name, request.Place, request.PhoneNumber, request.BranchCode);
 
         await context.SaveChangesAsync();
 

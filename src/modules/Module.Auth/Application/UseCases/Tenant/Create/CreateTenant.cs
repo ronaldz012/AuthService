@@ -34,16 +34,16 @@ public class CreateTenant(
 
             tenantConnectionContext.TenantId = tenantId;
 
-            var ownerUser = User.CreateOwner(ownerUserId, request.OwnerEmail, request.OwnerUserName);
-            var tenant = Tenant.Create(tenantId, request.DisplayName, db.Id, plan.Id, ownerUser);
+            var ownerUser = User.CreateOwner(ownerUserId, request.OwnerEmail, request.OwnerUserName, ownerUserId, request.OwnerEmail);
+            var tenant = Tenant.Create(tenantId, request.DisplayName, db.Id, plan.Id, ownerUser, ownerUserId, request.OwnerEmail);
             context.Tenants.Add(tenant);
 
-            var mainBranch = Branch.Create(mainBranchId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber);
+            var mainBranch = Branch.Create(mainBranchId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber, ownerUserId, request.OwnerEmail);
             context.Branches.Add(mainBranch);
 
             foreach (var roleTemplate in plan.DefaultRolesTemplate)
             {
-                var role = Role.CreateFromTemplate(roleTemplate);
+                var role = Role.CreateFromTemplate(roleTemplate, ownerUserId, request.OwnerEmail);
                 context.Roles.Add(role);
             }
 
