@@ -22,12 +22,13 @@ public class CorrectProductVariantStock(IInvDbContext context, ICurrentUser curr
     
         try 
         {
-            pv.CorrectQuantity(request.Stock, currentBranch);
+            pv.CorrectQuantity(request.Stock, currentBranch, currentUser.UserId, currentUser.FullName);
             var movement = StockMovement.CreateAdjustment(
-                currentBranch, 
-                pv.Id, 
-                currentUser.UserId, 
-                request.Stock, 
+                currentBranch,
+                pv.Id,
+                currentUser.UserId,
+                currentUser.FullName,
+                request.Stock,
                 request.Notes);
             context.StockMovements.Add(movement);
             await context.SaveChangesAsync();

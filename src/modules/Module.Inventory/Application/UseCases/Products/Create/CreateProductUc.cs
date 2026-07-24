@@ -1,3 +1,4 @@
+using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
@@ -5,7 +6,7 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Products.Create;
 
-public class CreateProductUc(IInvDbContext context)
+public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<ProductCreatedDto>> Execute(CreateProductRequest request)
     {
@@ -34,7 +35,9 @@ public class CreateProductUc(IInvDbContext context)
                 BrandId = request.BrandId,
                 Gender = request.Gender,
                 InternalCode = internalCode,
-                ProductVariantCounter = 0
+                ProductVariantCounter = 0,
+                CreatedBy = currentUser.UserId,
+                CreatedByName = currentUser.FullName
             };
 
             context.Products.Add(product);
@@ -51,7 +54,9 @@ public class CreateProductUc(IInvDbContext context)
                     Size = pv.Size,
                     Description = pv.Description,
                     Price = pv.Price,
-                    Sku = sku
+                    Sku = sku,
+                    CreatedBy = currentUser.UserId,
+                    CreatedByName = currentUser.FullName
                 });
             }
 

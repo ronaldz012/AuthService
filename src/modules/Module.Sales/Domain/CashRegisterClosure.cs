@@ -2,7 +2,7 @@ using Common.Domain;
 
 namespace Module.Sales.Domain;
 
-public class CashRegisterClosure: IMustHaveTenant
+public class CashRegisterClosure : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdatedBy, ISoftDelete
 {
     public Guid Id { get; set; }
     public Guid TenantId { get; set; }
@@ -20,11 +20,23 @@ public class CashRegisterClosure: IMustHaveTenant
     public decimal RealCountedAmount { get; set; }
 
     public bool IsOpen { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+    public Guid CreatedBy { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
+    public DateTime? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
+    public string? UpdatedByName { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    public string? DeletedByName { get; set; }
+
     public ICollection<CashRegisterMovement> Movements { get; set; } = new List<CashRegisterMovement>();
     public ICollection<Sale> Sales { get; set; } = new List<Sale>();
 
     public static CashRegisterClosure Open(Guid branchId, decimal openingBalance, Guid openById, string openByName)
     {
+        var now = DateTime.UtcNow;
         return new CashRegisterClosure
         {
             Id = Guid.NewGuid(),
@@ -32,9 +44,17 @@ public class CashRegisterClosure: IMustHaveTenant
             OpeningBalance = openingBalance,
             OpenById = openById,
             OpenByName = openByName,
-            OpenAt = DateTime.UtcNow,
-            IsOpen = true
+            OpenAt = now,
+            IsOpen = true,
+            CreatedAt = now,
+            CreatedBy = openById,
+            CreatedByName = openByName
         };
+    }
+
+    public bool CanClose()
+    {
+        return IsOpen;
     }
 
     public void Close(decimal realCountedAmount, Guid closedById, string closedByName)
@@ -55,6 +75,9 @@ public class CashRegisterClosure: IMustHaveTenant
         CloseById = closedById;
         CloseByName = closedByName;
         ClosedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = closedById;
+        UpdatedByName = closedByName;
         IsOpen = false;
     }
 }

@@ -17,7 +17,7 @@ public class CreateMovement(ISalesDbContext context, ICurrentUser currentUser)
             return CreateMovementErrors.NoOpenClosure;
 
         var movement = CashRegisterMovement.Create(
-            closure.Id, dto.Amount, dto.Description, CashRegisterMovementType.Outflow);
+            closure.Id, dto.Amount, dto.Description, CashRegisterMovementType.Outflow, currentUser.UserId, currentUser.FullName);
 
         context.CashRegisterMovements.Add(movement);
         await context.SaveChangesAsync();

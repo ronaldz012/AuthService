@@ -25,7 +25,11 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     Icon = table.Column<string>(type: "text", nullable: false),
                     Module = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     AvailableActions = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
@@ -45,6 +49,9 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     MaxBranches = table.Column<int>(type: "integer", nullable: false),
                     MaxExtraRoles = table.Column<int>(type: "integer", nullable: false),
                     AllowedFeatureKeys = table.Column<List<string>>(type: "text[]", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     DefaultRolesTemplate = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
@@ -62,9 +69,11 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     Public = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: false),
-                    DeletedBy = table.Column<int>(type: "integer", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,7 +87,10 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    Schema = table.Column<string>(type: "text", nullable: false)
+                    Schema = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -104,11 +116,14 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     GoogleId = table.Column<string>(type: "text", nullable: true),
                     LastActive = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<int>(type: "integer", nullable: true),
-                    DeletedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: false),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     AuthProvider = table.Column<int>(type: "integer", nullable: false),
                     ExternalAuthId = table.Column<string>(type: "text", nullable: true)
@@ -128,8 +143,11 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     Permissions = table.Column<List<string>>(type: "text[]", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<int>(type: "integer", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     FeatureKey1 = table.Column<string>(type: "character varying(100)", nullable: true)
                 },
                 constraints: table =>
@@ -168,7 +186,8 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsUsed = table.Column<bool>(type: "boolean", nullable: false),
                     Attempts = table.Column<int>(type: "integer", nullable: false),
-                    Purpose = table.Column<int>(type: "integer", nullable: false)
+                    Purpose = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -189,6 +208,8 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     DisplayName = table.Column<string>(type: "text", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
                     DataBaseId = table.Column<Guid>(type: "uuid", nullable: false),
                     PlanId = table.Column<Guid>(type: "uuid", nullable: false)
@@ -227,7 +248,9 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     BranchCode = table.Column<string>(type: "text", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -249,9 +272,11 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     BranchId = table.Column<Guid>(type: "uuid", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: false),
-                    DeletedBy = table.Column<int>(type: "integer", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -26,32 +26,48 @@ public class ProductVariant: Params, IMustHaveTenant
 
     public ICollection<StockTransferItem> TransferItems { get; set; } = new List<StockTransferItem>();
 
-    public static  string GenerateSku(string internalCode, string colorCode, string size)
+    public static string GenerateSku(string internalCode, string colorCode, string size)
     {
         return internalCode +"-"+colorCode+"-"+size;
     }
+
+    public static ProductVariant Create(Guid productId, Guid colorId, string size, decimal price, string sku, Guid tenantId, Guid createdBy, string createdByName)
+    {
+        return new ProductVariant
+        {
+            Id = Guid.NewGuid(),
+            ProductId = productId,
+            ColorId = colorId,
+            Size = size,
+            Price = price,
+            Sku = sku,
+            TenantId = tenantId,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName
+        };
+    }
+
     public bool HasSufficientStock(int quantity, Guid branchId)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
         return branchInventory != null && branchInventory.Stock >= quantity;
     }
 
-    // DOER: Realiza la acción. Asume que quien lo llama ya validó el estado.
-    public void SellStock(int quantity, Guid branchId, Guid userId, Guid referenceId, string? notes = null)
+    public void SellStock(int quantity, Guid branchId, Guid userId, string userName, Guid referenceId, string? notes = null)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
         if (branchInventory == null)
             throw new InvalidOperationException($"No existe registro de inventario para la sucursal {branchId}");
 
         if (branchInventory.Stock < quantity)
-            throw new InvalidOperationException($"Stock insuficiente para {Sku}"); // Solo actúa como salvaguarda
+            throw new InvalidOperationException($"Stock insuficiente para {Sku}");
 
         branchInventory.Stock -= quantity;
-        StockMovements.Add(StockMovement.CreateSale(branchId, Id, userId, quantity, referenceId, notes));
+        StockMovements.Add(StockMovement.CreateSale(branchId, Id, userId, userName, quantity, referenceId, notes));
     }
 
 
-    public void AddQuantity(int quantity, Guid branchId)
+    public void AddQuantity(int quantity, Guid branchId, Guid userId, string userName)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
         if (branchInventory == null)
@@ -60,14 +76,16 @@ public class ProductVariant: Params, IMustHaveTenant
             {
                 BranchId = branchId,
                 ProductVariantId = Id,
-                Stock = 0
+                Stock = 0,
+                CreatedBy = userId,
+                CreatedByName = userName
             };
             BranchInventories.Add(branchInventory);
         }
         branchInventory.Stock += quantity;
     }
 
-    public void CorrectQuantity(int quantity, Guid branchId)
+    public void CorrectQuantity(int quantity, Guid branchId, Guid userId, string userName)
     {
         var branchInventory = BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId);
         if (branchInventory == null)
@@ -77,6 +95,8 @@ public class ProductVariant: Params, IMustHaveTenant
                 BranchId = branchId,
                 ProductVariantId = Id,
                 Stock = quantity,
+                CreatedBy = userId,
+                CreatedByName = userName
             };
             BranchInventories.Add(branchInventory);
         }
@@ -97,9 +117,10 @@ public class ProductVariant: Params, IMustHaveTenant
     public int GetStockByBranch(Guid branchId) 
         => BranchInventories.FirstOrDefault(bi => bi.BranchId == branchId)?.Stock ?? 0;
 
-    public void SoftDelete(Guid userId)
+    public void SoftDelete(Guid userId, string deletedByName)
     {
        DeletedAt = DateTime.UtcNow;
-       DeletedById = userId;
+       DeletedBy = userId;
+       DeletedByName = deletedByName;
     }
 }

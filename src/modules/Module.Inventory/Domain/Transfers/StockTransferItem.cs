@@ -1,9 +1,10 @@
 using Common.Domain;
 using Module.Inventory.Domain.Products;
+using Module.Inventory.Domain.Shared.Base;
 
 namespace Module.Inventory.Domain.Transfers;
 
-public class StockTransferItem: IMustHaveTenant
+public class StockTransferItem : Params, IMustHaveTenant
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid TenantId { get; set; }

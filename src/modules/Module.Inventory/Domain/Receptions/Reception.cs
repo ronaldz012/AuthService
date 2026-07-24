@@ -15,7 +15,7 @@ public class StockReception : Params, IMustHaveTenant
 
     public ICollection<StockReceptionItem> Items { get; set; } = new List<StockReceptionItem>();
 
-    public static StockReception Create(Guid branchId, string? notes)
+    public static StockReception Create(Guid branchId, Guid userId, string userName, string? notes)
     {
         return new StockReception
         {
@@ -23,17 +23,21 @@ public class StockReception : Params, IMustHaveTenant
             BranchId = branchId,
             Notes = notes,
             ReceivedAt = DateTime.UtcNow,
-            Status = ReceptionStatus.Confirmed
+            Status = ReceptionStatus.Confirmed,
+            CreatedBy = userId,
+            CreatedByName = userName
         };
     }
 
-    public void AddExistingVariant(Guid variantId, int quantity, decimal unitCost)
+    public void AddExistingVariant(Guid variantId, Guid userId, string userName, int quantity, decimal unitCost)
     {
         Items.Add(new StockReceptionItem
         {
             ProductVariantId = variantId,
             QuantityReceived = quantity,
             UnitCost = unitCost,
+            CreatedBy = userId,
+            CreatedByName = userName
         });
     }
 }

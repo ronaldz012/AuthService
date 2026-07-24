@@ -43,7 +43,7 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
             for (var i = 0; i < branchIds.Count; i++)
             {
                 var branchId = branchIds[i];
-                var reception = StockReception.Create(branchId, "Stock inicial");
+                var reception = StockReception.Create(branchId, tenantInfo.OwnerUserId, "System", "Stock inicial");
 
                 foreach (var prodSeed in InventorySeedData.Products)
                 {
@@ -59,17 +59,17 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
                         var qty = stockSplit[(prodSeed.Name, varSeed.Color, varSeed.Size)][i];
                         if (qty <= 0) continue;
 
-                        reception.AddExistingVariant(variant.Id, qty, varSeed.UnitCost);
-                        variant.AddQuantity(qty, branchId);
+                        reception.AddExistingVariant(variant.Id, tenantInfo.OwnerUserId, "System", qty, varSeed.UnitCost);
+                        variant.AddQuantity(qty, branchId, tenantInfo.OwnerUserId, "System");
                         allMovements.Add(StockMovement.CreateReception(
-                            branchId, variant.Id, Guid.Empty, qty, reception.Id, "Stock inicial"));
+                            branchId, variant.Id, tenantInfo.OwnerUserId, "System", qty, reception.Id, "Stock inicial"));
                     }
                 }
 
                 context.StockReceptions.Add(reception);
             }
 
-            context.StockMovements.AddRange(allMovements);
+            context.StockMovements.AddRange(  );
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }

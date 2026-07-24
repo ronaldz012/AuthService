@@ -68,7 +68,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantConnect
         });
         modelBuilder.Entity<CashRegisterMovement>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+            entity.HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId && x.DeletedAt == null);
         });
 
         // ===== Inventory entity configuration =====

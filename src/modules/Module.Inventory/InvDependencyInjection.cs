@@ -97,6 +97,7 @@ public  static class InvDependencyInjection
 
         services.AddScoped<IDataSeeder, InventorySeeder>();
         services.AddScoped<IDataSeeder, StockReceptionSeeder>();
+        services.AddScoped<IDataSeeder, StockTransferSeeder>();
 
         return services;
     }

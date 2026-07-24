@@ -23,7 +23,8 @@ public class DeleteProduct(IInvDbContext context, ICurrentUser currentUser)
             .Where(p => p.Id == id && p.DeletedAt == null)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(p => p.DeletedAt, DateTime.UtcNow)
-                .SetProperty(p => p.DeletedById, currentUser.UserId));
+                .SetProperty(p => p.DeletedBy, currentUser.UserId)
+                .SetProperty(p => p.DeletedByName, currentUser.FullName));
 
         if (affectedRows == 0) 
             return DeleteProductErrors.ProductNotFound;

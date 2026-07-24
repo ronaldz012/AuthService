@@ -28,7 +28,7 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
 
         if (!dto.Complete)
         {
-            transfer.Reject(currentUser.UserId, dto.Notes);
+            transfer.Reject(currentUser.UserId, currentUser.FullName, dto.Notes);
             await context.SaveChangesAsync();
             return true;
         }
@@ -49,7 +49,7 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
         await using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
-            transfer.Accept(currentUser.UserId, dto.Notes);
+            transfer.Accept(currentUser.UserId, currentUser.FullName, dto.Notes);
             var productVariants = await context.ProductVariants
                 .Include(pv => pv.BranchInventories)
                 .Where(pv => variantIds.Contains(pv.Id))
@@ -58,8 +58,8 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
             {
                 var productVariant = productVariants.First(pv => pv.Id == item.ProductVariantId);
 
-                productVariant.AddQuantity(-item.QuantityRequested, transfer.FromBranchId);
-                productVariant.AddQuantity(item.QuantityRequested, transfer.ToBranchId);
+                productVariant.AddQuantity(-item.QuantityRequested, transfer.FromBranchId, currentUser.UserId, currentUser.FullName);
+                productVariant.AddQuantity(item.QuantityRequested, transfer.ToBranchId, currentUser.UserId, currentUser.FullName);
 
                 // StockMovements
                 var (movOut, movIn) = StockMovement.CreateTransfer(
@@ -67,6 +67,7 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
                     transfer.ToBranchId,
                     item.ProductVariantId,
                     currentUser.UserId,
+                    currentUser.FullName,
                     item.QuantityRequested,
                     transfer.Id
 

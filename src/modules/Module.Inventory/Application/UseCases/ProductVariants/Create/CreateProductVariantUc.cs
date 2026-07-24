@@ -1,3 +1,4 @@
+using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
@@ -5,7 +6,7 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.Create;
 
-public class CreateProductVariantUc(IInvDbContext context)
+public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<List<ProductVariantCreatedDto>>> Execute(Guid productId, List<CreateProductVariantDto> dto)
     {
@@ -75,7 +76,9 @@ public class CreateProductVariantUc(IInvDbContext context)
                     Size = x.Size.Trim(),
                     Description = x.Description,
                     Price = x.Price,
-                    Sku = sku
+                    Sku = sku,
+                    CreatedBy = currentUser.UserId,
+                    CreatedByName = currentUser.FullName
                 });
             }
 

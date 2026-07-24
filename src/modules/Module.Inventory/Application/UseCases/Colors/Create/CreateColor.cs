@@ -23,7 +23,8 @@ public class CreateColor(IInvDbContext context, ICurrentUser currentUser)
         var newColor = new Color
         {
             Name = colorName,
-            CreatedById = currentUser.UserId
+            CreatedBy = currentUser.UserId,
+            CreatedByName = currentUser.FullName
         };
 
         context.Add(newColor);

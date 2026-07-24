@@ -38,7 +38,9 @@ public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser
             FromBranchId = fromBranchId,
             ToBranchId = dto.ToBranchId,
             RequestedByUserId = currentUser.UserId,
-            Notes = dto.Notes
+            Notes = dto.Notes,
+            CreatedBy = currentUser.UserId,
+            CreatedByName = currentUser.FullName
         };
 
         foreach (var item in dto.Items)
@@ -46,7 +48,9 @@ public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser
             transfer.Items.Add(new StockTransferItem
             {
                 ProductVariantId = item.ProductVariantId,
-                QuantityRequested = item.QuantityRequested
+                QuantityRequested = item.QuantityRequested,
+                CreatedBy = currentUser.UserId,
+                CreatedByName = currentUser.FullName
             });
         }
 

@@ -8,7 +8,7 @@ public interface IInventoryIntegrationService
         List<Guid> variantIds, Guid branchId);
 
     Task<Result<bool>> DeductStock(
-        List<StockDeductionDto> deductions, Guid branchId, Guid userId, Guid referenceId);
+        List<StockDeductionDto> deductions, Guid branchId, Guid userId, string userName, Guid referenceId);
 
     Task<bool> BranchHasPendingTransfers(Guid branchId);
 }

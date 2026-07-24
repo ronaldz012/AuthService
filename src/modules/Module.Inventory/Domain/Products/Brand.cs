@@ -12,4 +12,17 @@ public class Brand : Params, IMustHaveTenant
     public int ProductCounter { get; set; }
     public Guid TenantId { get; set; }
     public ICollection<Product> Products { get; set; } = new List<Product>();
+
+    public static Brand Create(string name, string prefix, Guid tenantId, Guid createdBy, string createdByName)
+    {
+        return new Brand
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Prefix = prefix,
+            TenantId = tenantId,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName
+        };
+    }
 }

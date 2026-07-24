@@ -25,23 +25,19 @@ public class InventorySeeder(
         foreach (var name in InventorySeedData.Colors)
         {
             if (!await context.Colors.AnyAsync(c => c.Name == name))
-                context.Colors.Add(new Color
-                {
-                    Name = name,
-                    CreatedById = tenantInfo.OwnerUserId
-                });
+                context.Colors.Add(Color.Create(name, tenantInfo.TenantId, tenantInfo.OwnerUserId));
         }
 
         foreach (var name in InventorySeedData.Categories)
         {
             if (!await context.Categories.AnyAsync(c => c.Name == name))
-                context.Categories.Add(new Category { Name = name });
+                context.Categories.Add(Category.Create(name, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
         }
 
         foreach (var brand in InventorySeedData.Brands)
         {
             if (!await context.Brands.AnyAsync(b => b.Prefix == brand.Prefix))
-                context.Brands.Add(new Brand { Name = brand.Name, Prefix = brand.Prefix });
+                context.Brands.Add(Brand.Create(brand.Name, brand.Prefix, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
         }
 
         await context.SaveChangesAsync();
@@ -52,16 +48,7 @@ public class InventorySeeder(
             var category = await context.Categories.FirstAsync(c => c.Name == prodSeed.Category);
 
             var code = await context.ReserveBrandCounter(brand.Id, brand.Prefix);
-            var product = new Product
-            {
-                Name = prodSeed.Name,
-                Description = prodSeed.Description,
-                CategoryId = category.Id,
-                BrandId = brand.Id,
-                Gender = prodSeed.Gender,
-                InternalCode = code,
-                ProductVariantCounter = 0
-            };
+            var product = Product.Create(prodSeed.Name, prodSeed.Description, category.Id, brand.Id, prodSeed.Gender, code, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System");
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
@@ -69,14 +56,7 @@ public class InventorySeeder(
             {
                 var color = await context.Colors.FirstAsync(c => c.Name == varSeed.Color);
                 var sku = await context.ReserveVariantCounter(product.Id, product.InternalCode);
-                context.ProductVariants.Add(new ProductVariant
-                {
-                    ProductId = product.Id,
-                    ColorId = color.Id,
-                    Size = varSeed.Size,
-                    Price = varSeed.Price,
-                    Sku = sku
-                });
+                context.ProductVariants.Add(ProductVariant.Create(product.Id, color.Id, varSeed.Size, varSeed.Price, sku, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
             }
         }
 

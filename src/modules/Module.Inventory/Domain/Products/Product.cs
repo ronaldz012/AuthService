@@ -16,13 +16,31 @@ public class Product:Params, IMustHaveTenant
     public decimal BasePrice { get; set; }
     public int ProductVariantCounter {get;set;}
 
-    public int UnitMeasurementSin { get; set; } // unidad de medida siat
-    public string EconomicActivity { get; set; } = string.Empty; // codigo actividad economica siat
-    public int ProductCodeSin { get; set; } // codigo producto SIN siat
+    public int UnitMeasurementSin { get; set; }
+    public string EconomicActivity { get; set; } = string.Empty;
+    public int ProductCodeSin { get; set; }
 
     public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
     public Category Category { get; set; } = default!;
     public Brand Brand { get; set; } = null!;
+
+    public static Product Create(string name, string description, Guid categoryId, Guid brandId, Gender gender, string internalCode, Guid tenantId, Guid createdBy, string createdByName)
+    {
+        return new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Description = description,
+            CategoryId = categoryId,
+            BrandId = brandId,
+            Gender = gender,
+            InternalCode = internalCode,
+            TenantId = tenantId,
+            ProductVariantCounter = 0,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName
+        };
+    }
 }
 
 public enum Gender
@@ -31,4 +49,3 @@ public enum Gender
     Male,
     Female
 }
-

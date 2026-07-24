@@ -1,10 +1,11 @@
+using Common.Contracts.authentication;
 using Common.Utilities;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Brands.CreateBrand;
 
-public class CreateBrandUc(IInvDbContext context)
+public class CreateBrandUc(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<BrandResponse>> Execute(CreateBrandRequest request)
     {
@@ -15,7 +16,9 @@ public class CreateBrandUc(IInvDbContext context)
         {
             Name = request.Name,
             Description = request.Description,
-            Prefix = request.Prefix
+            Prefix = request.Prefix,
+            CreatedBy = currentUser.UserId,
+            CreatedByName = currentUser.FullName
         };
         context.Brands.Add(newBrand);
         await context.SaveChangesAsync();

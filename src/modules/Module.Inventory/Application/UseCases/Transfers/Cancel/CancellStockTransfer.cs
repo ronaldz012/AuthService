@@ -17,7 +17,7 @@ public class CancelStockTransfer(IInvDbContext context, ICurrentUser currentUser
 
         if (transfer.Status != TransferStatus.Pending) return CancelStockTransferErrors.NotPending;
 
-        transfer.Status = TransferStatus.Cancelled;
+        transfer.Cancel(currentUser.UserId, currentUser.FullName);
         await context.SaveChangesAsync();
         return true;
     }

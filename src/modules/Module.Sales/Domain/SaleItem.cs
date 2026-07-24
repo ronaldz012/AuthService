@@ -1,9 +1,8 @@
-
 using Common.Domain;
 
 namespace Module.Sales.Domain;
 
-public class SaleItem : IMustHaveTenant
+public class SaleItem : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdatedBy, ISoftDelete
 {
     public Guid Id { get; set; } 
     public Guid TenantId { get; set; }
@@ -15,6 +14,15 @@ public class SaleItem : IMustHaveTenant
     public decimal UnitPrice { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal FinalPrice { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public Guid CreatedBy { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
+    public DateTime? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
+    public string? UpdatedByName { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    public string? DeletedByName { get; set; }
 
     public Sale Sale { get; set; } = null!;
 }

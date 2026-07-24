@@ -28,7 +28,7 @@ public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentU
             return DeleteProductVariantErrors.VariantHasMovements;
 
         // 4. Ejecutamos el método de tu modelo de dominio (Mantiene encapsulamiento)
-        variantData.Entity.SoftDelete(currentUser.UserId);
+        variantData.Entity.SoftDelete(currentUser.UserId, currentUser.FullName);
 
         // 5. Persistimos los cambios en la base de datos
         var rowsAffected = await context.SaveChangesAsync();

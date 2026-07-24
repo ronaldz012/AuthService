@@ -2,7 +2,7 @@ using Common.Domain;
 
 namespace Module.Sales.Domain;
 
-public class Sale : IMustHaveTenant
+public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdatedBy, ISoftDelete
 {
     public Guid Id { get; set; }
     public Guid TenantId { get; set; }
@@ -18,7 +18,15 @@ public class Sale : IMustHaveTenant
     public DocumentType DocumentType { get; set; }
 
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
+    public Guid CreatedBy { get; set; }
+    public string CreatedByName { get; set; } = string.Empty;
+    public DateTime? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
+    public string? UpdatedByName { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedBy { get; set; }
+    public string? DeletedByName { get; set; }
     public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
     public CashRegisterClosure CashRegisterClosure { get; set; } = null!;
 
@@ -27,13 +35,15 @@ public class Sale : IMustHaveTenant
         Guid branchId,
         Guid soldById,
         string soldByName,
+        Guid createdBy,
+        string createdByName,
         Guid cashRegisterClosureId,
         PaymentMethod paymentMethod,
         string? transactionCode,
         string? notes,
         List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
     {
-        return CreateBase(branchId, soldById, soldByName, cashRegisterClosureId, paymentMethod, 
+        return CreateBase(branchId, soldById, soldByName, createdBy, createdByName, cashRegisterClosureId, paymentMethod, 
             DocumentType.Ticket, transactionCode, notes, null, items);
     }
 
@@ -41,6 +51,8 @@ public class Sale : IMustHaveTenant
         Guid branchId,
         Guid soldById,
         string soldByName,
+        Guid createdBy,
+        string createdByName,
         Guid cashRegisterClosureId,
         PaymentMethod paymentMethod,
         DocumentType documentType, 
@@ -55,7 +67,7 @@ public class Sale : IMustHaveTenant
         if (documentType == DocumentType.Invoice && (!invoiceNumber.HasValue || invoiceNumber <= 0))
             throw new InvalidOperationException("Invoice number is required for completed invoices.");
 
-        return CreateBase(branchId, soldById, soldByName, cashRegisterClosureId, paymentMethod, 
+        return CreateBase(branchId, soldById, soldByName, createdBy, createdByName, cashRegisterClosureId, paymentMethod, 
             documentType, transactionCode, notes, invoiceNumber, items);
     }
 
@@ -64,6 +76,8 @@ public class Sale : IMustHaveTenant
         Guid branchId,
         Guid soldById,
         string soldByName,
+        Guid createdBy,
+        string createdByName,
         Guid cashRegisterClosureId,
         PaymentMethod paymentMethod,
         DocumentType documentType,
@@ -75,6 +89,7 @@ public class Sale : IMustHaveTenant
         if (items == null || !items.Any())
             throw new InvalidOperationException("Cannot create a sale without products.");
 
+        var now = DateTime.UtcNow;
         var sale = new Sale
         {
             Id = Guid.NewGuid(),
@@ -88,8 +103,9 @@ public class Sale : IMustHaveTenant
             TransactionCode = transactionCode,
             Notes = notes,
             InvoiceNumber = invoiceNumber,
-
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = now,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName
         };
 
         decimal total = 0;
@@ -104,7 +120,10 @@ public class Sale : IMustHaveTenant
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
                 DiscountAmount = item.DiscountAmount,
-                FinalPrice = subtotal
+                FinalPrice = subtotal,
+                CreatedAt = now,
+                CreatedBy = createdBy,
+                CreatedByName = createdByName
             });
             total += subtotal;
         }

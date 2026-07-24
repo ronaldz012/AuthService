@@ -1,9 +1,10 @@
+using Common.Contracts.authentication;
 using Common.Utilities;
 using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Products.Update;
 
-public class UpdateProduct(IInvDbContext context)
+public class UpdateProduct(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<bool>> Execute(UpdateProductDto dto, Guid id)
     {
@@ -15,6 +16,9 @@ public class UpdateProduct(IInvDbContext context)
         product.Description = dto.Description ?? product.Description;
         product.Gender = dto.Gender ?? product.Gender;
         product.CategoryId = dto.CategoryId ?? product.CategoryId;
+        product.UpdatedBy = currentUser.UserId;
+        product.UpdatedByName = currentUser.FullName;
+        product.UpdatedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();
         return true;
 

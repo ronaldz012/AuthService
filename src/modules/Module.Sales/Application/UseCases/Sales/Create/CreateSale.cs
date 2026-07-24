@@ -49,6 +49,8 @@ public class CreateSale(
                     branchId,
                     currentUser.UserId,
                     currentUser.FullName,
+                    currentUser.UserId,
+                    currentUser.FullName,
                     cashClosure.Id,
                     dto.PaymentMethod,
                     dto.TransactionCode,
@@ -60,6 +62,8 @@ public class CreateSale(
             {
                 sale = Sale.CreateSaleWithInvoice(
                     branchId,
+                    currentUser.UserId,
+                    currentUser.FullName,
                     currentUser.UserId,
                     currentUser.FullName,
                     cashClosure.Id,
@@ -76,7 +80,7 @@ public class CreateSale(
                 .Select(i => new StockDeductionDto(i.ProductVariantId, i.Quantity))
                 .ToList();
 
-            var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId, sale.Id);
+            var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId, currentUser.FullName, sale.Id);
             if (!deductResult.IsSuccess)
             {
                 await transaction.RollbackAsync();

@@ -4,6 +4,7 @@ using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Moq;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Domain.Products;
 using System.Infrastructure.Persistence;
@@ -22,7 +23,10 @@ public class CreateProductTests
     {
         using var ctx = CreateDbContext();
         SeedCategory(ctx);
-        var sut = new CreateProductUc(ctx);
+        var currentUser = new Mock<ICurrentUser>();
+        currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
+        currentUser.Setup(u => u.FullName).Returns("Test User");
+        var sut = new CreateProductUc(ctx, currentUser.Object);
 
         var result = await sut.Execute(new CreateProductRequest
         {
@@ -41,7 +45,10 @@ public class CreateProductTests
         using var ctx = CreateDbContext();
         SeedBrand(ctx);
         SeedCategory(ctx);
-        var sut = new CreateProductUc(ctx);
+        var currentUser = new Mock<ICurrentUser>();
+        currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
+        currentUser.Setup(u => u.FullName).Returns("Test User");
+        var sut = new CreateProductUc(ctx, currentUser.Object);
 
         var result = await sut.Execute(new CreateProductRequest
         {
@@ -64,7 +71,10 @@ public class CreateProductTests
         SeedBrand(ctx);
         SeedCategory(ctx);
         SeedColor(ctx);
-        var sut = new CreateProductUc(ctx);
+        var currentUser = new Mock<ICurrentUser>();
+        currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
+        currentUser.Setup(u => u.FullName).Returns("Test User");
+        var sut = new CreateProductUc(ctx, currentUser.Object);
 
         var result = await sut.Execute(new CreateProductRequest
         {
@@ -112,19 +122,19 @@ public class CreateProductTests
 
     private static void SeedBrand(TestAppDbContext ctx)
     {
-        ctx.Brands.Add(new Brand { Id = BrandId, Name = "Test Brand", Prefix = "BRD", ProductCounter = 0 });
+        ctx.Brands.Add(new Brand { Id = BrandId, Name = "Test Brand", Prefix = "BRD", ProductCounter = 0, CreatedBy = TenantId, CreatedByName = "Test User" });
         ctx.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     private static void SeedCategory(TestAppDbContext ctx)
     {
-        ctx.Categories.Add(new Category { Id = CategoryId, Name = "Test Category" });
+        ctx.Categories.Add(new Category { Id = CategoryId, Name = "Test Category", CreatedBy = TenantId, CreatedByName = "Test User" });
         ctx.SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     private static void SeedColor(TestAppDbContext ctx)
     {
-        ctx.Colors.Add(new Color { Id = ColorId, Name = "Red" });
+        ctx.Colors.Add(new Color { Id = ColorId, Name = "Red", CreatedBy = TenantId, CreatedByName = "Test User" });
         ctx.SaveChangesAsync().GetAwaiter().GetResult();
     }
 }

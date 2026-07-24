@@ -1,10 +1,11 @@
+using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Sales.Application.Abstraction;
 
 namespace Module.Sales.Application.UseCases.Movements.Delete;
 
-public class DeleteMovement(ISalesDbContext context)
+public class DeleteMovement(ISalesDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<bool>> Execute(Guid id)
     {
@@ -18,7 +19,9 @@ public class DeleteMovement(ISalesDbContext context)
         if (!movement.CashRegisterClosure.IsOpen)
             return DeleteMovementErrors.ClosureClosed;
 
-        context.CashRegisterMovements.Remove(movement);
+        movement.DeletedAt = DateTime.UtcNow;
+        movement.DeletedBy = currentUser.UserId;
+        movement.DeletedByName = currentUser.FullName;
         await context.SaveChangesAsync();
 
         return true;

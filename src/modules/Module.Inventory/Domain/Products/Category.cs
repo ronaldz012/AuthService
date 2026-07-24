@@ -11,4 +11,16 @@ public class Category : Params, IMustHaveTenant
     public string Description { get; set; } = string.Empty;
 
     public ICollection<Product> Products { get; set; } = [];
+
+    public static Category Create(string name, Guid tenantId, Guid createdBy, string createdByName)
+    {
+        return new Category
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            TenantId = tenantId,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName
+        };
+    }
 }

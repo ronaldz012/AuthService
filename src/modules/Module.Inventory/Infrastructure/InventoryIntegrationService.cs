@@ -32,7 +32,7 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
     }
 
 public async Task<Result<bool>> DeductStock(
-    List<StockDeductionDto> deductions, Guid branchId, Guid userId, Guid referenceId)
+    List<StockDeductionDto> deductions, Guid branchId, Guid userId, string userName, Guid referenceId)
 {
     var variantIds = deductions.Select(d => d.ProductVariantId).ToList();
 
@@ -52,7 +52,7 @@ public async Task<Result<bool>> DeductStock(
         {
             return new Error(ErrorCode.InvalidState, $"Insufficient stock for product {pv.Sku}.");
         }
-        pv.SellStock(deduction.Quantity, branchId, userId, referenceId);
+        pv.SellStock(deduction.Quantity, branchId, userId, userName, referenceId);
     }
 
     return true; 
