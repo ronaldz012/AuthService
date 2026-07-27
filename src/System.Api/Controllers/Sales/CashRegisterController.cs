@@ -33,9 +33,9 @@ namespace System.Api.Controllers.Sales
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetClosureDetail([FromRoute] Guid id)
+        public async Task<IActionResult> GetClosureDetail([FromRoute] Guid id, [FromQuery] bool includeStock = false)
         {
-            return await registerUseCases.GetClosureDetail.Execute(id).ToValueOrProblemDetails();
+            return await registerUseCases.GetClosureDetail.Execute(id, includeStock).ToValueOrProblemDetails();
         }
 
         [HttpGet]

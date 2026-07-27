@@ -1,4 +1,5 @@
 using Common.Contracts.authentication;
+using Common.Contracts.inventory;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Sales.Application.Abstraction;
@@ -6,9 +7,12 @@ using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Registers.GetById;
 
-public class GetClosureDetail(ISalesDbContext context, ICurrentUser currentUser)
+public class GetClosureDetail(
+    ISalesDbContext context,
+    ICurrentUser currentUser,
+    IInventoryIntegrationService inventoryService)
 {
-    public async Task<Result<ClosureDetailDto>> Execute(Guid id)
+    public async Task<Result<ClosureDetailDto>> Execute(Guid id, bool includeStock = false)
     {
         var closure = await context.CashRegisterClosures
             .AsNoTracking()
@@ -40,7 +44,17 @@ public class GetClosureDetail(ISalesDbContext context, ICurrentUser currentUser)
                         DocumentType = s.DocumentType.ToString(),
                         InvoiceNumber = s.InvoiceNumber,
                         TransactionCode = s.TransactionCode,
-                        ItemsCount = s.SaleItems.Count
+                        ItemsCount = s.SaleItems.Count,
+                        Items = s.SaleItems.Select(si => new ClosureSaleItemDetailDto
+                        {
+                            ProductVariantId = si.ProductVariantId,
+                            ProductSku = si.ProductSku,
+                            ProductDisplayName = si.ProductDisplayName,
+                            Quantity = si.Quantity,
+                            UnitPrice = si.UnitPrice,
+                            DiscountAmount = si.DiscountAmount,
+                            FinalPrice = si.FinalPrice
+                        }).ToList()
                     }).ToList(),
                 Movements = c.Movements
                     .OrderBy(m => m.CreatedAt)
@@ -57,6 +71,30 @@ public class GetClosureDetail(ISalesDbContext context, ICurrentUser currentUser)
 
         if (closure is null)
             return GetClosureErrors.NotFound;
+
+        if (includeStock)
+        {
+            var variantIds = closure.Sales
+                .SelectMany(s => s.Items)
+                .Select(i => i.ProductVariantId)
+                .Distinct()
+                .ToList();
+
+            var stockResult = await inventoryService.GetVariantsWithStock(variantIds, closure.BranchId);
+            if (!stockResult.IsSuccess)
+                return stockResult.Error;
+
+            closure.VariantStocks = stockResult.Value
+                .Select(v => new ClosureVariantStockDto
+                {
+                    ProductVariantId = v.Id,
+                    ProductSku = v.Sku,
+                    ProductDisplayName = v.DisplayName,
+                    CurrentStock = v.Stock
+                })
+                .OrderBy(v => v.CurrentStock)
+                .ToList();
+        }
 
         return closure;
     }
