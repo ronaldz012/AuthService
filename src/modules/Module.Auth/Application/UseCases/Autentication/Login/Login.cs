@@ -12,6 +12,7 @@ public class Login(
     ITenantConnectionContext tenantConnectionContext,
     ISessionStateService sessionState,
     ITokenGenerator tokenGenerator,
+    IRefreshTokenService refreshTokenService,
     ILogger<Login> logger) 
 {
     public async Task<Result<LoginResponse>> Execute(LoginRequest request)
@@ -25,6 +26,9 @@ public class Login(
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return LoginErrors.InvalidPassword;
 
+        if (!user.IsActive)
+            return LoginErrors.InactiveUser;
+
         tenantConnectionContext.TenantId = user.TenantId;
 
         var session = await sessionState.GetOrBuildAsync(user.Id, user.TenantId, user.Type);
@@ -37,7 +41,7 @@ public class Login(
             user.Type,
             fullName);
 
-        var refreshToken = tokenGenerator.GenerateRefreshToken();
+        var refreshToken = await refreshTokenService.GenerateAsync(user.Id);
 
         return new LoginResponse(accessToken, refreshToken, expirationMinutes * 60, session);
     }

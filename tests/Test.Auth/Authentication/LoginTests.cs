@@ -84,17 +84,20 @@ public class LoginTests
             .Setup(t => t.GenerateAccessToken(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<UserType>(), It.IsAny<string>()))
             .Returns("fake-access-token");
         tokenGeneratorMock
-            .Setup(t => t.GenerateRefreshToken())
-            .Returns("fake-refresh-token");
-        tokenGeneratorMock
             .Setup(t => t.GetExpirationMinutes())
             .Returns(60);
+
+        var refreshTokenServiceMock = new Mock<IRefreshTokenService>();
+        refreshTokenServiceMock
+            .Setup(s => s.GenerateAsync(It.IsAny<Guid>()))
+            .ReturnsAsync("fake-refresh-token");
 
         return new Login(
             dbContext,
             tenantConnectionContext,
             sessionState,
             tokenGeneratorMock.Object,
+            refreshTokenServiceMock.Object,
             new Mock<ILogger<Login>>().Object);
     }
 }

@@ -11,6 +11,7 @@ using Module.Auth.Application.UseCases.Autentication.AuthMe;
 using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Application.UseCases.Autentication.PublicLogin;
 using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
+using Module.Auth.Application.UseCases.Autentication.RefreshToken;
 using Module.Auth.Application.UseCases.Autentication.VerifiUser;
 using Module.Auth.Application.UseCases.Autentication.VerifyToken;
 using Module.Auth.Application.UseCases.Branches;
@@ -37,6 +38,7 @@ using Module.Auth.Application.UseCases.Users.ToggleUserType;
 using Module.Auth.Application.UseCases.Users.Pending;
 using Module.Auth.Infrastructure.Authentication;
 using Module.Auth.Infrastructure.Authentication.EmailTemplates;
+using ImplementationRefreshTokenService = Module.Auth.Infrastructure.Authentication.RefreshTokenService;
 using Module.Auth.Infrastructure.Branches;
 using Module.Auth.Infrastructure.Databases;
 using Module.Auth.Infrastructure.Persistence;
@@ -80,7 +82,8 @@ public static class SharedDependencyInjection
                .AddScoped<VerifyUser>()
                .AddScoped<SetupUserPassword>()
                .AddScoped<VerifyToken>()
-               .AddScoped<AuthMe>();
+               .AddScoped<AuthMe>()
+               .AddScoped<RefreshTokenUseCase>();
          
          services.AddScoped<UserUserCases>()
                  .AddScoped<GetAllUsers>()
@@ -109,6 +112,7 @@ public static class SharedDependencyInjection
          IConfigurationSection projectInfoSection = configuration.GetSection(ProjectInfo.SectionName);
          services.Configure<ProjectInfo>(projectInfoSection);
 
+         services.AddScoped<IRefreshTokenService, ImplementationRefreshTokenService>();
          services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
          services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
 

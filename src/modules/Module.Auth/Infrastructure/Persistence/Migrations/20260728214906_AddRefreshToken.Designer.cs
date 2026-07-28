@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Module.Auth.Infrastructure.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Module.Auth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    partial class AuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728214906_AddRefreshToken")]
+    partial class AddRefreshToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -237,17 +240,12 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TokenHash")
                         .IsUnique();
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("RefreshTokens");
                 });
@@ -700,14 +698,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Module.Auth.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.RoleFeaturePermission", b =>

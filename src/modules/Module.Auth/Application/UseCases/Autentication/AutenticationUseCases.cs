@@ -1,6 +1,7 @@
 using Module.Auth.Application.UseCases.Autentication.AuthMe;
 using Module.Auth.Application.UseCases.Autentication.Login;
 using Module.Auth.Application.UseCases.Autentication.PublicLogin;
+using Module.Auth.Application.UseCases.Autentication.RefreshToken;
 using Module.Auth.Application.UseCases.Autentication.VerifiUser;
 using Module.Auth.Application.UseCases.Autentication.VerifyToken;
 using Module.Auth.Application.UseCases.Users.Pending;
@@ -13,5 +14,6 @@ public record AutenticationUseCases(RegisterDefaultUser RegisterDefaultUser,
                              VerifyUser VerifyUser,
                               CompletePublicRegister CompletePublicRegister,
                              SetupUserPassword.SetupUserPassword SetupUserPassword,
-                             VerifyToken.VerifyToken VerifyToken,
-                             AuthMe.AuthMe AuthMe);
+                              VerifyToken.VerifyToken VerifyToken,
+                              AuthMe.AuthMe AuthMe,
+                              RefreshTokenUseCase RefreshToken);
