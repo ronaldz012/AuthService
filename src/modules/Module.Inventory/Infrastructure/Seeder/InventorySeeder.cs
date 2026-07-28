@@ -9,14 +9,14 @@ namespace Module.Inventory.Infrastructure.Seeder;
 
 public class InventorySeeder(
     IServiceProvider serviceProvider,
-    ITenantDatabaseResolver tenantResolver,
-    IProductCodeService codeService) : IDataSeeder
+    ITenantDatabaseResolver tenantResolver) : IDataSeeder
 {
     public int Order => 5;
 
     public async Task SeedAsync()
     {
         var context = serviceProvider.GetRequiredService<IInvDbContext>();
+        var codeService = serviceProvider.GetRequiredService<IProductCodeService>();
 
         if (await context.Categories.AnyAsync()) return;
 
