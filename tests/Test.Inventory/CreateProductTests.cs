@@ -5,6 +5,7 @@ using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
+using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Domain.Products;
 using System.Infrastructure.Persistence;
@@ -18,6 +19,14 @@ public class CreateProductTests
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid ColorId = Guid.NewGuid();
 
+    private static IProductCodeService CreateCodeService(string internalCode, string sku)
+    {
+        var mock = new Mock<IProductCodeService>();
+        mock.Setup(s => s.ReserveBrandCounter(It.IsAny<Guid>(), It.IsAny<string>())).ReturnsAsync(internalCode);
+        mock.Setup(s => s.ReserveVariantCounter(It.IsAny<Guid>(), It.IsAny<string>())).ReturnsAsync(sku);
+        return mock.Object;
+    }
+
     [Fact]
     public async Task Execute_ShouldReturnError_WhenBrandNotFound()
     {
@@ -26,7 +35,7 @@ public class CreateProductTests
         var currentUser = new Mock<ICurrentUser>();
         currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
         currentUser.Setup(u => u.FullName).Returns("Test User");
-        var sut = new CreateProductUc(ctx, currentUser.Object);
+        var sut = new CreateProductUc(ctx, currentUser.Object, Mock.Of<IProductCodeService>());
 
         var result = await sut.Execute(new CreateProductRequest
         {
@@ -48,7 +57,7 @@ public class CreateProductTests
         var currentUser = new Mock<ICurrentUser>();
         currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
         currentUser.Setup(u => u.FullName).Returns("Test User");
-        var sut = new CreateProductUc(ctx, currentUser.Object);
+        var sut = new CreateProductUc(ctx, currentUser.Object, Mock.Of<IProductCodeService>());
 
         var result = await sut.Execute(new CreateProductRequest
         {
@@ -74,7 +83,8 @@ public class CreateProductTests
         var currentUser = new Mock<ICurrentUser>();
         currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
         currentUser.Setup(u => u.FullName).Returns("Test User");
-        var sut = new CreateProductUc(ctx, currentUser.Object);
+        var codeService = CreateCodeService("BRD-1", "BRD-1-001");
+        var sut = new CreateProductUc(ctx, currentUser.Object, codeService);
 
         var result = await sut.Execute(new CreateProductRequest
         {
@@ -151,20 +161,4 @@ public class TestTenantConnectionContext : ITenantConnectionContext
 }
 
 public class TestAppDbContext(DbContextOptions<AppDbContext> options, ITenantConnectionContext tenant)
-    : AppDbContext(options, tenant)
-{
-    private int _brandCounter;
-    private int _variantCounter;
-
-    public override Task<string> ReserveBrandCounter(Guid brandId, string prefix)
-    {
-        _brandCounter++;
-        return Task.FromResult($"{prefix}-{_brandCounter}");
-    }
-
-    public override Task<string> ReserveVariantCounter(Guid productId, string productCode)
-    {
-        _variantCounter++;
-        return Task.FromResult($"{productCode}-{_variantCounter.ToString().PadLeft(3, '0')}");
-    }
-}
+    : AppDbContext(options, tenant);

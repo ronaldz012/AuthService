@@ -6,7 +6,7 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Products.Create;
 
-public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser)
+public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IProductCodeService codeService)
 {
     public async Task<Result<ProductCreatedDto>> Execute(CreateProductRequest request)
     {
@@ -25,7 +25,7 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser)
         await using var tx = await context.Database.BeginTransactionAsync();
         try
         {
-            var internalCode = await context.ReserveBrandCounter(request.BrandId, brand.Prefix);
+            var internalCode = await codeService.ReserveBrandCounter(request.BrandId, brand.Prefix);
 
             var product = new Product
             {
@@ -46,7 +46,7 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser)
             var variants = new List<ProductVariant>();
             foreach (var pv in request.Variants)
             {
-                var sku = await context.ReserveVariantCounter(product.Id, product.InternalCode);
+                var sku = await codeService.ReserveVariantCounter(product.Id, product.InternalCode);
                 variants.Add(new ProductVariant
                 {
                     ProductId = product.Id,

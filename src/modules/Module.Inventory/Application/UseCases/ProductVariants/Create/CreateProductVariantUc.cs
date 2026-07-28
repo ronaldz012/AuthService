@@ -6,7 +6,7 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.Create;
 
-public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentUser)
+public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentUser, IProductCodeService codeService)
 {
     public async Task<Result<List<ProductVariantCreatedDto>>> Execute(Guid productId, List<CreateProductVariantDto> dto)
     {
@@ -68,7 +68,7 @@ public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentU
             var variants = new List<ProductVariant>();
             foreach (var x in dto)
             {
-                var sku = await context.ReserveVariantCounter(productId, product.InternalCode);
+                var sku = await codeService.ReserveVariantCounter(productId, product.InternalCode);
                 variants.Add(new ProductVariant
                 {
                     ProductId = productId,

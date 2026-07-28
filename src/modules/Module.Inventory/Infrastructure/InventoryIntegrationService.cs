@@ -9,24 +9,23 @@ namespace Module.Inventory.Infrastructure;
 
 public class InventoryIntegrationService(IInvDbContext context) : IInventoryIntegrationService
 {
-    public async Task<Result<List<ProductVariantStockDto>>> GetVariantsWithStock(
-        List<Guid> variantIds, Guid branchId)
+    public async Task<Result<List<ProductVariantStockDto>>> GetVariantsWithStock(List<Guid> variantIds, Guid branchId)
     {
-        var variants = await context.ProductVariants
-            .Include(pv => pv.Product)
-            .Include(pv => pv.Color)
-            .Include(pv => pv.BranchInventories.Where(bi => bi.BranchId == branchId))
+        var result = await context.ProductVariants
             .Where(pv => variantIds.Contains(pv.Id))
+            .Select(pv => new ProductVariantStockDto(
+                pv.Id,
+                pv.Sku,
+                // Inventory compone el nombre mostrable; Sales lo guarda tal cual como snapshot
+                pv.Product.Brand.Name + " " + pv.Product.Category.Name + " " + pv.Product.Name
+                    + " - " + pv.Color.Name + " / " + pv.Size,
+                pv.Price,
+                pv.BranchInventories
+                    .Where(bi => bi.BranchId == branchId)
+                    .Select(bi => bi.Stock)
+                    .FirstOrDefault()
+            ))
             .ToListAsync();
-
-        var result = variants.Select(pv => new ProductVariantStockDto(
-            pv.Id,
-            pv.Sku,
-            // Inventory compone el nombre mostrable; Sales lo guarda tal cual como snapshot
-            $"{pv.Product.Name} - {pv.Color.Name} / {pv.Size}",
-            pv.Price,
-            pv.BranchInventories.FirstOrDefault()?.Stock ?? 0
-        )).ToList();
 
         return result;
     }

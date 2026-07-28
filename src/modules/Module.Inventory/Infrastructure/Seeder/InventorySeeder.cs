@@ -9,7 +9,8 @@ namespace Module.Inventory.Infrastructure.Seeder;
 
 public class InventorySeeder(
     IServiceProvider serviceProvider,
-    ITenantDatabaseResolver tenantResolver) : IDataSeeder
+    ITenantDatabaseResolver tenantResolver,
+    IProductCodeService codeService) : IDataSeeder
 {
     public int Order => 5;
 
@@ -47,7 +48,7 @@ public class InventorySeeder(
             var brand = await context.Brands.FirstAsync(b => b.Name == prodSeed.Brand);
             var category = await context.Categories.FirstAsync(c => c.Name == prodSeed.Category);
 
-            var code = await context.ReserveBrandCounter(brand.Id, brand.Prefix);
+            var code = await codeService.ReserveBrandCounter(brand.Id, brand.Prefix);
             var product = Product.Create(prodSeed.Name, prodSeed.Description, category.Id, brand.Id, prodSeed.Gender, code, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System");
             context.Products.Add(product);
             await context.SaveChangesAsync();
@@ -55,7 +56,7 @@ public class InventorySeeder(
             foreach (var varSeed in prodSeed.Variants)
             {
                 var color = await context.Colors.FirstAsync(c => c.Name == varSeed.Color);
-                var sku = await context.ReserveVariantCounter(product.Id, product.InternalCode);
+                var sku = await codeService.ReserveVariantCounter(product.Id, product.InternalCode);
                 context.ProductVariants.Add(ProductVariant.Create(product.Id, color.Id, varSeed.Size, varSeed.Price, sku, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
             }
         }

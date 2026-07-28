@@ -51,6 +51,4 @@ public interface IInvDbContext
     Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default);
 
-    Task<string> ReserveBrandCounter(Guid brandId, string prefix);
-    Task<string> ReserveVariantCounter(Guid productId, string productCode);
 }

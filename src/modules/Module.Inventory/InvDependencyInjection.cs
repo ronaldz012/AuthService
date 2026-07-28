@@ -1,6 +1,8 @@
 using Common.Contracts.inventory;
 using Common.Contracts.Seeder;
 using Microsoft.Extensions.DependencyInjection;
+using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Infrastructure.Services;
 using Module.Inventory.Application.UseCases.Brands;
 using Module.Inventory.Application.UseCases.Brands.CreateBrand;
 using Module.Inventory.Application.UseCases.Brands.GetBrands;
@@ -94,6 +96,7 @@ public  static class InvDependencyInjection
             .AddScoped<GetListColors>();
 
         services.AddScoped<IInventoryIntegrationService, InventoryIntegrationService>();
+        services.AddScoped<IProductCodeService, ProductCodeService>();
 
         services.AddScoped<IDataSeeder, InventorySeeder>();
         services.AddScoped<IDataSeeder, StockReceptionSeeder>();
