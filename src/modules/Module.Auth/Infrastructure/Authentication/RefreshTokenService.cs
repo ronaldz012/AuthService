@@ -45,6 +45,20 @@ public class RefreshTokenService(IAuthDbContext context) : IRefreshTokenService
         return newToken;
     }
 
+    public async Task RevokeAsync(string refreshToken)
+    {
+        var hash = HashToken(refreshToken);
+        var entity = await context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.TokenHash == hash);
+
+        if (entity is null)
+            return;
+
+        entity.IsRevoked = true;
+        entity.RevokedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync();
+    }
+
     private static string GenerateCryptographicToken()
     {
         var bytes = new byte[64];

@@ -65,7 +65,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConne
         {
             e.HasKey(rt => rt.Id);
             e.HasIndex(rt => rt.TokenHash).IsUnique();
-            e.HasOne<User>().WithMany().HasForeignKey(rt => rt.UserId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(rt => rt.User).WithMany().HasForeignKey(rt => rt.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Tenant>(e =>

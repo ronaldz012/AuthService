@@ -8,20 +8,21 @@ namespace Module.Auth.Application.UseCases.Autentication.RefreshToken;
 public class RefreshTokenUseCase(
     IRefreshTokenService refreshTokenService,
     ITokenGenerator tokenGenerator,
-    IAuthDbContext dbContext)
+    IAuthDbContext context)
 {
     public async Task<Result<RefreshTokenResponse>> Execute(string refreshToken)
     {
         var tokenHash = RefreshTokenService.HashToken(refreshToken);
 
-        var token = await dbContext.RefreshTokens
+        var token = await context.RefreshTokens
             .Include(rt => rt.User)
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash);
 
         if (token is null || !token.IsActive)
             return RefreshTokenErrors.InvalidOrExpired;
 
-        if (!token.User.IsActive)
+        if (token.User is null || !token.User.IsActive)
             return RefreshTokenErrors.InactiveUser;
 
         var newRefreshToken = await refreshTokenService.RevokeAndGenerateAsync(token);
@@ -29,8 +30,6 @@ public class RefreshTokenUseCase(
         var fullName = $"{token.User.FirstName} {token.User.LastName}".Trim();
         var accessToken = tokenGenerator.GenerateAccessToken(
             token.UserId, token.User.TenantId, token.User.Type, fullName);
-
-        var expiresIn = tokenGenerator.GetExpirationMinutes() * 60;
 
         return new RefreshTokenResponse(accessToken, newRefreshToken);
     }

@@ -25,7 +25,11 @@ builder.Services.AddOpenApi(options =>
       Title = "Sales API",
       Version = "v1"
     };
-    document.Servers = [new() { Url = "http://localhost:5253" }];
+    document.Servers =
+    [
+        new() { Url = "https://localhost:5253" },
+        new() { Url = "http://localhost:5264" }
+    ];
 
     // 1. Definir el esquema de seguridad para el Token JWT
     document.Components ??= new Microsoft.OpenApi.Models.OpenApiComponents();
@@ -89,11 +93,23 @@ builder.Services.AddAuthentication(options =>
     ValidateAudience = true,
     ValidateLifetime = true,
     ValidateIssuerSigningKey = true,
+    ClockSkew = TimeSpan.Zero,
     ValidIssuer = builder.Configuration["TokenSettings:Issuer"]!,
     ValidAudience = builder.Configuration["TokenSettings:Audience"]!,
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["TokenSettings:SecretKey"]!))
+    IssuerSigningKey = new SymmetricSecurityKey
+    (Encoding.UTF8.GetBytes(builder.Configuration["TokenSettings:SecretKey"]!))
   };
 });
+
+
+
+
+
+
+
+
+
+
 builder.Services.AddCommon(builder.Configuration);
 
   builder.Services.AuthDependencyInjection(builder.Configuration);
@@ -119,9 +135,10 @@ builder.Services.AddCors(options =>
 {
   options.AddPolicy("AllowAll", policy =>
   {
-    policy.AllowAnyOrigin()   // Permite solicitudes desde cualquier origen
-      .AllowAnyHeader()   // Permite cualquier encabezado
-      .AllowAnyMethod();  // Permite cualquier método HTTP
+    policy.SetIsOriginAllowed(_ => true)
+      .AllowCredentials()
+      .AllowAnyHeader()
+      .AllowAnyMethod();
   });
 });
 
@@ -142,6 +159,18 @@ app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 //app.MapHub<NotificationHub>("/hubs/notifications");
 app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+    if (!context.Request.Headers.ContainsKey("Authorization"))
+    {
+        var token = context.Request.Cookies["accessToken"];
+        if (!string.IsNullOrEmpty(token))
+            context.Request.Headers["Authorization"] = $"Bearer {token}";
+    }
+    await next(context);
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantMiddleware>();

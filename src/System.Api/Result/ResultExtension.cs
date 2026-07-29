@@ -22,23 +22,28 @@ public static class ResultExtensions
     public static async Task<IActionResult> ToValueOrProblemDetails<TValue>(
         this Task<Result<TValue>> resultTask)
     {
-        // Esperamos el resultado de la tarea
         var result = await resultTask;
-        
-        // Si fue exitoso, retornamos 200 OK con el valor
-        if (result.IsSuccess)
-        {
-            return new OkObjectResult(result.Value);
-        }
+        return result.ToValueOrProblemDetailsResult();
+    }
 
-        // Si falló, convertimos el Error en ProblemDetails (RFC 7807)
+    public static IActionResult ToValueOrProblemDetails<TValue>(
+        this Result<TValue> result)
+    {
+        return result.ToValueOrProblemDetailsResult();
+    }
+
+    private static IActionResult ToValueOrProblemDetailsResult<TValue>(
+        this Result<TValue> result)
+    {
+        if (result.IsSuccess)
+            return new OkObjectResult(result.Value);
+
         var statusCode = MapErrorCodeToStatusCode(result.Error!.Code);
-        
         return new ObjectResult(new ProblemDetails
         {
             Status = statusCode,
-            Title = result.Error.Code.ToString(), // Convierte el Enum a String (ej: "ValidationError")
-            Detail = result.Error.Message         // Mensaje descriptivo del UseCase
+            Title = result.Error.Code.ToString(),
+            Detail = result.Error.Message
         })
         {
             StatusCode = statusCode
