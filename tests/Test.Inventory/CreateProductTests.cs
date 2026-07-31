@@ -113,6 +113,46 @@ public class CreateProductTests
         Assert.Equal("BRD-1-001", result.Value.Variants[0].Sku);
     }
 
+    [Fact]
+    public async Task Execute_ShouldReturnError_WhenProductNameAlreadyExistsForCategoryAndBrand()
+    {
+        using var ctx = CreateDbContext();
+        SeedBrand(ctx);
+        SeedCategory(ctx);
+        SeedColor(ctx);
+        var currentUser = new Mock<ICurrentUser>();
+        currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
+        currentUser.Setup(u => u.FullName).Returns("Test User");
+        var codeService = CreateCodeService("BRD-1", "BRD-1-001");
+        var sut = new CreateProductUc(ctx, currentUser.Object, codeService);
+
+        var first = await sut.Execute(new CreateProductRequest
+        {
+            Name = "Test Product",
+            BrandId = BrandId,
+            CategoryId = CategoryId,
+            Variants =
+            [
+                new CreateProductVariantForProductDto { ColorId = ColorId, Size = "M", Price = 100 }
+            ]
+        });
+        Assert.True(first.IsSuccess, $"Expected success but got: {first.Error?.Code} - {first.Error?.Message}");
+
+        var second = await sut.Execute(new CreateProductRequest
+        {
+            Name = "test product",
+            BrandId = BrandId,
+            CategoryId = CategoryId,
+            Variants =
+            [
+                new CreateProductVariantForProductDto { ColorId = ColorId, Size = "M", Price = 100 }
+            ]
+        });
+
+        Assert.False(second.IsSuccess);
+        Assert.Equal(CreateProductErrors.ProductNameAlreadyExists, second.Error);
+    }
+
     private static TestAppDbContext CreateDbContext()
     {
         var tenantCtx = new TestTenantConnectionContext

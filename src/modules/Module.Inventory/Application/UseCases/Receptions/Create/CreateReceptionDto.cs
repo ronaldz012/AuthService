@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Module.Inventory.Application.UseCases.Receptions.Create;
 
-public class CreateStockReceptionDto
+public class CreateStockReceptionDto : IValidatableObject
 {
     public Guid? ProviderId { get; set; }
 
@@ -11,6 +11,16 @@ public class CreateStockReceptionDto
     [Required]
     [MinLength(1, ErrorMessage = "At least one item is required")]
     public List<CreateStockReceptionItemDto> Items { get; set; } = new();
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var duplicate = Items
+            .GroupBy(x => x.ProductVariantId)
+            .FirstOrDefault(g => g.Count() > 1);
+
+        if (duplicate != null)
+            yield return new ValidationResult("Duplicate variant items in request", [nameof(Items)]);
+    }
 }
 
 public class CreateStockReceptionItemDto

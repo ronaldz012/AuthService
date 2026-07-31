@@ -14,6 +14,18 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IP
         if (brand == null)
             return CreateProductErrors.BrandNotFound;
 
+        var category = await context.Categories.FindAsync(request.CategoryId);
+        if (category == null)
+            return CreateProductErrors.CategoryNotFound;
+
+        var duplicateName = await context.Products.AnyAsync(p =>
+            p.CategoryId == request.CategoryId &&
+            p.BrandId == request.BrandId &&
+            p.Name.ToLower() == request.Name.ToLower());
+
+        if (duplicateName)
+            return CreateProductErrors.ProductNameAlreadyExists;
+
         var colorIds = request.Variants.Select(pv => pv.ColorId).Distinct().ToList();
         var colors = await context.Colors
             .Where(c => colorIds.Contains(c.Id))

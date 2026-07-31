@@ -40,9 +40,9 @@ namespace System.Api.Controllers.Inventory
             return await useCases.GetProductVariantDetails.Execute(id).ToValueOrProblemDetails();
         }
         [HttpPost("{productId:guid}")]
-        public async Task<IActionResult> CreateProductVariants([FromRoute]Guid productId, [FromBody] List<CreateProductVariantDto> variants)
+        public async Task<IActionResult> CreateProductVariants([FromRoute]Guid productId, [FromBody] CreateProductVariantsRequest request)
         {
-            return await useCases.CreateProductVariantUc.Execute(productId, variants).ToValueOrProblemDetails();
+            return await useCases.CreateProductVariantUc.Execute(productId, request).ToValueOrProblemDetails();
         }
 
         [HttpDelete("{id:guid}")]

@@ -34,15 +34,15 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
         var branchIds = tenantInfo.BranchIds;
         var stockSplit = DistributeStock(InventorySeedData.Products, branchIds.Count);
 
-        var providerNames = InventorySeedData.Providers.Select(p => p.Name).ToList();
+        var providerNames = InventorySeedData.Providers.Select(p => p.Name.ToLower()).ToList();
         var existingProviders = await context.Providers
-            .Where(p => providerNames.Contains(p.Name))
+            .Where(p => providerNames.Contains(p.Name.ToLower()))
             .ToListAsync();
 
         var providers = existingProviders.ToList();
         foreach (var providerSeed in InventorySeedData.Providers)
         {
-            if (providers.Any(p => p.Name == providerSeed.Name)) continue;
+            if (providers.Any(p => p.Name.ToLower() == providerSeed.Name.ToLower())) continue;
 
             var provider = Module.Inventory.Domain.Organization.Provider.Create(
                 providerSeed.Name,

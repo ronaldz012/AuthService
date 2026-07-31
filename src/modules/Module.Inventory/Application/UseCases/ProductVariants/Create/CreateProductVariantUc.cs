@@ -8,19 +8,12 @@ namespace Module.Inventory.Application.UseCases.ProductVariants.Create;
 
 public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentUser, IProductCodeService codeService)
 {
-    public async Task<Result<List<ProductVariantCreatedDto>>> Execute(Guid productId, List<CreateProductVariantDto> dto)
+    public async Task<Result<List<ProductVariantCreatedDto>>> Execute(Guid productId, CreateProductVariantsRequest request)
     {
-        if (dto == null) throw new ArgumentNullException(nameof(dto));
+        var dto = request.Variants;
 
         if (dto.Count == 0)
             return CreateProductVariantErrors.EmptyVariantList;
-
-        var hasDuplicatesInDto = dto
-            .GroupBy(x => new { x.ColorId, Size = x.Size.Trim().ToLower() })
-            .Any(g => g.Count() > 1);
-
-        if (hasDuplicatesInDto)
-            return CreateProductVariantErrors.DuplicateVariantsInRequest;
 
         var product = await context.Products
             .Select(x => new { x.Id, x.InternalCode })

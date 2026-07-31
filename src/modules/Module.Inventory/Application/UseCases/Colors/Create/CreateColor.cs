@@ -10,8 +10,8 @@ public class CreateColor(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<ColorDto>> Execute(string colorName)
     {
-        // Buscamos si existe conflicto con nombre o código (incluyendo eliminados si usas filtros globales)
-        var existing = await context.Colors.AnyAsync(x => x.Name == colorName );
+        // Buscamos si existe conflicto con nombre (case-insensitive, incluyendo eliminados si usas filtros globales)
+        var existing = await context.Colors.AnyAsync(x => x.Name.ToLower() == colorName.ToLower());
 
 
         if (existing)

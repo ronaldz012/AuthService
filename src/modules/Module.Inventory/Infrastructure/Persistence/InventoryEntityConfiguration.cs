@@ -24,11 +24,17 @@ public static class InventoryEntityConfiguration
             entity.HasOne(p => p.Brand)
                 .WithMany(b => b.Products)
                 .HasForeignKey(p => p.BrandId);
+            entity.HasIndex(x => new { x.TenantId, x.CategoryId, x.BrandId, x.Name })
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
+            entity.HasIndex(x => new { x.TenantId, x.InternalCode })
+                .IsUnique();
         });
         builder.Entity<ProductVariant>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasQueryFilter(x => x.DeletedAt == null);
+            entity.HasIndex(x => new { x.TenantId, x.Sku }).IsUnique();
             entity.HasMany(pv => pv.BranchInventories)
                 .WithOne(inv => inv.ProductVariant)
                 .HasForeignKey(inv => inv.ProductVariantId);
@@ -45,14 +51,17 @@ public static class InventoryEntityConfiguration
         builder.Entity<BranchInventory>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);
+            entity.HasIndex(x => new { x.TenantId, x.BranchId, x.ProductVariantId }).IsUnique();
         });
         builder.Entity<Category>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);
+            entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
         });
         builder.Entity<Provider>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);
+            entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
             entity.HasMany(p => p.StockReceptions)
                 .WithOne(r => r.Provider)
                 .HasForeignKey(r => r.ProviderId);
@@ -60,10 +69,13 @@ public static class InventoryEntityConfiguration
         builder.Entity<Brand>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);
+            entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
+            entity.HasIndex(x => new { x.TenantId, x.Prefix }).IsUnique();
         });
         builder.Entity<Color>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);
+            entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
         });
         builder.Entity<StockReception>(entity =>
         {

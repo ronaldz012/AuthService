@@ -1,5 +1,6 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
+using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Products;
 
@@ -9,8 +10,11 @@ public class CreateBrandUc(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<BrandResponse>> Execute(CreateBrandRequest request)
     {
-        var uniquePrefix = context.Brands.Any(b => b.Prefix == request.Prefix);
+        var uniquePrefix = await context.Brands.AnyAsync(b => b.Prefix.ToLower() == request.Prefix.ToLower());
             if(uniquePrefix) return CreateBrandErrors.BrandPrefixAlreadyExists;
+
+        var uniqueName = await context.Brands.AnyAsync(b => b.Name.ToLower() == request.Name.ToLower());
+            if(uniqueName) return CreateBrandErrors.BrandNameAlreadyExists;
             
         var newBrand = new Brand
         {

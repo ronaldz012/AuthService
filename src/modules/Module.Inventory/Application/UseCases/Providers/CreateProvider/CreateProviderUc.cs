@@ -11,7 +11,7 @@ public class CreateProviderUc(IInvDbContext context, ICurrentUser currentUser)
     public async Task<Result<ProviderResponse>> Execute(CreateProviderRequest request)
     {
         var duplicate = await context.Providers
-            .AnyAsync(p => p.Name == request.Name && p.IsActive);
+            .AnyAsync(p => p.Name.ToLower() == request.Name.ToLower());
 
         if (duplicate)
             return CreateProviderErrors.ProviderNameAlreadyExists;

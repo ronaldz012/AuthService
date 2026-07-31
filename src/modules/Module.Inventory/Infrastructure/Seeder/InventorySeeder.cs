@@ -25,19 +25,19 @@ public class InventorySeeder(
 
         foreach (var name in InventorySeedData.Colors)
         {
-            if (!await context.Colors.AnyAsync(c => c.Name == name))
+            if (!await context.Colors.AnyAsync(c => c.Name.ToLower() == name.ToLower()))
                 context.Colors.Add(Color.Create(name, tenantInfo.TenantId, tenantInfo.OwnerUserId));
         }
 
         foreach (var name in InventorySeedData.Categories)
         {
-            if (!await context.Categories.AnyAsync(c => c.Name == name))
+            if (!await context.Categories.AnyAsync(c => c.Name.ToLower() == name.ToLower()))
                 context.Categories.Add(Category.Create(name, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
         }
 
         foreach (var brand in InventorySeedData.Brands)
         {
-            if (!await context.Brands.AnyAsync(b => b.Prefix == brand.Prefix))
+            if (!await context.Brands.AnyAsync(b => b.Prefix.ToLower() == brand.Prefix.ToLower()))
                 context.Brands.Add(Brand.Create(brand.Name, brand.Prefix, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
         }
 

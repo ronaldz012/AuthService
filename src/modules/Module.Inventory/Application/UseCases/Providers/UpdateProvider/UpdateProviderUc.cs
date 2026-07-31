@@ -14,7 +14,7 @@ public class UpdateProviderUc(IInvDbContext context, ICurrentUser currentUser)
             return UpdateProviderErrors.ProviderNotFound;
 
         var duplicate = await context.Providers
-            .AnyAsync(p => p.Id != id && p.Name == request.Name && p.IsActive);
+            .AnyAsync(p => p.Id != id && p.Name.ToLower() == (request.Name ?? string.Empty).ToLower());
 
         if (duplicate)
             return UpdateProviderErrors.ProviderNameAlreadyExists;

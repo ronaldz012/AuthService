@@ -3,6 +3,7 @@ using System;
 using System.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace System.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731203647_AddCatalogUniqueIndexes")]
+    partial class AddCatalogUniqueIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,9 +77,6 @@ namespace System.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductVariantId");
-
-                    b.HasIndex("TenantId", "BranchId", "ProductVariantId")
-                        .IsUnique();
 
                     b.ToTable("BranchInventories");
                 });
@@ -463,13 +463,6 @@ namespace System.Infrastructure.Persistence.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("TenantId", "InternalCode")
-                        .IsUnique();
-
-                    b.HasIndex("TenantId", "CategoryId", "BrandId", "Name")
-                        .IsUnique()
-                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.ToTable("Products");
                 });
