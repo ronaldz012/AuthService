@@ -4,6 +4,8 @@ namespace Module.Inventory.Application.UseCases.Receptions.Create;
 
 public class CreateStockReceptionDto
 {
+    public Guid? ProviderId { get; set; }
+
     public string? Notes { get; set; }
 
     [Required]

@@ -53,6 +53,9 @@ public static class InventoryEntityConfiguration
         builder.Entity<Provider>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);
+            entity.HasMany(p => p.StockReceptions)
+                .WithOne(r => r.Provider)
+                .HasForeignKey(r => r.ProviderId);
         });
         builder.Entity<Brand>(entity =>
         {

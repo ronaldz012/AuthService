@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -23,11 +22,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     ProductCounter = table.Column<int>(type: "integer", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -42,13 +44,24 @@ namespace System.Infrastructure.Persistence.Migrations
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     BranchId = table.Column<Guid>(type: "uuid", nullable: false),
                     OpenById = table.Column<Guid>(type: "uuid", nullable: false),
+                    OpenByName = table.Column<string>(type: "text", nullable: false),
                     CloseById = table.Column<Guid>(type: "uuid", nullable: true),
+                    CloseByName = table.Column<string>(type: "text", nullable: true),
                     OpenAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ClosedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     OpeningBalance = table.Column<decimal>(type: "numeric", nullable: false),
                     SystemSalesAmount = table.Column<decimal>(type: "numeric", nullable: false),
                     RealCountedAmount = table.Column<decimal>(type: "numeric", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false)
+                    IsOpen = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -64,11 +77,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -83,11 +99,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -98,46 +117,27 @@ namespace System.Infrastructure.Persistence.Migrations
                 name: "Providers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    ContactName = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Address = table.Column<string>(type: "text", nullable: false),
+                    ContactName = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    Address = table.Column<string>(type: "text", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Providers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StockReceptions",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
-                    BranchId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ReceivedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    Notes = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StockReceptions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -154,11 +154,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     Notes = table.Column<string>(type: "text", nullable: true),
                     ResolvedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -173,6 +176,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CashRegisterClosureId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true),
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false)
@@ -196,6 +207,7 @@ namespace System.Infrastructure.Persistence.Migrations
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     BranchId = table.Column<Guid>(type: "uuid", nullable: false),
                     SoldById = table.Column<Guid>(type: "uuid", nullable: false),
+                    SoldByName = table.Column<string>(type: "text", nullable: false),
                     CashRegisterClosureId = table.Column<Guid>(type: "uuid", nullable: false),
                     PaymentMethod = table.Column<int>(type: "integer", nullable: false),
                     TransactionCode = table.Column<string>(type: "text", nullable: true),
@@ -203,10 +215,16 @@ namespace System.Infrastructure.Persistence.Migrations
                     InvoiceNumber = table.Column<int>(type: "integer", nullable: true),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     DocumentType = table.Column<int>(type: "integer", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    CancelledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Notes = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -237,11 +255,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     EconomicActivity = table.Column<string>(type: "text", nullable: false),
                     ProductCodeSin = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -261,6 +282,37 @@ namespace System.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StockReceptions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BranchId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProviderId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ReceivedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StockReceptions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StockReceptions_Providers_ProviderId",
+                        column: x => x.ProviderId,
+                        principalTable: "Providers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SaleItems",
                 columns: table => new
                 {
@@ -268,10 +320,21 @@ namespace System.Infrastructure.Persistence.Migrations
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     SaleId = table.Column<Guid>(type: "uuid", nullable: false),
                     ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductSku = table.Column<string>(type: "text", nullable: false),
+                    ProductDisplayName = table.Column<string>(type: "text", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     DiscountAmount = table.Column<decimal>(type: "numeric", nullable: false),
-                    FinalPrice = table.Column<decimal>(type: "numeric", nullable: false)
+                    FinalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -297,11 +360,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     ColorId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -331,11 +397,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     Stock = table.Column<int>(type: "integer", nullable: false),
                     MinStock = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -364,11 +433,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     ReferenceId = table.Column<Guid>(type: "uuid", nullable: true),
                     StockTransferId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -397,11 +469,14 @@ namespace System.Infrastructure.Persistence.Migrations
                     QuantityReceived = table.Column<int>(type: "integer", nullable: false),
                     UnitCost = table.Column<decimal>(type: "numeric", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true)
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -429,7 +504,16 @@ namespace System.Infrastructure.Persistence.Migrations
                     TransferId = table.Column<Guid>(type: "uuid", nullable: false),
                     ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
                     QuantityRequested = table.Column<int>(type: "integer", nullable: false),
-                    StockTransferId = table.Column<Guid>(type: "uuid", nullable: false)
+                    StockTransferId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -452,6 +536,13 @@ namespace System.Infrastructure.Persistence.Migrations
                 name: "IX_BranchInventories_ProductVariantId",
                 table: "BranchInventories",
                 column: "ProductVariantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CashRegisterClosures_Tenant_Branch_OpenOnly",
+                table: "CashRegisterClosures",
+                columns: new[] { "TenantId", "BranchId" },
+                unique: true,
+                filter: "\"IsOpen\" = true");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CashRegisterMovements_CashRegisterClosureId",
@@ -509,6 +600,11 @@ namespace System.Infrastructure.Persistence.Migrations
                 column: "StockReceptionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StockReceptions_ProviderId",
+                table: "StockReceptions",
+                column: "ProviderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StockTransferItems_ProductVariantId",
                 table: "StockTransferItems",
                 column: "ProductVariantId");
@@ -527,9 +623,6 @@ namespace System.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "CashRegisterMovements");
-
-            migrationBuilder.DropTable(
-                name: "Providers");
 
             migrationBuilder.DropTable(
                 name: "SaleItems");
@@ -557,6 +650,9 @@ namespace System.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "CashRegisterClosures");
+
+            migrationBuilder.DropTable(
+                name: "Providers");
 
             migrationBuilder.DropTable(
                 name: "Colors");

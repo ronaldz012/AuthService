@@ -26,6 +26,11 @@ using Module.Inventory.Application.UseCases.ProductVariants.GetById;
 using Module.Inventory.Application.UseCases.ProductVariants.GetBySku;
 using Module.Inventory.Application.UseCases.ProductVariants.PatchStock;
 using Module.Inventory.Application.UseCases.ProductVariants.Update;
+using Module.Inventory.Application.UseCases.Providers;
+using Module.Inventory.Application.UseCases.Providers.CreateProvider;
+using Module.Inventory.Application.UseCases.Providers.GetProviders;
+using Module.Inventory.Application.UseCases.Providers.ToggleProvider;
+using Module.Inventory.Application.UseCases.Providers.UpdateProvider;
 using Module.Inventory.Application.UseCases.Receptions;
 using Module.Inventory.Application.UseCases.Receptions.Create;
 using Module.Inventory.Application.UseCases.Receptions.Get;
@@ -94,6 +99,12 @@ public  static class InvDependencyInjection
         services.AddScoped<ColoreUseCases>()
             .AddScoped<CreateColor>()
             .AddScoped<GetListColors>();
+
+        services.AddScoped<ProviderUseCases>()
+            .AddScoped<CreateProviderUc>()
+            .AddScoped<GetProviders>()
+            .AddScoped<UpdateProviderUc>()
+            .AddScoped<ToggleProviderUc>();
 
         services.AddScoped<IInventoryIntegrationService, InventoryIntegrationService>();
         services.AddScoped<IProductCodeService, ProductCodeService>();

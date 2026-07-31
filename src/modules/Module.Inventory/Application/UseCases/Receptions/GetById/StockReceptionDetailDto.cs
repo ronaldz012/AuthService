@@ -6,6 +6,8 @@ public class StockReceptionDetailDto
 {
     public Guid Id { get; set; }
     public Guid BranchId { get; set; }
+    public Guid? ProviderId { get; set; }
+    public string? ProviderName { get; set; }
     public bool CanRollBack { get; set; }
     public string ReasonCannotRollback  { get; set; } = string.Empty;
     public DateTime ReceivedAt { get; set; }

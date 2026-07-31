@@ -34,6 +34,29 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
         var branchIds = tenantInfo.BranchIds;
         var stockSplit = DistributeStock(InventorySeedData.Products, branchIds.Count);
 
+        var providerNames = InventorySeedData.Providers.Select(p => p.Name).ToList();
+        var existingProviders = await context.Providers
+            .Where(p => providerNames.Contains(p.Name))
+            .ToListAsync();
+
+        var providers = existingProviders.ToList();
+        foreach (var providerSeed in InventorySeedData.Providers)
+        {
+            if (providers.Any(p => p.Name == providerSeed.Name)) continue;
+
+            var provider = Module.Inventory.Domain.Organization.Provider.Create(
+                providerSeed.Name,
+                tenantInfo.TenantId,
+                tenantInfo.OwnerUserId,
+                "System",
+                providerSeed.ContactName,
+                providerSeed.Email,
+                providerSeed.PhoneNumber,
+                providerSeed.Address);
+            context.Providers.Add(provider);
+            providers.Add(provider);
+        }
+
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
@@ -43,7 +66,8 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
             for (var i = 0; i < branchIds.Count; i++)
             {
                 var branchId = branchIds[i];
-                var reception = StockReception.Create(branchId, tenantInfo.OwnerUserId, "System", "Stock inicial");
+                var provider = providers.Count > 0 ? providers[i % providers.Count] : null;
+                var reception = StockReception.Create(branchId, tenantInfo.OwnerUserId, "System", "Stock inicial", provider?.Id);
 
                 foreach (var prodSeed in InventorySeedData.Products)
                 {

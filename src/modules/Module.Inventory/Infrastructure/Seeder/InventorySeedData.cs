@@ -7,6 +7,7 @@ public static class InventorySeedData
     public record VariantSeed(string Color, string Size, decimal Price, int InitialStock, decimal UnitCost);
     public record ProductSeed(string Name, string Description, string Category, string Brand, Gender Gender, List<VariantSeed> Variants);
     public record BrandSeed(string Name, string Prefix);
+    public record ProviderSeed(string Name, string ContactName, string Email, string PhoneNumber, string Address);
 
     public static readonly string[] Colors = ["Negro", "Blanco", "Rojo", "Azul"];
 
@@ -17,6 +18,12 @@ public static class InventorySeedData
         new("Nike", "NIK"),
         new("Adidas", "ADI"),
         new("Puma", "PUM"),
+    ];
+
+    public static readonly ProviderSeed[] Providers =
+    [
+        new("Shoes Import S.A.", "Carlos Mendoza", "ventas@shoesimport.com", "+595 981 234 567", "Av. Mariscal López 1045, Asunción"),
+        new("Distribuidora Deportiva", "Laura Ferreira", "contacto@distdeportiva.com", "+595 971 456 789", "Ruta Transchaco Km 12, Asunción"),
     ];
 
     public static readonly ProductSeed[] Products =

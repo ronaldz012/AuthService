@@ -30,11 +30,25 @@ public class CreateReceptionUc(
         if (missingIds.Count != 0)
             return CreateReceptionErrors.VariantsNotFound;
 
+        if (dto.ProviderId.HasValue)
+        {
+            var provider = await context.Providers
+                .Where(p => p.Id == dto.ProviderId.Value)
+                .Select(p => new { p.IsActive })
+                .FirstOrDefaultAsync();
+
+            if (provider is null)
+                return CreateReceptionErrors.ProviderNotFound;
+
+            if (!provider.IsActive)
+                return CreateReceptionErrors.ProviderInactive;
+        }
+
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
-            var reception = StockReception.Create(branchId, userId, currentUser.FullName, dto.Notes);
+            var reception = StockReception.Create(branchId, userId, currentUser.FullName, dto.Notes, dto.ProviderId);
             var stockMovements = new List<StockMovement>();
             var variantMap = variants.ToDictionary(v => v.Id);
 
@@ -61,6 +75,8 @@ public class CreateReceptionUc(
                 {
                     Id = r.Id,
                     BranchId = r.BranchId,
+                    ProviderId = r.ProviderId,
+                    ProviderName = r.Provider != null ? r.Provider.Name : null,
                     ReceivedAt = r.ReceivedAt,
                     Notes = r.Notes,
                     Items = r.Items.Select(i => new StockReceptionItemResultDto

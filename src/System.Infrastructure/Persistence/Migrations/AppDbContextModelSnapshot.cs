@@ -154,18 +154,14 @@ namespace System.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Module.Inventory.Domain.Organization.Provider", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ContactName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
@@ -188,15 +184,16 @@ namespace System.Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("TenantId")
@@ -550,6 +547,9 @@ namespace System.Infrastructure.Persistence.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("ProviderId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("ReceivedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -569,6 +569,8 @@ namespace System.Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProviderId");
 
                     b.ToTable("StockReceptions");
                 });
@@ -1102,6 +1104,15 @@ namespace System.Infrastructure.Persistence.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Module.Inventory.Domain.Receptions.StockReception", b =>
+                {
+                    b.HasOne("Module.Inventory.Domain.Organization.Provider", "Provider")
+                        .WithMany("StockReceptions")
+                        .HasForeignKey("ProviderId");
+
+                    b.Navigation("Provider");
+                });
+
             modelBuilder.Entity("Module.Inventory.Domain.Receptions.StockReceptionItem", b =>
                 {
                     b.HasOne("Module.Inventory.Domain.Products.ProductVariant", "ProductVariant")
@@ -1171,6 +1182,11 @@ namespace System.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Sale");
+                });
+
+            modelBuilder.Entity("Module.Inventory.Domain.Organization.Provider", b =>
+                {
+                    b.Navigation("StockReceptions");
                 });
 
             modelBuilder.Entity("Module.Inventory.Domain.Products.Brand", b =>
