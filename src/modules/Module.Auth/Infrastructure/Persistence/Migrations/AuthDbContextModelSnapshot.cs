@@ -29,6 +29,10 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.PrimitiveCollection<List<string>>("AllowedFeatureKeys")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
                     b.Property<string>("BranchCode")
                         .IsRequired()
                         .HasColumnType("text");
@@ -60,6 +64,9 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

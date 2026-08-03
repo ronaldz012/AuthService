@@ -43,5 +43,11 @@ namespace System.Api.Controllers.Branch
         {
             return await features.GetBranchDetails.Execute(id).ToValueOrProblemDetails();
         }
+
+        [HttpGet("types")]
+        public async Task<IActionResult> GetBranchTypes()
+        {
+            return await features.GetBranchTypes.Execute().ToValueOrProblemDetails();
+        }
     }
 }

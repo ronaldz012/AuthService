@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Module.Auth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260728214906_AddRefreshToken")]
-    partial class AddRefreshToken
+    [Migration("20260803204851_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,6 +31,10 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.PrimitiveCollection<List<string>>("AllowedFeatureKeys")
+                        .IsRequired()
+                        .HasColumnType("text[]");
 
                     b.Property<string>("BranchCode")
                         .IsRequired()
@@ -63,6 +67,9 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -693,11 +700,13 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Module.Auth.Domain.RefreshToken", b =>
                 {
-                    b.HasOne("Module.Auth.Domain.User", null)
+                    b.HasOne("Module.Auth.Domain.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.RoleFeaturePermission", b =>

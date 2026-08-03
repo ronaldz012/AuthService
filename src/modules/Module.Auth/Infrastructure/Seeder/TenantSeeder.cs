@@ -54,8 +54,14 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
         var tenant = Tenant.Create(tenantId, "default", db.Id, plan.Id, ownerUser, ownerUserId, "Admin Admin");
         context.Tenants.Add(tenant);
 
-        var mainBranch = Branch.Create(Guid.NewGuid(), "Main Branch", "Av. Principal 123", "000000000", ownerUserId, "Admin Admin");
-        var secondaryBranch = Branch.Create(Guid.NewGuid(), "Secondary Branch", "Av. Secundaria 456", "000000001", ownerUserId, "Admin Admin");
+        var features = await context.Features
+            .Select(f => new FeatureModuleInfo(f.Key, f.Module))
+            .ToListAsync();
+
+        var mainBranch = Branch.Create(Guid.NewGuid(), "Main Branch", "Av. Principal 123", "000000000", BranchType.PointOfSale, ownerUserId, "Admin Admin");
+        mainBranch.AllowedFeatureKeys = BranchFeatureKeysResolver.Resolve(plan.AllowedFeatureKeys, mainBranch.Type, features);
+        var secondaryBranch = Branch.Create(Guid.NewGuid(), "Secondary Branch", "Av. Secundaria 456", "000000001", BranchType.Warehouse, ownerUserId, "Admin Admin");
+        secondaryBranch.AllowedFeatureKeys = BranchFeatureKeysResolver.Resolve(plan.AllowedFeatureKeys, secondaryBranch.Type, features);
         context.Branches.Add(mainBranch);
         context.Branches.Add(secondaryBranch);
 

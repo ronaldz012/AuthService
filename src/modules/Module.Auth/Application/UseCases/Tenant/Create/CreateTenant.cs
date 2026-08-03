@@ -38,7 +38,7 @@ public class CreateTenant(
             var tenant = Tenant.Create(tenantId, request.DisplayName, db.Id, plan.Id, ownerUser, ownerUserId, request.OwnerEmail);
             context.Tenants.Add(tenant);
 
-            var mainBranch = Branch.Create(mainBranchId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber, ownerUserId, request.OwnerEmail);
+            var mainBranch = Branch.Create(mainBranchId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber, BranchType.Warehouse, ownerUserId, request.OwnerEmail);
             context.Branches.Add(mainBranch);
 
             foreach (var roleTemplate in plan.DefaultRolesTemplate)

@@ -11,6 +11,8 @@ public class Branch : IMustHaveTenant, ICreatedAt, ICreatedBy
     public string PhoneNumber { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
     public string BranchCode { get; set; } = string.Empty;
+    public BranchType Type { get; set; } = BranchType.Warehouse;
+    public List<string> AllowedFeatureKeys { get; set; } = [];
 
     public Guid TenantId { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -20,7 +22,7 @@ public class Branch : IMustHaveTenant, ICreatedAt, ICreatedBy
     public ICollection<UserBranchRole> UserBranchRoles { get; set; } = new List<UserBranchRole>();
     public Tenant Tenant { get; set; } = null!;
 
-    public static Branch Create(Guid id, string name, string place, string phoneNumber, Guid createdBy, string createdByName)
+    public static Branch Create(Guid id, string name, string place, string phoneNumber, BranchType type, Guid createdBy, string createdByName)
     {
         return new Branch
         {
@@ -28,6 +30,7 @@ public class Branch : IMustHaveTenant, ICreatedAt, ICreatedBy
             Name = name,
             Place = place,
             PhoneNumber = phoneNumber,
+            Type = type,
             CreatedAt = DateTime.UtcNow,
             CreatedBy = createdBy,
             CreatedByName = createdByName,
