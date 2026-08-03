@@ -85,6 +85,7 @@ public class SessionStateService(
                     BranchName = branch.Name,
                     Role = "Admin",
                     Modules = planFeatures
+                        .Where(f => branch.AllowedFeatureKeys.Contains(f.Key))
                         .GroupBy(f => f.Module.ToString())
                         .Select(moduleGroup => new PermissiónByModuleDto
                         {
@@ -111,6 +112,7 @@ public class SessionStateService(
                 {
                     ubr.BranchId,
                     BranchName = ubr.Branch.Name,
+                    AllowedFeatureKeys = ubr.Branch.AllowedFeatureKeys,
                     RoleName = ubr.Role.Name,
                     Features = ubr.Role.RoleFeaturePermissions.Select(rfp => new
                     {
@@ -131,6 +133,7 @@ public class SessionStateService(
                 BranchName = b.BranchName,
                 Role = b.RoleName,
                 Modules = b.Features
+                    .Where(f => b.AllowedFeatureKeys.Contains(f.FeatureKey))
                     .GroupBy(f => f.Module.ToString())
                     .Select(moduleGroup => new PermissiónByModuleDto
                     {
