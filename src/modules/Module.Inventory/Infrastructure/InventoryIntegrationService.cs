@@ -3,6 +3,7 @@ using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Domain.Products;
 using Module.Inventory.Domain.Transfers;
 
 namespace Module.Inventory.Infrastructure;
@@ -13,21 +14,33 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
     {
         var result = await context.ProductVariants
             .Where(pv => variantIds.Contains(pv.Id))
-            .Select(pv => new ProductVariantStockDto(
+            .Select(pv => new
+            {
                 pv.Id,
                 pv.Sku,
-                // Inventory compone el nombre mostrable; Sales lo guarda tal cual como snapshot
-                pv.Product.Brand.Name + " " + pv.Product.Category.Name + " " + pv.Product.Name
-                    + " - " + pv.Color.Name + " / " + pv.Size,
                 pv.Price,
-                pv.BranchInventories
+                pv.Size,
+                ColorName = pv.Color.Name,
+                ProductName = pv.Product.Name,
+                CategoryName = pv.Product.Category.Name,
+                BrandName = pv.Product.Brand.Name,
+                Stock = pv.BranchInventories
                     .Where(bi => bi.BranchId == branchId)
                     .Select(bi => bi.Stock)
                     .FirstOrDefault()
-            ))
+            })
             .ToListAsync();
 
-        return result;
+        var dtos = result
+            .Select(x => new ProductVariantStockDto(
+                x.Id,
+                x.Sku,
+                ProductVariant.BuildDisplayName(x.BrandName, x.CategoryName, x.ProductName, x.ColorName, x.Size),
+                x.Price,
+                x.Stock))
+            .ToList();
+
+        return dtos;
     }
 
 public async Task<Result<bool>> DeductStock(

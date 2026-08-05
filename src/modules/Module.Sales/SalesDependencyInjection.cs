@@ -8,8 +8,10 @@ using Module.Sales.Application.UseCases.Movements.Update;
 using Module.Sales.Application.UseCases.Registers.Close;
 using Module.Sales.Application.UseCases.Registers.Current;
 using Module.Sales.Application.UseCases.Registers.GetById;
+using Module.Sales.Application.UseCases.Registers.LastClosure;
 using Module.Sales.Application.UseCases.Registers.List;
 using Module.Sales.Application.UseCases.Registers.Open;
+using Module.Sales.Application.UseCases.Registers.TodaySales;
 using Module.Sales.Application.UseCases.Sales.Create;
 using Module.Sales.Application.UseCases.Sales.Get;
 using Module.Sales.Application.UseCases.Sales.GetById;
@@ -32,6 +34,8 @@ public static class SalesDependencyInjection
                         .AddScoped<GetCurrentRegister>()
                         .AddScoped<ListClosures>()
                         .AddScoped<GetClosureDetail>()
+                        .AddScoped<GetTodaySales>()
+                        .AddScoped<GetLastClosureSummary>()
                         .AddScoped<MovementUseCases>()
                         .AddScoped<CreateMovement>()
                         .AddScoped<ListMovements>()

@@ -26,6 +26,10 @@ public class ProductVariant: Params, IMustHaveTenant
 
     public ICollection<StockTransferItem> TransferItems { get; set; } = new List<StockTransferItem>();
 
+    public static string BuildDisplayName(
+        string brandName, string categoryName, string productName, string colorName, string size)
+        => $"{brandName} {categoryName} {productName} - {colorName} / {size}";
+
     public static string GenerateSku(string internalCode, string colorCode, string size)
     {
         return internalCode +"-"+colorCode+"-"+size;

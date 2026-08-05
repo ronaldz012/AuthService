@@ -1,0 +1,27 @@
+using System.Api.Result;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Module.Sales.Application.UseCases;
+using Module.Sales.Application.UseCases.Registers.TodaySales;
+
+namespace System.Api.Controllers.Dashboard
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Tags("Dashboard")]
+    [Authorize]
+    public class DashboardController(RegisterUseCases registerUseCases) : ControllerBase
+    {
+        [HttpGet("today-sales")]
+        public async Task<IActionResult> GetTodaySales()
+        {
+            return await registerUseCases.GetTodaySales.Execute().ToValueOrProblemDetails();
+        }
+
+        [HttpGet("last-closure")]
+        public async Task<IActionResult> GetLastClosure()
+        {
+            return await registerUseCases.GetLastClosureSummary.Execute().ToValueOrProblemDetails();
+        }
+    }
+}

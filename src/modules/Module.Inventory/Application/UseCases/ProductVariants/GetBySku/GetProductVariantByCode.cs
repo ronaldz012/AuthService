@@ -2,6 +2,7 @@ using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
+using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.GetBySku;
 
@@ -31,6 +32,9 @@ public class GetProductVariantByCode(IInvDbContext context, ICurrentUser current
 
         ).FirstOrDefaultAsync(pv => pv.Sku == skuRequested);
         if(result is null) return GetProductVariantByCodeErrors.VariantNotFound;
+
+        result.DisplayName = ProductVariant.BuildDisplayName(
+            result.BranchName, result.CategoryName, result.ProductName, result.ColorName, result.Size);
 
         return result;
     }
