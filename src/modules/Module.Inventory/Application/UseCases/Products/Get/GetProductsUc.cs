@@ -10,7 +10,7 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
 {
     public async Task<Result<PagedResultDto<ListProductRequest>>> Execute(ProductQueryDto queryDto)
     {
-        IQueryable<Product> query = context.Products;
+        var query = context.Products.AsQueryable();
         if (!string.IsNullOrEmpty(queryDto.Filter))
         {
             query = query.Where(x => EF.Functions.ILike(x.Name, $"%{queryDto.Filter}%"));
@@ -30,28 +30,49 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
         //if(queryDto.LowStock.HasValue) PARA IMPLEMENTAR::::
         
         var totalCount = await query.CountAsync();
-        var items = await query
-            //.OrderByDescending(p => p.CreatedAt)
-            .ApplyPagination(queryDto)
-            .Select(p => new ListProductRequest()
-        {
-            Id = p.Id,
-            Name = p.Name,
-            BrandName = p.Brand.Name,
-            CategoryName = p.Category.Name,
-            BasePrice = p.BasePrice,
-            InternalCode = p.InternalCode,
 
-            VariantsCount = p.ProductVariants.Count,
-            TotalStock = p.ProductVariants
-                .SelectMany(pv => pv.BranchInventories)
-                .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
-                .Sum(bi => bi.Stock),
-        }).ToListAsync();
-        return new PagedResultDto<ListProductRequest>()
+        var pagedIds = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenBy(p => p.Id)
+            .Skip((queryDto.Page - 1) * queryDto.PageSize)
+            .Take(queryDto.PageSize)
+            .Select(p => p.Id)
+            .ToListAsync();
+
+        if (pagedIds.Count == 0)
+            return new PagedResultDto<ListProductRequest>
+            {
+                TotalCount = totalCount,
+                Items = [],
+                Page = queryDto.Page,
+                PageSize = queryDto.PageSize
+            };
+
+        var items = await context.Products
+            .Where(p => pagedIds.Contains(p.Id))
+            .Select(p => new ListProductRequest
+            {
+                Id = p.Id,
+                Name = p.Name,
+                BrandName = p.Brand.Name,
+                CategoryName = p.Category.Name,
+                BasePrice = p.BasePrice,
+                InternalCode = p.InternalCode,
+                VariantsCount = p.ProductVariants.Count,
+                TotalStock = p.ProductVariants
+                    .SelectMany(pv => pv.BranchInventories)
+                    .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
+                    .Sum(bi => bi.Stock),
+            })
+            .ToListAsync();
+
+        var byId = items.ToDictionary(i => i.Id);
+        var ordered = pagedIds.Select(id => byId[id]).ToList();
+
+        return new PagedResultDto<ListProductRequest>
         {
             TotalCount = totalCount,
-            Items = items,
+            Items = ordered,
             Page = queryDto.Page,
             PageSize = queryDto.PageSize
         };
