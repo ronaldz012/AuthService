@@ -4,7 +4,8 @@ namespace Module.Inventory.Application.UseCases.Receptions.Create;
 
 public class CreateStockReceptionDto : IValidatableObject
 {
-    public Guid? ProviderId { get; set; }
+    [Required]
+    public Guid ProviderId { get; set; }
 
     public string? Notes { get; set; }
 

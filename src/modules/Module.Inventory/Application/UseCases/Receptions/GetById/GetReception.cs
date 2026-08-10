@@ -18,7 +18,7 @@ public class GetReception(IInvDbContext context, ICurrentUser currentUser)
                 Id = r.Id,
                 BranchId = r.BranchId,
                 ProviderId = r.ProviderId,
-                ProviderName = r.Provider != null ? r.Provider.Name : null,
+                ProviderName = r.Provider.Name,
                 ReceivedAt = r.ReceivedAt,
                 Notes = r.Notes,
                 Status = r.Status,

@@ -30,19 +30,16 @@ public class CreateReceptionUc(
         if (missingIds.Count != 0)
             return CreateReceptionErrors.VariantsNotFound;
 
-        if (dto.ProviderId.HasValue)
-        {
-            var provider = await context.Providers
-                .Where(p => p.Id == dto.ProviderId.Value)
-                .Select(p => new { p.IsActive })
-                .FirstOrDefaultAsync();
+        var provider = await context.Providers
+            .Where(p => p.Id == dto.ProviderId)
+            .Select(p => new { p.IsActive })
+            .FirstOrDefaultAsync();
 
-            if (provider is null)
-                return CreateReceptionErrors.ProviderNotFound;
+        if (provider is null)
+            return CreateReceptionErrors.ProviderNotFound;
 
-            if (!provider.IsActive)
-                return CreateReceptionErrors.ProviderInactive;
-        }
+        if (!provider.IsActive)
+            return CreateReceptionErrors.ProviderInactive;
 
         await using var transaction = await context.Database.BeginTransactionAsync();
 
@@ -76,7 +73,7 @@ public class CreateReceptionUc(
                     Id = r.Id,
                     BranchId = r.BranchId,
                     ProviderId = r.ProviderId,
-                    ProviderName = r.Provider != null ? r.Provider.Name : null,
+                    ProviderName = r.Provider.Name,
                     ReceivedAt = r.ReceivedAt,
                     Notes = r.Notes,
                     Items = r.Items.Select(i => new StockReceptionItemResultDto

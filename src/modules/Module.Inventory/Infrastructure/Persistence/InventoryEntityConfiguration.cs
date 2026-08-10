@@ -64,7 +64,8 @@ public static class InventoryEntityConfiguration
             entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
             entity.HasMany(p => p.StockReceptions)
                 .WithOne(r => r.Provider)
-                .HasForeignKey(r => r.ProviderId);
+                .HasForeignKey(r => r.ProviderId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
         builder.Entity<Brand>(entity =>
         {

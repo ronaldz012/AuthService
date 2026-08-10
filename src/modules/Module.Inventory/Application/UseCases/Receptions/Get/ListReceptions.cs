@@ -39,7 +39,7 @@ public class ListReceptions(IInvDbContext context, ICurrentUser currentUser)
                 Id = r.Id,
                 BranchId = r.BranchId,
                 ProviderId = r.ProviderId,
-                ProviderName = r.Provider != null ? r.Provider.Name : null,
+                ProviderName = r.Provider.Name,
                 ReceivedAt = r.ReceivedAt,
                 Status = r.Status,
                 TotalItems = r.Items.Sum(x => x.QuantityReceived),

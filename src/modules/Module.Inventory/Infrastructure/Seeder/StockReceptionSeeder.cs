@@ -66,8 +66,8 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
             for (var i = 0; i < branchIds.Count; i++)
             {
                 var branchId = branchIds[i];
-                var provider = providers.Count > 0 ? providers[i % providers.Count] : null;
-                var reception = StockReception.Create(branchId, tenantInfo.OwnerUserId, "System", "Stock inicial", provider?.Id);
+                var provider = providers[i % providers.Count];
+                var reception = StockReception.Create(branchId, tenantInfo.OwnerUserId, "System", "Stock inicial", provider.Id);
 
                 foreach (var prodSeed in InventorySeedData.Products)
                 {

@@ -4,8 +4,8 @@ public class StockReceptionResultDto
 {
     public Guid Id { get; set; }
     public Guid BranchId { get; set; }
-    public Guid? ProviderId { get; set; }
-    public string? ProviderName { get; set; }
+    public Guid ProviderId { get; set; }
+    public string ProviderName { get; set; } = string.Empty;
     public DateTime ReceivedAt { get; set; }
     public string? Notes { get; set; }
     public List<StockReceptionItemResultDto> Items { get; set; } = new();

@@ -7,8 +7,8 @@ public class StockReceptionListDto
 {
     public Guid Id { get; set; }
     public Guid BranchId { get; set; }
-    public Guid? ProviderId { get; set; }
-    public string? ProviderName { get; set; }
+    public Guid ProviderId { get; set; }
+    public string ProviderName { get; set; } = string.Empty;
     public DateTime ReceivedAt { get; set; }
     public ReceptionStatus Status { get; set; }
     public int TotalItems { get; set; }
