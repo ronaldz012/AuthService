@@ -26,6 +26,7 @@ public class GetReception(IInvDbContext context, ICurrentUser currentUser)
                 Items = r.Items.Select(i => new StockReceptionItemDetailDto
                 {
                     Id = i.Id,
+                    Sku = i.ProductVariant.Sku,
                     ProductVariantId = i.ProductVariantId,
                     ProductName = i.ProductVariant.Product.Name,
                     VariantDescription = i.ProductVariant.Description,
@@ -34,7 +35,7 @@ public class GetReception(IInvDbContext context, ICurrentUser currentUser)
                     QuantityReceived = i.QuantityReceived,
                     UnitCost = i.UnitCost,
                     Subtotal = i.UnitCost * i.QuantityReceived
-                }).ToList()
+                }).OrderBy(i => i.ProductName).ToList()
             })
             .FirstOrDefaultAsync();
         if(reception == null)

@@ -21,6 +21,7 @@ public class StockReceptionItemDetailDto
 {
     public Guid Id { get; set; }
     public Guid ProductVariantId { get; set; }
+    public required string Sku {get;set;} = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public string VariantDescription { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
