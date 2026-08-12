@@ -59,7 +59,7 @@ public class StockTransferDetails(IInvDbContext context, IBranchService branchSe
                 ProductName = i.ProductVariant.Product.Name,
                 VariantDescription = i.ProductVariant.Description,
                 Sku = i.ProductVariant.Sku,
-                Size = i.ProductVariant.Size,
+                Size = i.ProductVariant.Size.Name,
                 Color = i.ProductVariant.Color.Name,
                 QuantityRequested = i.QuantityRequested
             }).ToList()

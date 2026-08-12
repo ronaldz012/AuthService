@@ -11,13 +11,14 @@ public class ProductVariant: Params, IMustHaveTenant
     public Guid Id { get; set; }
     public Guid ProductId { get; set; }
     public string Sku { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty; 
-    public string Size { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public Guid TenantId { get; set; }
     public Guid ColorId { get; set; }
+    public Guid SizeId { get; set; }
 
     public Color Color { get; set; } = null;
+    public Size Size { get; set; } = null!;
     
     public Product Product { get; set; } = default!;
     public ICollection<BranchInventory> BranchInventories { get; set; } = new List<BranchInventory>();
@@ -27,22 +28,17 @@ public class ProductVariant: Params, IMustHaveTenant
     public ICollection<StockTransferItem> TransferItems { get; set; } = new List<StockTransferItem>();
 
     public static string BuildDisplayName(
-        string brandName, string categoryName, string productName, string colorName, string size)
-        => $"{brandName} {categoryName} {productName} - {colorName} / {size}";
+        string brandName, string categoryName, string productName, string colorName, string sizeName)
+        => $"{brandName} {categoryName} {productName} - {colorName} / {sizeName}";
 
-    public static string GenerateSku(string internalCode, string colorCode, string size)
-    {
-        return internalCode +"-"+colorCode+"-"+size;
-    }
-
-    public static ProductVariant Create(Guid productId, Guid colorId, string size, decimal price, string sku, Guid tenantId, Guid createdBy, string createdByName)
+    public static ProductVariant Create(Guid productId, Guid colorId, Guid sizeId, decimal price, string sku, Guid tenantId, Guid createdBy, string createdByName)
     {
         return new ProductVariant
         {
             Id = Guid.NewGuid(),
             ProductId = productId,
             ColorId = colorId,
-            Size = size,
+            SizeId = sizeId,
             Price = price,
             Sku = sku,
             TenantId = tenantId,

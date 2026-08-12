@@ -19,6 +19,7 @@ public interface IInvDbContext
     public DbSet<Provider> Providers { get; set; }
     public DbSet<Brand> Brands { get; set; }
     public DbSet<Color> Colors { get; set; }
+    public DbSet<Size> Sizes { get; set; }
     public DbSet<StockReception> StockReceptions { get; set; }
     public DbSet<StockReceptionItem> StockReceptionItems { get; set; }
 

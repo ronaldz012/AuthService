@@ -5,7 +5,7 @@ namespace Module.Inventory.Application.UseCases.ProductVariants.Create;
 public class CreateProductVariantDto
 {
     public Guid ColorId {get; set;}
-    public string Size {get;set;} = string.Empty;
+    public Guid SizeId {get; set;}
     public decimal Price {get;set; }
     public string Description {get; set; } = string.Empty;
 
@@ -18,7 +18,7 @@ public class CreateProductVariantsRequest : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var duplicate = Variants
-            .GroupBy(x => new { x.ColorId, Size = x.Size.Trim().ToLower() })
+            .GroupBy(x => new { x.ColorId, x.SizeId })
             .FirstOrDefault(g => g.Count() > 1);
 
         if (duplicate != null)

@@ -12,6 +12,9 @@ using Module.Inventory.Application.UseCases.Categories.Get;
 using Module.Inventory.Application.UseCases.Colors;
 using Module.Inventory.Application.UseCases.Colors.Create;
 using Module.Inventory.Application.UseCases.Colors.List;
+using Module.Inventory.Application.UseCases.Sizes;
+using Module.Inventory.Application.UseCases.Sizes.Create;
+using Module.Inventory.Application.UseCases.Sizes.List;
 using Module.Inventory.Application.UseCases.Products;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Application.UseCases.Products.Delete;
@@ -101,6 +104,10 @@ public  static class InvDependencyInjection
         services.AddScoped<ColoreUseCases>()
             .AddScoped<CreateColor>()
             .AddScoped<GetListColors>();
+
+        services.AddScoped<SizeUseCases>()
+            .AddScoped<CreateSize>()
+            .AddScoped<GetListSizes>();
 
         services.AddScoped<ProviderUseCases>()
             .AddScoped<CreateProviderUc>()

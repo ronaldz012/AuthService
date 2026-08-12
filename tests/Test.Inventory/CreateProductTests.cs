@@ -18,6 +18,7 @@ public class CreateProductTests
     private static readonly Guid BrandId = Guid.NewGuid();
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid ColorId = Guid.NewGuid();
+    private static readonly Guid SizeId = Guid.NewGuid();
 
     private static IProductCodeService CreateCodeService(string internalCode, string sku)
     {
@@ -66,7 +67,7 @@ public class CreateProductTests
             CategoryId = CategoryId,
             Variants =
             [
-                new CreateProductVariantForProductDto { ColorId = Guid.NewGuid(), Size = "M", Price = 100 }
+                new CreateProductVariantForProductDto { ColorId = Guid.NewGuid(), SizeId = SizeId, Price = 100 }
             ]
         });
 
@@ -80,6 +81,7 @@ public class CreateProductTests
         SeedBrand(ctx);
         SeedCategory(ctx);
         SeedColor(ctx);
+        SeedSize(ctx);
         var currentUser = new Mock<ICurrentUser>();
         currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
         currentUser.Setup(u => u.FullName).Returns("Test User");
@@ -98,7 +100,7 @@ public class CreateProductTests
                 new CreateProductVariantForProductDto
                 {
                     ColorId = ColorId,
-                    Size = "M",
+                    SizeId = SizeId,
                     Price = 99.99m,
                     Description = "Medium variant"
                 }
@@ -120,6 +122,7 @@ public class CreateProductTests
         SeedBrand(ctx);
         SeedCategory(ctx);
         SeedColor(ctx);
+        SeedSize(ctx);
         var currentUser = new Mock<ICurrentUser>();
         currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
         currentUser.Setup(u => u.FullName).Returns("Test User");
@@ -133,7 +136,7 @@ public class CreateProductTests
             CategoryId = CategoryId,
             Variants =
             [
-                new CreateProductVariantForProductDto { ColorId = ColorId, Size = "M", Price = 100 }
+                new CreateProductVariantForProductDto { ColorId = ColorId, SizeId = SizeId, Price = 100 }
             ]
         });
         Assert.True(first.IsSuccess, $"Expected success but got: {first.Error?.Code} - {first.Error?.Message}");
@@ -145,7 +148,7 @@ public class CreateProductTests
             CategoryId = CategoryId,
             Variants =
             [
-                new CreateProductVariantForProductDto { ColorId = ColorId, Size = "M", Price = 100 }
+                new CreateProductVariantForProductDto { ColorId = ColorId, SizeId = SizeId, Price = 100 }
             ]
         });
 
@@ -185,6 +188,12 @@ public class CreateProductTests
     private static void SeedColor(TestAppDbContext ctx)
     {
         ctx.Colors.Add(new Color { Id = ColorId, Name = "Red", CreatedBy = TenantId, CreatedByName = "Test User" });
+        ctx.SaveChangesAsync().GetAwaiter().GetResult();
+    }
+
+    private static void SeedSize(TestAppDbContext ctx)
+    {
+        ctx.Sizes.Add(new Size { Id = SizeId, Name = "M", SortOrder = 1, CreatedBy = TenantId, CreatedByName = "Test User" });
         ctx.SaveChangesAsync().GetAwaiter().GetResult();
     }
 }

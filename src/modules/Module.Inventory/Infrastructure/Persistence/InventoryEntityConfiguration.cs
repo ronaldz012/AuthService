@@ -78,6 +78,14 @@ public static class InventoryEntityConfiguration
             entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
         });
+        builder.Entity<Size>(entity =>
+        {
+            entity.HasQueryFilter(x => x.TenantId == tenantId);
+            entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
+            entity.HasMany(s => s.ProductVariants)
+                .WithOne(pv => pv.Size)
+                .HasForeignKey(pv => pv.SizeId);
+        });
         builder.Entity<StockReception>(entity =>
         {
             entity.HasQueryFilter(x => x.TenantId == tenantId);

@@ -30,7 +30,7 @@ public class GetReception(IInvDbContext context, ICurrentUser currentUser)
                     ProductVariantId = i.ProductVariantId,
                     ProductName = i.ProductVariant.Product.Name,
                     VariantDescription = i.ProductVariant.Description,
-                    Size = i.ProductVariant.Size,
+                    Size = i.ProductVariant.Size.Name,
                     Color = i.ProductVariant.Color.Name,
                     QuantityReceived = i.QuantityReceived,
                     UnitCost = i.UnitCost,

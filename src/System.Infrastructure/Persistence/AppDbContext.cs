@@ -31,6 +31,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantConnect
     public DbSet<Provider> Providers { get; set; }
     public DbSet<Brand> Brands { get; set; }
     public DbSet<Color> Colors { get; set; }
+    public DbSet<Size> Sizes { get; set; }
     public DbSet<StockReception> StockReceptions { get; set; }
     public DbSet<StockReceptionItem> StockReceptionItems { get; set; }
     public DbSet<StockMovement> StockMovements { get; set; }

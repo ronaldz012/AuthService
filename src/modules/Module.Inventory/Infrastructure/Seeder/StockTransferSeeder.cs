@@ -31,6 +31,7 @@ public class StockTransferSeeder(IServiceProvider serviceProvider) : IDataSeeder
         var variants = await context.ProductVariants
             .Include(pv => pv.Product)
             .Include(pv => pv.Color)
+            .Include(pv => pv.Size)
             .Include(pv => pv.BranchInventories)
             .Where(pv => productNames.Contains(pv.Product.Name))
             .ToListAsync();
@@ -44,7 +45,7 @@ public class StockTransferSeeder(IServiceProvider serviceProvider) : IDataSeeder
 
             // Transfer 1: Air Max 90 (Negro/42) — 3 units from Main to Secondary
             var variant1 = variants.FirstOrDefault(pv =>
-                pv.Product.Name == "Air Max 90" && pv.Color.Name == "Negro" && pv.Size == "42");
+                pv.Product.Name == "Air Max 90" && pv.Color.Name == "Negro" && pv.Size.Name == "42");
 
             if (variant1 != null)
             {
@@ -59,7 +60,7 @@ public class StockTransferSeeder(IServiceProvider serviceProvider) : IDataSeeder
 
             // Transfer 2: Revolution 7 (Rojo/40) — 5 units from Main to Secondary
             var variant2 = variants.FirstOrDefault(pv =>
-                pv.Product.Name == "Revolution 7" && pv.Color.Name == "Rojo" && pv.Size == "40");
+                pv.Product.Name == "Revolution 7" && pv.Color.Name == "Rojo" && pv.Size.Name == "40");
 
             if (variant2 != null)
             {

@@ -9,6 +9,7 @@ public class ProductVariantBySkuDto
     public string DisplayName { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
+    public Guid SizeId { get; set; }
     public Guid ColorId { get; set; }
     public string ColorName { get; set; } = string.Empty;
     public decimal Price { get; set; }

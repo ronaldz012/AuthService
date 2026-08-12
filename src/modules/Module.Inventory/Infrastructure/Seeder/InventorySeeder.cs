@@ -29,6 +29,12 @@ public class InventorySeeder(
                 context.Colors.Add(Color.Create(name, tenantInfo.TenantId, tenantInfo.OwnerUserId));
         }
 
+        foreach (var sizeSeed in InventorySeedData.Sizes)
+        {
+            if (!await context.Sizes.AnyAsync(s => s.Name.ToLower() == sizeSeed.Name.ToLower()))
+                context.Sizes.Add(Size.Create(sizeSeed.Name, sizeSeed.SortOrder, tenantInfo.TenantId, tenantInfo.OwnerUserId));
+        }
+
         foreach (var name in InventorySeedData.Categories)
         {
             if (!await context.Categories.AnyAsync(c => c.Name.ToLower() == name.ToLower()))
@@ -56,8 +62,9 @@ public class InventorySeeder(
             foreach (var varSeed in prodSeed.Variants)
             {
                 var color = await context.Colors.FirstAsync(c => c.Name == varSeed.Color);
+                var size = await context.Sizes.FirstAsync(s => s.Name == varSeed.Size);
                 var sku = await codeService.ReserveVariantCounter(product.Id, product.InternalCode);
-                context.ProductVariants.Add(ProductVariant.Create(product.Id, color.Id, varSeed.Size, varSeed.Price, sku, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
+                context.ProductVariants.Add(ProductVariant.Create(product.Id, color.Id, size.Id, varSeed.Price, sku, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
             }
         }
 

@@ -21,7 +21,7 @@ public async Task<Result<ProductVariantDetailsDto>> Execute(Guid id)
             ProductBrand = pv.Product.Brand.Name,
             Sku = pv.Sku,
             Description = pv.Description,
-            Size = pv.Size,
+            Size = pv.Size.Name,
             Color = pv.Color.Name,
             Price = pv.Price,
             CurrentStock = pv.BranchInventories

@@ -28,6 +28,7 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
         var variants = await context.ProductVariants
             .Include(pv => pv.Product)
             .Include(pv => pv.Color)
+            .Include(pv => pv.Size)
             .Where(pv => productNames.Contains(pv.Product.Name))
             .ToListAsync();
 
@@ -76,7 +77,7 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
                         var variant = variants.FirstOrDefault(pv =>
                             pv.Product.Name == prodSeed.Name &&
                             pv.Color.Name == varSeed.Color &&
-                            pv.Size == varSeed.Size);
+                            pv.Size.Name == varSeed.Size);
 
                         if (variant == null) continue;
 

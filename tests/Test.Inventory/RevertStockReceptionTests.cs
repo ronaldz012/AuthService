@@ -17,6 +17,7 @@ public class RevertStockReceptionTests
     private static readonly Guid BranchId = Guid.NewGuid();
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid ProviderId = Guid.NewGuid();
+    private static readonly Guid SizeId = Guid.NewGuid();
 
     private static TestAppDbContext CreateDbContext()
     {
@@ -49,8 +50,11 @@ public class RevertStockReceptionTests
 
     private static ProductVariant SeedVariant(TestAppDbContext ctx, int stock)
     {
+        ctx.Sizes.Add(new Size { Id = SizeId, Name = "L", SortOrder = 1, CreatedBy = UserId, CreatedByName = "Test User" });
+        ctx.SaveChangesAsync().GetAwaiter().GetResult();
+
         var variant = ProductVariant.Create(
-            Guid.NewGuid(), Guid.NewGuid(), "L", 100m,
+            Guid.NewGuid(), Guid.NewGuid(), SizeId, 100m,
             $"SKU-{Guid.NewGuid():N}", TenantId, UserId, "Test User");
         ctx.ProductVariants.Add(variant);
         ctx.SaveChangesAsync().GetAwaiter().GetResult();

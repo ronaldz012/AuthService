@@ -34,6 +34,14 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IP
         if (colorIds.Except(colors.Select(c => c.Id)).Any())
             return CreateProductErrors.ColorsNotFound;
 
+        var sizeIds = request.Variants.Select(pv => pv.SizeId).Distinct().ToList();
+        var sizes = await context.Sizes
+            .Where(s => sizeIds.Contains(s.Id))
+            .ToListAsync();
+
+        if (sizeIds.Except(sizes.Select(s => s.Id)).Any())
+            return CreateProductErrors.SizesNotFound;
+
         await using var tx = await context.Database.BeginTransactionAsync();
         try
         {
@@ -63,7 +71,7 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IP
                 {
                     ProductId = product.Id,
                     ColorId = pv.ColorId,
-                    Size = pv.Size,
+                    SizeId = pv.SizeId,
                     Description = pv.Description,
                     Price = pv.Price,
                     Sku = sku,
@@ -82,6 +90,8 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IP
                 .Include(p => p.Category)
                 .Include(p => p.ProductVariants)
                     .ThenInclude(pv => pv.Color)
+                .Include(p => p.ProductVariants)
+                    .ThenInclude(pv => pv.Size)
                 .FirstOrDefaultAsync(p => p.Id == product.Id);
 
             if (saved == null)
@@ -98,7 +108,7 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IP
                 {
                     ProductVariantId = pv.Id,
                     Sku = pv.Sku,
-                    Size = pv.Size,
+                    Size = pv.Size.Name,
                     ColorName = pv.Color.Name
                 }).ToList()
             };

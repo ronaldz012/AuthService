@@ -35,22 +35,35 @@ public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentU
             return CreateProductVariantErrors.ColorIdsNotFound;
         }
 
+        var sizeIdsInDto = dto.Select(x => x.SizeId).Distinct().ToList();
+
+        var sizesDictionary = await context.Sizes
+            .Where(s => sizeIdsInDto.Contains(s.Id))
+            .Select(x => new { x.Id, x.Name })
+            .ToDictionaryAsync(x => x.Id, x => x);
+
+        if (sizesDictionary.Count != sizeIdsInDto.Count)
+        {
+            var missingIds = sizeIdsInDto.Where(id => !sizesDictionary.ContainsKey(id)).ToList();
+            return CreateProductVariantErrors.SizeIdsNotFound;
+        }
+
         var dtoCombinations = dto
-            .Select(d => new { d.ColorId, Size = d.Size.Trim().ToLower() })
+            .Select(d => new { d.ColorId, d.SizeId })
             .ToList();
 
         var colorIdsToCheck = dtoCombinations.Select(d => d.ColorId).Distinct().ToList();
-        var sizesToCheck = dtoCombinations.Select(d => d.Size).Distinct().ToList();
+        var sizeIdsToCheck = dtoCombinations.Select(d => d.SizeId).Distinct().ToList();
 
         var existingVariants = await context.ProductVariants
             .Where(pv => pv.ProductId == productId
                       && colorIdsToCheck.Contains(pv.ColorId)
-                      && sizesToCheck.Contains(pv.Size.ToLower()))
-            .Select(pv => new { pv.ColorId, Size = pv.Size.ToLower() })
+                      && sizeIdsToCheck.Contains(pv.SizeId))
+            .Select(pv => new { pv.ColorId, pv.SizeId })
             .ToListAsync();
 
         var alreadyExists = existingVariants
-            .Any(ev => dtoCombinations.Any(d => d.ColorId == ev.ColorId && d.Size == ev.Size));
+            .Any(ev => dtoCombinations.Any(d => d.ColorId == ev.ColorId && d.SizeId == ev.SizeId));
 
         if (alreadyExists)
             return CreateProductVariantErrors.VariantAlreadyExists;
@@ -66,7 +79,7 @@ public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentU
                 {
                     ProductId = productId,
                     ColorId = x.ColorId,
-                    Size = x.Size.Trim(),
+                    SizeId = x.SizeId,
                     Description = x.Description,
                     Price = x.Price,
                     Sku = sku,
@@ -83,7 +96,7 @@ public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentU
             {
                 ProductVariantId = v.Id,
                 Sku = v.Sku,
-                Size = v.Size,
+                Size = sizesDictionary[v.SizeId].Name,
                 ColorName = colorsDictionary[v.ColorId].Name
             }).ToList();
         }

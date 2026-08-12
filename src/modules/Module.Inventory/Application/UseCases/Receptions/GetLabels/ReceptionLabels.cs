@@ -16,7 +16,7 @@ public class ReceptionLabels(IInvDbContext context)
             {
                 VariantId = ri.ProductVariantId,
                 Sku = ri.ProductVariant.Sku,
-                Size = ri.ProductVariant.Size,
+                Size = ri.ProductVariant.Size.Name,
                 Color = ri.ProductVariant.Color.Name,
                 Gender = ri.ProductVariant.Product.Gender,
                 Price = ri.ProductVariant.Price,
