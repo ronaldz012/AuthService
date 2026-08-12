@@ -8,8 +8,6 @@ public class StockReceptionDetailDto
     public Guid BranchId { get; set; }
     public Guid ProviderId { get; set; }
     public string ProviderName { get; set; } = string.Empty;
-    public bool CanRollBack { get; set; }
-    public string ReasonCannotRollback  { get; set; } = string.Empty;
     public DateTime ReceivedAt { get; set; }
     public string? Notes { get; set; }
     public ReceptionStatus Status { get; set; }

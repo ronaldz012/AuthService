@@ -36,6 +36,7 @@ using Module.Inventory.Application.UseCases.Receptions.Create;
 using Module.Inventory.Application.UseCases.Receptions.Get;
 using Module.Inventory.Application.UseCases.Receptions.GetById;
 using Module.Inventory.Application.UseCases.Receptions.GetLabels;
+using Module.Inventory.Application.UseCases.Receptions.Revert;
 using Module.Inventory.Application.UseCases.Transfers;
 using Module.Inventory.Application.UseCases.Transfers.Cancel;
 using Module.Inventory.Application.UseCases.Transfers.Create;
@@ -84,7 +85,8 @@ public  static class InvDependencyInjection
             .AddScoped<CreateReceptionUc>()
             .AddScoped<ListReceptions>()
             .AddScoped<GetReception>()
-            .AddScoped<ReceptionLabels>();
+            .AddScoped<ReceptionLabels>()
+            .AddScoped<RevertStockReception>();
 
         services.AddScoped<StockTransferUseCases>()
             .AddScoped<CreateStockTransfer>()

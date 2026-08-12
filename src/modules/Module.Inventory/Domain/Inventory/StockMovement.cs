@@ -92,6 +92,26 @@ public class StockMovement : Params, IMustHaveTenant
         };
     }
 
+    // Egreso por reversión de recepción
+    public static StockMovement CreateReceptionRevert(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, string? notes = null)
+    {
+        if (quantity <= 0)
+            throw new InvalidOperationException("Quantity must be greater than zero");
+
+        return new StockMovement
+        {
+            BranchId = branchId,
+            ProductVariantId = productVariantId,
+            UserId = userId,
+            Quantity = -quantity,
+            MovementType = MovementType.ReceptionRevert,
+            Notes = notes ?? string.Empty,
+            ReferenceId = referenceId,
+            CreatedBy = userId,
+            CreatedByName = userName
+        };
+    }
+
     // Traspaso — devuelve los dos movimientos linkeados
     public static (StockMovement Out, StockMovement In) CreateTransfer(
         Guid fromBranchId, Guid toBranchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId,  string? notes = null)
@@ -135,5 +155,6 @@ public enum MovementType
     Sale,        // egreso por venta
     Adjustment,  // ajuste manual
     TransferOut, // egreso por traspaso
-    TransferIn   // ingreso por traspaso
+    TransferIn,  // ingreso por traspaso
+    ReceptionRevert // egreso por reversión de recepción
 }

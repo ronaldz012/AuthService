@@ -36,5 +36,17 @@ namespace System.Api.Controllers.Inventory
         {
             return await service.ReceptionLabels.Execute(id).ToValueOrProblemDetails();
         }
+
+        [HttpGet("{id:guid}/can-revert")]
+        public async Task<IActionResult> CheckCanRevert([FromRoute] Guid id)
+        {
+            return await service.RevertStockReception.Check(id).ToValueOrProblemDetails();
+        }
+
+        [HttpPost("{id:guid}/revert")]
+        public async Task<IActionResult> Revert([FromRoute] Guid id)
+        {
+            return await service.RevertStockReception.Execute(id).ToValueOrProblemDetails();
+        }
     }
 }

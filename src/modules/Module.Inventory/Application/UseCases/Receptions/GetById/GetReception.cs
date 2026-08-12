@@ -41,50 +41,6 @@ public class GetReception(IInvDbContext context, ICurrentUser currentUser)
         if(reception == null)
             return GetReceptionErrors.ReceptionNotFound;
         
-        var variantIds = reception.Items.Select(i => i.ProductVariantId).ToList();
-
-        var itemsActualStock = await context.ProductVariants
-            .Where(pv => variantIds.Contains(pv.Id))
-            .Select(pv => new
-            {
-                VariantId = pv.Id,
-                StockInBranch = pv.BranchInventories
-                    .Where(bi => bi.BranchId == currentBranch)
-                    .Select(bi => bi.Stock)
-                    .FirstOrDefault() // Si no existe registro, devuelve 0 automáticamente
-            })
-            .ToDictionaryAsync(x => x.VariantId, x => x.StockInBranch);
-
-        bool hasEnoughStock = true;
-
-        foreach (var item in reception.Items)
-        {
-            itemsActualStock.TryGetValue(item.ProductVariantId, out var currentStock);
-            if (currentStock < item.QuantityReceived)
-            {
-                reception.ReasonCannotRollback = "NOT_ENOUGH_STOCK";
-                hasEnoughStock = false;
-                break;
-            }
-        }
-
-        if (reception.ReceivedAt < DateTime.Now.AddDays(-1))
-        {
-            reception.CanRollBack = false;
-            reception.ReasonCannotRollback = "OUTDATED";
-        }
-        else if (!hasEnoughStock)
-        {
-            reception.CanRollBack = false;
-            reception.ReasonCannotRollback = "NOT_ENOUGH_STOCK";
-        }
-        else
-        {
-            reception.CanRollBack = true;
-        }
         return reception;
-        
-
     }
-    
 }
