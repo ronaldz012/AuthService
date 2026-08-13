@@ -18,7 +18,8 @@ public record ProductVariantStockDto(
     string Sku,
     string DisplayName,
     decimal Price,
-    int Stock);
+    int Stock,
+    bool IsActive);
 
 public record StockDeductionDto(
     Guid ProductVariantId,

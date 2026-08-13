@@ -19,6 +19,7 @@ public class Product:Params, IMustHaveTenant
     public int UnitMeasurementSin { get; set; }
     public string EconomicActivity { get; set; } = string.Empty;
     public int ProductCodeSin { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
     public Category Category { get; set; } = default!;
@@ -37,6 +38,7 @@ public class Product:Params, IMustHaveTenant
             InternalCode = internalCode,
             TenantId = tenantId,
             ProductVariantCounter = 0,
+            IsActive = true,
             CreatedBy = createdBy,
             CreatedByName = createdByName
         };

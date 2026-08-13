@@ -22,6 +22,7 @@ using Module.Inventory.Application.UseCases.Products.Get;
 using Module.Inventory.Application.UseCases.Products.GetById;
 using Module.Inventory.Application.UseCases.Products.Search;
 using Module.Inventory.Application.UseCases.Products.Update;
+using Module.Inventory.Application.UseCases.Products.UpdateStatus;
 using Module.Inventory.Application.UseCases.ProductVariants;
 using Module.Inventory.Application.UseCases.ProductVariants.Create;
 using Module.Inventory.Application.UseCases.ProductVariants.Delete;
@@ -64,7 +65,8 @@ public  static class InvDependencyInjection
             .AddScoped<ProductDetails>()
             .AddScoped<GetProductVariantByCode>()
             .AddScoped<UpdateProduct>()
-            .AddScoped<DeleteProduct>();
+            .AddScoped<DeleteProduct>()
+            .AddScoped<UpdateProductStatus>();
 
         services.AddScoped<ProductVariantUseCases>()
             .AddScoped<GetProductVariantDetails>()

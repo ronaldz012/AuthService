@@ -26,6 +26,12 @@ public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser
         if (missingVariants.Count != 0)
             return CreateStockTransferErrors.VariantsNotFoundInBranch;
 
+        var inactiveVariants = await context.ProductVariants
+            .Where(v => variantIds.Contains(v.Id) && !v.Product.IsActive)
+            .AnyAsync();
+        if (inactiveVariants)
+            return CreateStockTransferErrors.ProductInactive;
+
         var insufficientStock = dto.Items
             .Where(item => inventories.First(inv => inv.ProductVariantId == item.ProductVariantId).Stock < item.QuantityRequested)
             .ToList();

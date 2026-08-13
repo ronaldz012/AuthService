@@ -30,6 +30,9 @@ public class CreateReceptionUc(
         if (missingIds.Count != 0)
             return CreateReceptionErrors.VariantsNotFound;
 
+        if (variants.Any(v => !v.Product.IsActive))
+            return CreateReceptionErrors.ProductInactive;
+
         var provider = await context.Providers
             .Where(p => p.Id == dto.ProviderId)
             .Select(p => new { p.IsActive })

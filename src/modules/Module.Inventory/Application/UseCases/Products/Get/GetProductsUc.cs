@@ -16,6 +16,11 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
             query = query.Where(x => EF.Functions.ILike(x.Name, $"%{queryDto.Filter}%"));
         }
 
+        if (queryDto.IncludeInactive != true)
+        {
+            query = query.Where(x => x.IsActive);
+        }
+
         if (queryDto.CategoryId.HasValue)
         {
             query = query.Where(x => x.CategoryId == queryDto.CategoryId);
@@ -27,13 +32,38 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
         {
             query = query.Where(x => x.Gender == queryDto.Gender);
         }
-        //if(queryDto.LowStock.HasValue) PARA IMPLEMENTAR::::
         
         var totalCount = await query.CountAsync();
 
-        var pagedIds = await query
-            .OrderByDescending(p => p.CreatedAt)
-            .ThenBy(p => p.Id)
+        var descending = queryDto.SortDescending ?? true;
+
+        IOrderedQueryable<Product> orderedQuery;
+        if (queryDto.SortBy == ProductSortBy.Stock)
+        {
+            orderedQuery = descending
+                ? query
+                    .OrderByDescending(p => p.ProductVariants
+                        .SelectMany(pv => pv.BranchInventories)
+                        .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
+                        .Sum(bi => bi.Stock))
+                    .ThenBy(p => p.Name)
+                    .ThenBy(p => p.Id)
+                : query
+                    .OrderBy(p => p.ProductVariants
+                        .SelectMany(pv => pv.BranchInventories)
+                        .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
+                        .Sum(bi => bi.Stock))
+                    .ThenBy(p => p.Name)
+                    .ThenBy(p => p.Id);
+        }
+        else
+        {
+            orderedQuery = descending
+                ? query.OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id)
+                : query.OrderBy(p => p.CreatedAt).ThenBy(p => p.Id);
+        }
+
+        var pagedIds = await orderedQuery
             .Skip((queryDto.Page - 1) * queryDto.PageSize)
             .Take(queryDto.PageSize)
             .Select(p => p.Id)
@@ -58,6 +88,7 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
                 CategoryName = p.Category.Name,
                 BasePrice = p.BasePrice,
                 InternalCode = p.InternalCode,
+                IsActive = p.IsActive,
                 VariantsCount = p.ProductVariants.Count,
                 TotalStock = p.ProductVariants
                     .SelectMany(pv => pv.BranchInventories)

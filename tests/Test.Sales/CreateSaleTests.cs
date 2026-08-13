@@ -54,7 +54,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true)
             });
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
@@ -81,7 +81,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true)
             });
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
@@ -108,7 +108,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true)
             });
         var deductError = new Error(ErrorCode.InvalidState, "Insufficient stock for product SKU-001.");
         inventoryMock
@@ -128,6 +128,33 @@ public class CreateSaleTests
     }
 
     [Fact]
+    public async Task Execute_ShouldReturnError_WhenProductInactive()
+    {
+        var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
+        using var dbContext = TestSalesDbContextFactory.Create(tenantCtx);
+        SeedOpenCashClosure(dbContext);
+
+        var inventoryMock = new Mock<IInventoryIntegrationService>();
+        inventoryMock
+            .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
+            .ReturnsAsync(new List<ProductVariantStockDto>
+            {
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, false)
+            });
+
+        var sut = CreateSut(dbContext, inventoryMock.Object);
+
+        var result = await sut.Execute(new CreateSaleDto
+        {
+            PaymentMethod = PaymentMethod.Cash,
+            DocumentType = DocumentType.Ticket,
+            Items = [new CreateSaleItemDto { ProductVariantId = VariantId, Quantity = 1 }]
+        });
+
+        Assert.Equal(CreateSaleErrors.ProductInactive, result.Error);
+    }
+
+    [Fact]
     public async Task Execute_ShouldCreateSale_WhenValidRequest()
     {
         var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
@@ -139,7 +166,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true)
             });
         inventoryMock
             .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<string>(), It.IsAny<Guid>()))

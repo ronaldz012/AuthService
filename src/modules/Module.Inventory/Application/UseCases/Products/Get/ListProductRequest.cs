@@ -15,6 +15,7 @@ public class ListProductRequest
     public int VariantsCount { get; set; }
     public decimal TotalStock { get; set; }
     public decimal BasePrice { get; set; } // Puede ser el BasePrice o el Min(Price) de variantes
+    public bool IsActive { get; set; } = true;
 }
 public class ProductQueryDto : PaginationQueryDto
 {
@@ -23,4 +24,13 @@ public class ProductQueryDto : PaginationQueryDto
     public Guid? BrandId { get; set; }
     public Gender? Gender { get; set; }
     public bool? LowStock { get; set; }
+    public bool? IncludeInactive { get; set; }
+    public ProductSortBy SortBy { get; set; } = ProductSortBy.CreatedAt;
+    public bool? SortDescending { get; set; }
+}
+
+public enum ProductSortBy
+{
+    CreatedAt,
+    Stock
 }

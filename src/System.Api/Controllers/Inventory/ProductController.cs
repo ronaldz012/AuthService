@@ -6,6 +6,7 @@ using Module.Inventory.Application.UseCases.Products;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Application.UseCases.Products.Get;
 using Module.Inventory.Application.UseCases.Products.Update;
+using Module.Inventory.Application.UseCases.Products.UpdateStatus;
 
 namespace System.Api.Controllers.Inventory
 {
@@ -29,9 +30,9 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet("Search")]
-        public async Task<IActionResult> SearchProduct([FromQuery] string request)
+        public async Task<IActionResult> SearchProduct([FromQuery] string request, [FromQuery] bool? includeInactive)
         {
-            return await productUseCases.SearchProducts.Execute(request).ToValueOrProblemDetails();
+            return await productUseCases.SearchProducts.Execute(request, includeInactive).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}")]
@@ -46,6 +47,12 @@ namespace System.Api.Controllers.Inventory
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto request, [FromRoute] Guid id)
         {
             return await productUseCases.UpdateProduct.Execute(request, id).ToValueOrProblemDetails();
+        }
+
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> UpdateProductStatus([FromRoute] Guid id, [FromBody] UpdateProductStatusDto request)
+        {
+            return await productUseCases.UpdateProductStatus.Execute(id, request).ToValueOrProblemDetails();
         }
 
         [HttpDelete("{id:guid}")]

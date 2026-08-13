@@ -6,7 +6,7 @@ namespace Module.Inventory.Application.UseCases.Products.Search;
 
 public class SearchProduct(IInvDbContext context)
 {
-    public async Task<Result<List<ProductDto>>> Execute(string query)
+    public async Task<Result<List<ProductDto>>> Execute(string query, bool? includeInactive = null)
     {
         if (string.IsNullOrWhiteSpace(query)) return new List<ProductDto>();
 
@@ -18,6 +18,12 @@ public class SearchProduct(IInvDbContext context)
             .Include(x => x.Brand)
             .Include(x => x.Category)
             .AsNoTracking();
+
+        if (includeInactive != true)
+        {
+            dbQuery = dbQuery.Where(x => x.IsActive);
+        }
+
         foreach (var word in keywords)
         {
             var pattern = $"%{word}%";
@@ -39,6 +45,7 @@ public class SearchProduct(IInvDbContext context)
                 BrandName = x.Brand.Name,
                 BasePrice = x.BasePrice,
                 Gender = x.Gender,
+                IsActive = x.IsActive,
                 ProductVariants = x.ProductVariants.Select(y => new ProductVariantDto
                 {
                     Id = y.Id,

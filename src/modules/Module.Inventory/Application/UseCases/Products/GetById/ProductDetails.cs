@@ -19,6 +19,7 @@ public class ProductDetails(IInvDbContext context, ICurrentUser currentUser)
             Description = p.Description,
             BasePrice = p.BasePrice,
             Gender = p.Gender,
+            IsActive = p.IsActive,
             CategoryId = p.CategoryId,
             CategoryName = p.Category.Name,
             BrandId = p.BrandId,

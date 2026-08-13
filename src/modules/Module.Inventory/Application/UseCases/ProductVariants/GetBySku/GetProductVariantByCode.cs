@@ -29,10 +29,14 @@ public class GetProductVariantByCode(IInvDbContext context, ICurrentUser current
                 Gender = pv.Product.Gender,
                 BranchName = pv.Product.Brand.Name,
                 CategoryName = pv.Product.Category.Name,
+                IsActive = pv.Product.IsActive,
             }
 
         ).FirstOrDefaultAsync(pv => pv.Sku == skuRequested);
         if(result is null) return GetProductVariantByCodeErrors.VariantNotFound;
+
+        if (!result.IsActive)
+            return GetProductVariantByCodeErrors.ProductInactive;
 
         result.DisplayName = ProductVariant.BuildDisplayName(
             result.BranchName, result.CategoryName, result.ProductName, result.ColorName, result.Size);

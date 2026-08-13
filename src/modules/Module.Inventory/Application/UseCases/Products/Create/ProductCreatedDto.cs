@@ -7,6 +7,7 @@ public class ProductCreatedDto
     public required string Name {get;set;} = string.Empty;
     public required string BrandName  {get;set;}
     public required string CategoryName { get; set; }
+    public bool IsActive { get; set; } = true;
 
     public List<ProductVariantsCreated> Variants { get; set; } = [];
 

@@ -32,6 +32,9 @@ public class CreateSale(
         if (variants.Count != variantIds.Count)
             return CreateSaleErrors.ProductsNotFound;
 
+        if (variants.Any(v => !v.IsActive))
+            return CreateSaleErrors.ProductInactive;
+
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try

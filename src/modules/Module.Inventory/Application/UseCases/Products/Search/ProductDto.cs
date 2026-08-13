@@ -12,6 +12,7 @@ public class ProductDto
     public string BrandName { get; set; } = string.Empty;
     public decimal BasePrice { get; set; }
     public Gender Gender { get; set; }
+    public bool IsActive { get; set; } = true;
     
 
     public List<ProductVariantDto> ProductVariants { get; set; } = new List<ProductVariantDto>();

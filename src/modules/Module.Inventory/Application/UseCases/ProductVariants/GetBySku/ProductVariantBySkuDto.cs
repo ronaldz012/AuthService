@@ -22,4 +22,5 @@ public class ProductVariantBySkuDto
     public Gender Gender { get; set; } 
     public string BranchName { get; set; } = string.Empty;
     public string CategoryName { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
 }

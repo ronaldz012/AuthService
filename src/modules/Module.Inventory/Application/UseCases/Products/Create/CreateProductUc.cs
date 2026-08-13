@@ -104,6 +104,7 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IP
                 Name = saved.Name,
                 BrandName = saved.Brand.Name,
                 CategoryName = saved.Category.Name,
+                IsActive = saved.IsActive,
                 Variants = saved.ProductVariants.Select(pv => new ProductVariantsCreated
                 {
                     ProductVariantId = pv.Id,
