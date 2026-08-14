@@ -45,6 +45,12 @@ namespace System.Api.Controllers.Inventory
             return await useCases.CreateProductVariantUc.Execute(productId, request).ToValueOrProblemDetails();
         }
 
+        [HttpGet("{id:guid}/can-delete")]
+        public async Task<IActionResult> CanDeleteVariant([FromRoute] Guid id)
+        {
+            return await useCases.DeleteProductVariantUc.Check(id).ToValueOrProblemDetails();
+        }
+
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteProductVariant([FromRoute] Guid id)
         {

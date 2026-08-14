@@ -7,7 +7,33 @@ namespace Module.Inventory.Application.UseCases.ProductVariants.Delete;
 
 public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentUser)
 {
-   public async Task<Result<bool>> Execute(Guid id)
+    public async Task<Result<ProductVariantDeleteCheckDto>> Check(Guid id)
+    {
+        var data = await context.ProductVariants
+            .Where(x => x.Id == id)
+            .Select(x => new
+            {
+                HasMovements = x.StockMovements.Any(),
+                HasTransferItems = x.TransferItems.Any()
+            })
+            .FirstOrDefaultAsync();
+
+        if (data is null)
+            return DeleteProductVariantErrors.VariantNotFound;
+
+        return new ProductVariantDeleteCheckDto
+        {
+            VariantId = id,
+            CanDelete = !data.HasMovements && !data.HasTransferItems,
+            Reason = data.HasMovements
+                ? "HAS_MOVEMENTS"
+                : data.HasTransferItems
+                    ? "HAS_TRANSFER"
+                    : string.Empty
+        };
+    }
+
+    public async Task<Result<bool>> Execute(Guid id)
     {
         // 1. Traemos la entidad trackeada y el cálculo en un solo viaje a la base de datos
         var variantData = await context.ProductVariants
@@ -15,9 +41,8 @@ public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentU
             .Select(x => new 
             {
                 Entity = x,
-                HasMovements = x.StockMovements.Any() 
-                // Nota: Si no tienes la propiedad de navegación mapeada, usa:
-                // HasMovements = context.StockMovements.Any(sm => sm.ProductVariantId == id)
+                HasMovements = x.StockMovements.Any(),
+                HasTransferItems = x.TransferItems.Any()
             })
             .FirstOrDefaultAsync();
 
@@ -26,6 +51,9 @@ public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentU
 
         if (variantData.HasMovements)
             return DeleteProductVariantErrors.VariantHasMovements;
+
+        if (variantData.HasTransferItems)
+            return DeleteProductVariantErrors.VariantHasTransfers;
 
         // 4. Ejecutamos el método de tu modelo de dominio (Mantiene encapsulamiento)
         variantData.Entity.SoftDelete(currentUser.UserId, currentUser.FullName);

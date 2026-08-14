@@ -22,15 +22,26 @@ public class CorrectProductVariantStock(IInvDbContext context, ICurrentUser curr
     
         try 
         {
+            var existingInventory = pv.BranchInventories.FirstOrDefault(bi => bi.BranchId == currentBranch);
+            var previousStock = existingInventory?.Stock ?? 0;
+            var delta = request.Stock - previousStock;
+
+            // Se valida el movimiento primero (CreateAdjustment exige Notes); si falla, no se muta stock
+            var movement = delta != 0
+                ? StockMovement.CreateAdjustment(
+                    currentBranch,
+                    pv.Id,
+                    currentUser.UserId,
+                    currentUser.FullName,
+                    delta,
+                    request.Notes)
+                : null;
+
             pv.CorrectQuantity(request.Stock, currentBranch, currentUser.UserId, currentUser.FullName);
-            var movement = StockMovement.CreateAdjustment(
-                currentBranch,
-                pv.Id,
-                currentUser.UserId,
-                currentUser.FullName,
-                request.Stock,
-                request.Notes);
-            context.StockMovements.Add(movement);
+
+            if (movement is not null)
+                context.StockMovements.Add(movement);
+
             await context.SaveChangesAsync();
             return true;
         }

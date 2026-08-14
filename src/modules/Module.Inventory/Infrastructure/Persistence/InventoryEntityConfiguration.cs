@@ -35,6 +35,9 @@ public static class InventoryEntityConfiguration
             entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasIndex(x => new { x.TenantId, x.Sku }).IsUnique();
+            entity.HasIndex(x => new { x.TenantId, x.ProductId, x.ColorId, x.SizeId })
+                .IsUnique()
+                .HasFilter("\"DeletedAt\" IS NULL");
             entity.HasMany(pv => pv.BranchInventories)
                 .WithOne(inv => inv.ProductVariant)
                 .HasForeignKey(inv => inv.ProductVariantId);

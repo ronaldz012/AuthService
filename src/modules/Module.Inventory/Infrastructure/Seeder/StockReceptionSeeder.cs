@@ -94,7 +94,7 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
                 context.StockReceptions.Add(reception);
             }
 
-            context.StockMovements.AddRange(  );
+            context.StockMovements.AddRange(allMovements);
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
         }
