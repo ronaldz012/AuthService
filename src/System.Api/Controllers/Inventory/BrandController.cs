@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Module.Inventory.Application.UseCases.Brands;
 using Module.Inventory.Application.UseCases.Brands.CreateBrand;
 using Module.Inventory.Application.UseCases.Brands.GetBrands;
+using Module.Inventory.Application.UseCases.Brands.Update;
 
 namespace System.Api.Controllers.Inventory
 {
@@ -21,9 +22,21 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBrands()
+        public async Task<IActionResult> GetBrands([FromQuery] bool? includeInactive)
         {
-            return await  service.GetBrands.Execute().ToValueOrProblemDetails();
+            return await  service.GetBrands.Execute(includeInactive).ToValueOrProblemDetails();
+        }
+
+        [HttpPatch("{id:guid}/status")]
+        public async Task<IActionResult> ToggleBrandStatus([FromRoute] Guid id)
+        {
+            return await service.UpdateBrand.ChangeStatus(id).ToValueOrProblemDetails();
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateBrand([FromRoute] Guid id, [FromBody] UpdateBrandDto dto)
+        {
+            return await service.UpdateBrand.Execute(id, dto).ToValueOrProblemDetails();
         }
     }
 }

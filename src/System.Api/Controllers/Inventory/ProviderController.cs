@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Inventory.Application.UseCases.Providers;
 using Module.Inventory.Application.UseCases.Providers.CreateProvider;
-using Module.Inventory.Application.UseCases.Providers.UpdateProvider;
+using Module.Inventory.Application.UseCases.Providers.Update;
 
 namespace System.Api.Controllers.Inventory
 {
@@ -20,9 +20,9 @@ namespace System.Api.Controllers.Inventory
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProviders()
+        public async Task<IActionResult> GetProviders([FromQuery] bool? includeInactive)
         {
-            return await useCases.GetProviders.Execute().ToValueOrProblemDetails();
+            return await useCases.GetProviders.Execute(includeInactive).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
@@ -31,10 +31,10 @@ namespace System.Api.Controllers.Inventory
             return await useCases.UpdateProvider.Execute(id, dto).ToValueOrProblemDetails();
         }
 
-        [HttpPatch("{id:guid}")]
+        [HttpPatch("{id:guid}/status")]
         public async Task<IActionResult> ToggleProvider([FromRoute] Guid id)
         {
-            return await useCases.ToggleProvider.Execute(id).ToValueOrProblemDetails();
+            return await useCases.UpdateProvider.ChangeStatus(id).ToValueOrProblemDetails();
         }
     }
 }

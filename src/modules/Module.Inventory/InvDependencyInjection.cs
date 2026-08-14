@@ -6,15 +6,19 @@ using Module.Inventory.Infrastructure.Services;
 using Module.Inventory.Application.UseCases.Brands;
 using Module.Inventory.Application.UseCases.Brands.CreateBrand;
 using Module.Inventory.Application.UseCases.Brands.GetBrands;
+using Module.Inventory.Application.UseCases.Brands.Update;
 using Module.Inventory.Application.UseCases.Categories;
 using Module.Inventory.Application.UseCases.Categories.Create;
 using Module.Inventory.Application.UseCases.Categories.Get;
+using Module.Inventory.Application.UseCases.Categories.Update;
 using Module.Inventory.Application.UseCases.Colors;
 using Module.Inventory.Application.UseCases.Colors.Create;
 using Module.Inventory.Application.UseCases.Colors.List;
+using Module.Inventory.Application.UseCases.Colors.Update;
 using Module.Inventory.Application.UseCases.Sizes;
 using Module.Inventory.Application.UseCases.Sizes.Create;
 using Module.Inventory.Application.UseCases.Sizes.List;
+using Module.Inventory.Application.UseCases.Sizes.Update;
 using Module.Inventory.Application.UseCases.Products;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Application.UseCases.Products.Delete;
@@ -33,8 +37,7 @@ using Module.Inventory.Application.UseCases.ProductVariants.Update;
 using Module.Inventory.Application.UseCases.Providers;
 using Module.Inventory.Application.UseCases.Providers.CreateProvider;
 using Module.Inventory.Application.UseCases.Providers.GetProviders;
-using Module.Inventory.Application.UseCases.Providers.ToggleProvider;
-using Module.Inventory.Application.UseCases.Providers.UpdateProvider;
+using Module.Inventory.Application.UseCases.Providers.Update;
 using Module.Inventory.Application.UseCases.Receptions;
 using Module.Inventory.Application.UseCases.Receptions.Create;
 using Module.Inventory.Application.UseCases.Receptions.Get;
@@ -80,11 +83,13 @@ public  static class InvDependencyInjection
         
         services.AddScoped<CategoryUseCases>()
             .AddScoped<CreateCategory>()
-            .AddScoped<GetCategories>();
+            .AddScoped<GetCategories>()
+            .AddScoped<UpdateCategory>();
         
         services.AddScoped<BrandUseCases>()
             .AddScoped<CreateBrandUc>()
-            .AddScoped<GetBrands>();
+            .AddScoped<GetBrands>()
+            .AddScoped<UpdateBrand>();
         
         services.AddScoped<ReceptionUseCases>()
             .AddScoped<CreateReceptionUc>()
@@ -105,17 +110,18 @@ public  static class InvDependencyInjection
 
         services.AddScoped<ColoreUseCases>()
             .AddScoped<CreateColor>()
-            .AddScoped<GetListColors>();
+            .AddScoped<GetListColors>()
+            .AddScoped<UpdateColor>();
 
         services.AddScoped<SizeUseCases>()
             .AddScoped<CreateSize>()
-            .AddScoped<GetListSizes>();
+            .AddScoped<GetListSizes>()
+            .AddScoped<UpdateSize>();
 
         services.AddScoped<ProviderUseCases>()
             .AddScoped<CreateProviderUc>()
             .AddScoped<GetProviders>()
-            .AddScoped<UpdateProviderUc>()
-            .AddScoped<ToggleProviderUc>();
+            .AddScoped<UpdateProvider>();
 
         services.AddScoped<IInventoryIntegrationService, InventoryIntegrationService>();
         services.AddScoped<IProductCodeService, ProductCodeService>();

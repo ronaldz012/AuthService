@@ -9,6 +9,7 @@ public class Category : Params, IMustHaveTenant
     public Guid TenantId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
 
     public ICollection<Product> Products { get; set; } = [];
 
@@ -19,8 +20,26 @@ public class Category : Params, IMustHaveTenant
             Id = Guid.NewGuid(),
             Name = name,
             TenantId = tenantId,
+            IsActive = true,
             CreatedBy = createdBy,
             CreatedByName = createdByName
         };
+    }
+
+    public void Update(string name, string description, Guid updatedBy, string updatedByName)
+    {
+        Name = name;
+        Description = description;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ToggleActive(Guid updatedBy, string updatedByName)
+    {
+        IsActive = !IsActive;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

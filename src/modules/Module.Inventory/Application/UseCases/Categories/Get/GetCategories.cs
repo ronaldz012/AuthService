@@ -7,15 +7,21 @@ namespace Module.Inventory.Application.UseCases.Categories.Get;
 
 public class GetCategories(IInvDbContext context)
 {
-    public async Task<Result<List<GetCategoriesResponse>>> Execute()
+    public async Task<Result<List<GetCategoriesResponse>>> Execute(bool? includeInactive = null)
     {
-        var result = await context.Categories
-            .AsNoTracking()
+        var query = context.Categories.AsNoTracking();
+
+        if (includeInactive != true)
+            query = query.Where(x => x.IsActive);
+
+        var result = await query
             .OrderBy(x => x.Name)
             .Select(x => new GetCategoriesResponse
             {
                 Id = x.Id,
                 Name = x.Name,
+                Description = x.Description,
+                IsActive = x.IsActive,
             })
             .ToListAsync();
 

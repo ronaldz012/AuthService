@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Module.Inventory.Application.UseCases.Providers.UpdateProvider;
+namespace Module.Inventory.Application.UseCases.Providers.Update;
 
 public class UpdateProviderRequest
 {

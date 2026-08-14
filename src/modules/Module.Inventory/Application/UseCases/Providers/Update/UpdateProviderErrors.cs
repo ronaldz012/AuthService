@@ -1,6 +1,6 @@
 using Common.Utilities;
 
-namespace Module.Inventory.Application.UseCases.Providers.UpdateProvider;
+namespace Module.Inventory.Application.UseCases.Providers.Update;
 
 public static class UpdateProviderErrors
 {

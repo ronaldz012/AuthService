@@ -41,4 +41,31 @@ public class Provider : Params, IMustHaveTenant
             CreatedByName = createdByName
         };
     }
+
+    public void Update(
+        string name,
+        string? contactName,
+        string? email,
+        string? phoneNumber,
+        string? address,
+        Guid updatedBy,
+        string updatedByName)
+    {
+        Name = name;
+        ContactName = contactName;
+        Email = email;
+        PhoneNumber = phoneNumber;
+        Address = address;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ToggleActive(Guid updatedBy, string updatedByName)
+    {
+        IsActive = !IsActive;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

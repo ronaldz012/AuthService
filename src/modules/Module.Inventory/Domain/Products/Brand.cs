@@ -10,6 +10,7 @@ public class Brand : Params, IMustHaveTenant
     public string Prefix { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int ProductCounter { get; set; }
+    public bool IsActive { get; set; } = true;
     public Guid TenantId { get; set; }
     public ICollection<Product> Products { get; set; } = new List<Product>();
 
@@ -21,8 +22,26 @@ public class Brand : Params, IMustHaveTenant
             Name = name,
             Prefix = prefix,
             TenantId = tenantId,
+            IsActive = true,
             CreatedBy = createdBy,
             CreatedByName = createdByName
         };
+    }
+
+    public void Update(string name, string description, Guid updatedBy, string updatedByName)
+    {
+        Name = name;
+        Description = description;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ToggleActive(Guid updatedBy, string updatedByName)
+    {
+        IsActive = !IsActive;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+        UpdatedAt = DateTime.UtcNow;
     }
 }
