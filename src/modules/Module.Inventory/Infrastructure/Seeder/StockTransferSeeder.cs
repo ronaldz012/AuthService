@@ -9,7 +9,7 @@ namespace Module.Inventory.Infrastructure.Seeder;
 
 public class StockTransferSeeder(IServiceProvider serviceProvider) : IDataSeeder
 {
-    public int Order => 7;
+    public int Order => 8;
 
     public async Task SeedAsync()
     {
@@ -58,9 +58,9 @@ public class StockTransferSeeder(IServiceProvider serviceProvider) : IDataSeeder
                 context.StockMovements.Add(movIn1);
             }
 
-            // Transfer 2: Revolution 7 (Rojo/40) — 5 units from Main to Secondary
+            // Transfer 2: Revolution 7 (Plomo/40) — 5 units from Main to Secondary
             var variant2 = variants.FirstOrDefault(pv =>
-                pv.Product.Name == "Revolution 7" && pv.Color.Name == "Rojo" && pv.Size.Name == "40");
+                pv.Product.Name == "Revolution 7" && pv.Color.Name == "Plomo" && pv.Size.Name == "40");
 
             if (variant2 != null)
             {

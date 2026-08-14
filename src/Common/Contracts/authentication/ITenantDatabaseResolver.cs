@@ -6,4 +6,5 @@ public interface ITenantDatabaseResolver
 {
     Task<TenantDatabaseInfoDto?> GetTenantDatabaseInfo(Guid tenantId);
     Task<TenantDatabaseInfoDto?> GetByDisplayName(string displayName);
+    Task<List<TenantDatabaseInfoDto>> GetAll();
 }

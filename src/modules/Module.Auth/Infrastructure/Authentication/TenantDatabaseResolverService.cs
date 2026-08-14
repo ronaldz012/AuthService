@@ -37,6 +37,21 @@ public class TenantDatabaseResolverService(
 
     private static string DisplayNameKey(string displayName) => $"tenant_by_name:{displayName}";
 
+    public async Task<List<TenantDatabaseInfoDto>> GetAll()
+    {
+        return await context.Tenants
+            .Select(t => new TenantDatabaseInfoDto
+            {
+                Schema = t.TenantDataBase.Schema,
+                DatabaseName = t.TenantDataBase.Name,
+                TenantId = t.Id,
+                MainBranchId = t.Branches.Select(b => b.Id).FirstOrDefault(),
+                OwnerUserId = t.OwnerId,
+                BranchIds = t.Branches.Select(b => b.Id).ToList()
+            })
+            .ToListAsync();
+    }
+
     public async Task<TenantDatabaseInfoDto?> GetByDisplayName(string displayName)
     {
         if (cache.TryGetValue(DisplayNameKey(displayName), out TenantDatabaseInfoDto? cached) && cached is not null)

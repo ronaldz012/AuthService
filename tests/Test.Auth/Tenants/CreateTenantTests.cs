@@ -1,6 +1,8 @@
 using Common.Contracts.authentication;
+using Common.Contracts.inventory;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Tenant.Create;
@@ -169,6 +171,8 @@ public class CreateTenantTests
             dbContext,
             tenantConnectionContext,
             Mock.Of<IEmailVerificationService>(),
-            projectInfoOptions);
+            Mock.Of<IDefaultCatalogProvisioner>(),
+            projectInfoOptions,
+            Mock.Of<ILogger<CreateTenant>>());
     }
 }

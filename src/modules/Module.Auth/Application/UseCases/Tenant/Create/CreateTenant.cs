@@ -1,5 +1,7 @@
 using Common.Contracts.authentication;
+using Common.Contracts.inventory;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Module.Auth.Application.UseCases.Tenant.Create;
@@ -11,7 +13,9 @@ public class CreateTenant(
     IAuthDbContext context,
     ITenantConnectionContext tenantConnectionContext,
     IEmailVerificationService emailVerificationService,
-    IOptions<ProjectInfo> projectInfo)
+    IDefaultCatalogProvisioner catalogProvisioner,
+    IOptions<ProjectInfo> projectInfo,
+    ILogger<CreateTenant> logger)
 {
     public async Task<Result<CreateTenantResponse>> ExecuteAsync(CreateTenantRequest request)
     {
@@ -52,6 +56,19 @@ public class CreateTenant(
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
+
+            try
+            {
+                await catalogProvisioner.SeedAsync(
+                    tenantId,
+                    ownerUserId,
+                    request.OwnerEmail,
+                    plan.DefaultCatalogTemplate ?? Common.Contracts.inventory.DefaultCatalogTemplates.Basic);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error seeding default catalog for tenant {TenantId}", tenantId);
+            }
 
             var frontendDomain = projectInfo.Value.AppBranding.FrontendDomain;
             var setupUrl = $"https://{request.DisplayName}.{frontendDomain}/auth/setup-password?code={verificationCode.Code}";

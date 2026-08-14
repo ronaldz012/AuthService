@@ -95,6 +95,14 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConne
                 builder.ToJson();
                 builder.OwnsMany(r => r.Permissions);
             });
+
+            e.OwnsOne(p => p.DefaultCatalogTemplate, builder =>
+            {
+                builder.ToJson();
+                builder.OwnsMany(t => t.Sizes);
+                builder.OwnsMany(t => t.Brands);
+                builder.OwnsMany(t => t.Categories);
+            });
         });
 
         modelBuilder.Entity<Feature>(e =>

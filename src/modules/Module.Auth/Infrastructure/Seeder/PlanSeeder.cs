@@ -1,4 +1,5 @@
 using Common.Contracts.Seeder;
+using Common.Contracts.inventory;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
@@ -66,7 +67,8 @@ public class PlanSeeder(IAuthDbContext context) : IDataSeeder
                         new() { FeatureKey = "closures",   Actions = ["read", "export"] }
                     ]
                 },
-            ]
+            ],
+            DefaultCatalogTemplate = DefaultCatalogTemplates.Basic
         };
 
         foreach (var role in basic.DefaultRolesTemplate)

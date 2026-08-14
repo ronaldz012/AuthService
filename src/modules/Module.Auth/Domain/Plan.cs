@@ -1,3 +1,4 @@
+using Common.Contracts.inventory;
 using Common.Domain;
 
 namespace Module.Auth.Domain;
@@ -13,6 +14,7 @@ public class Plan : ICreatedAt, ICreatedBy
     public int MaxExtraRoles { get; set; }
     public List<string> AllowedFeatureKeys { get; set; } = new List<string>();
     public List<DefaultRoleTemplate> DefaultRolesTemplate { get; set; } = [];
+    public DefaultCatalogTemplate? DefaultCatalogTemplate { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Guid CreatedBy { get; set; }

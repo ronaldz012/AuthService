@@ -1,5 +1,6 @@
 using Common.Contracts.authentication;
 using Common.Contracts.Seeder;
+using Common.Contracts.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Module.Inventory.Application.Abstraction;
@@ -17,30 +18,21 @@ public class InventorySeeder(
     {
         var context = serviceProvider.GetRequiredService<IInvDbContext>();
         var codeService = serviceProvider.GetRequiredService<IProductCodeService>();
+        var catalogProvisioner = serviceProvider.GetRequiredService<IDefaultCatalogProvisioner>();
 
         if (await context.Categories.AnyAsync()) return;
 
         var tenantInfo = await tenantResolver.GetByDisplayName("default");
         if (tenantInfo is null) return;
 
-        foreach (var name in InventorySeedData.Colors)
-        {
-            if (!await context.Colors.AnyAsync(c => c.Name.ToLower() == name.ToLower()))
-                context.Colors.Add(Color.Create(name, tenantInfo.TenantId, tenantInfo.OwnerUserId));
-        }
+        // Catálogo base (colores, tallas, categorías) desde el template compartido
+        await catalogProvisioner.SeedAsync(
+            tenantInfo.TenantId,
+            tenantInfo.OwnerUserId,
+            "System",
+            DefaultCatalogTemplates.Basic);
 
-        foreach (var sizeSeed in InventorySeedData.Sizes)
-        {
-            if (!await context.Sizes.AnyAsync(s => s.Name.ToLower() == sizeSeed.Name.ToLower()))
-                context.Sizes.Add(Size.Create(sizeSeed.Name, sizeSeed.SortOrder, tenantInfo.TenantId, tenantInfo.OwnerUserId));
-        }
-
-        foreach (var name in InventorySeedData.Categories)
-        {
-            if (!await context.Categories.AnyAsync(c => c.Name.ToLower() == name.ToLower()))
-                context.Categories.Add(Category.Create(name, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
-        }
-
+        // Marcas demo (cada tenant gestiona las propias)
         foreach (var brand in InventorySeedData.Brands)
         {
             if (!await context.Brands.AnyAsync(b => b.Prefix.ToLower() == brand.Prefix.ToLower()))
@@ -49,10 +41,12 @@ public class InventorySeeder(
 
         await context.SaveChangesAsync();
 
+        // Productos demo usando el catálogo ya sembrado (se omiten los que no existan)
         foreach (var prodSeed in InventorySeedData.Products)
         {
-            var brand = await context.Brands.FirstAsync(b => b.Name == prodSeed.Brand);
-            var category = await context.Categories.FirstAsync(c => c.Name == prodSeed.Category);
+            var brand = await context.Brands.FirstOrDefaultAsync(b => b.Name == prodSeed.Brand);
+            var category = await context.Categories.FirstOrDefaultAsync(c => c.Name == prodSeed.Category);
+            if (brand is null || category is null) continue;
 
             var code = await codeService.ReserveBrandCounter(brand.Id, brand.Prefix);
             var product = Product.Create(prodSeed.Name, prodSeed.Description, category.Id, brand.Id, prodSeed.Gender, code, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System");
@@ -61,8 +55,10 @@ public class InventorySeeder(
 
             foreach (var varSeed in prodSeed.Variants)
             {
-                var color = await context.Colors.FirstAsync(c => c.Name == varSeed.Color);
-                var size = await context.Sizes.FirstAsync(s => s.Name == varSeed.Size);
+                var color = await context.Colors.FirstOrDefaultAsync(c => c.Name == varSeed.Color);
+                var size = await context.Sizes.FirstOrDefaultAsync(s => s.Name == varSeed.Size);
+                if (color is null || size is null) continue;
+
                 var sku = await codeService.ReserveVariantCounter(product.Id, product.InternalCode);
                 context.ProductVariants.Add(ProductVariant.Create(product.Id, color.Id, size.Id, varSeed.Price, sku, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
             }

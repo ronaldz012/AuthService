@@ -9,7 +9,7 @@ namespace Module.Inventory.Infrastructure.Seeder;
 
 public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeeder
 {
-    public int Order => 6;
+    public int Order => 7;
 
     public async Task SeedAsync()
     {
