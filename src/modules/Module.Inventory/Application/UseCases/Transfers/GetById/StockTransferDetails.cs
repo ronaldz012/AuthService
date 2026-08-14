@@ -15,9 +15,13 @@ public class StockTransferDetails(IInvDbContext context, IBranchService branchSe
         var transfer = await context.StockTransfers
             .Include(st => st.Items)
                 .ThenInclude(i => i.ProductVariant)
-                    .ThenInclude(pv => pv.Product).Include(stockTransfer => stockTransfer.Items)
-                        .ThenInclude(stockTransferItem => stockTransferItem.ProductVariant)
-                                .ThenInclude(productVariant => productVariant.Color)
+                    .ThenInclude(pv => pv.Product)
+            .Include(st => st.Items)
+                .ThenInclude(i => i.ProductVariant)
+                    .ThenInclude(pv => pv.Color)
+            .Include(st => st.Items)
+                .ThenInclude(i => i.ProductVariant)
+                    .ThenInclude(pv => pv.Size)
             .FirstOrDefaultAsync(x => x.Id == stockTransferId);
 
         if (transfer == null)
