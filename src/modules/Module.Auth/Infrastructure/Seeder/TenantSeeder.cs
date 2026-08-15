@@ -2,11 +2,15 @@ using Common.Contracts.authentication;
 using Common.Contracts.Seeder;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.Abstraction;
+using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Domain;
 
 namespace Module.Auth.Infrastructure.Seeder;
 
-public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenantConnectionContext) : IDataSeeder
+public class TenantSeeder(
+    IAuthDbContext context,
+    ITenantConnectionContext tenantConnectionContext,
+    CreateBranch createBranch) : IDataSeeder
 {
     public int Order => 4;
 
@@ -53,17 +57,33 @@ public class TenantSeeder(IAuthDbContext context, ITenantConnectionContext tenan
 
         var tenant = Tenant.Create(tenantId, "default", db.Id, plan.Id, ownerUser, ownerUserId, "Admin Admin");
         context.Tenants.Add(tenant);
+        await context.SaveChangesAsync();
 
-        var features = await context.Features
-            .Select(f => new FeatureModuleInfo(f.Key, f.Module))
-            .ToListAsync();
+        var actor = new ActorContext(tenantId, ownerUserId, "Admin Admin", Guid.Empty, []);
 
-        var mainBranch = Branch.Create(Guid.NewGuid(), "Main Branch", "Av. Principal 123", "000000000", BranchType.PointOfSale, ownerUserId, "Admin Admin");
-        mainBranch.AllowedFeatureKeys = BranchFeatureKeysResolver.Resolve(plan.AllowedFeatureKeys, mainBranch.Type, features);
-        var secondaryBranch = Branch.Create(Guid.NewGuid(), "Secondary Branch", "Av. Secundaria 456", "000000001", BranchType.Warehouse, ownerUserId, "Admin Admin");
-        secondaryBranch.AllowedFeatureKeys = BranchFeatureKeysResolver.Resolve(plan.AllowedFeatureKeys, secondaryBranch.Type, features);
-        context.Branches.Add(mainBranch);
-        context.Branches.Add(secondaryBranch);
+        var mainBranchResult = await createBranch.Execute(actor, new CreateBranchRequest
+        {
+            Name = "Main Branch",
+            Place = "Av. Principal 123",
+            PhoneNumber = "000000000",
+            Type = BranchType.PointOfSale
+        });
+
+        if (!mainBranchResult.IsSuccess)
+            throw new InvalidOperationException(
+                $"Seeding Main Branch failed: {mainBranchResult.Error?.Code} - {mainBranchResult.Error?.Message}");
+
+        var secondaryBranchResult = await createBranch.Execute(actor, new CreateBranchRequest
+        {
+            Name = "Secondary Branch",
+            Place = "Av. Secundaria 456",
+            PhoneNumber = "000000001",
+            Type = BranchType.Warehouse
+        });
+
+        if (!secondaryBranchResult.IsSuccess)
+            throw new InvalidOperationException(
+                $"Seeding Secondary Branch failed: {secondaryBranchResult.Error?.Code} - {secondaryBranchResult.Error?.Message}");
 
         foreach (var roleTemplate in plan.DefaultRolesTemplate)
         {

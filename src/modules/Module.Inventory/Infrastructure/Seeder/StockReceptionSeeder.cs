@@ -1,9 +1,10 @@
+using Common.Contracts.authentication;
 using Common.Contracts.Seeder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Module.Inventory.Application.Abstraction;
-using Module.Inventory.Domain.Inventory;
-using Module.Inventory.Domain.Receptions;
+using Module.Inventory.Application.UseCases.Providers.CreateProvider;
+using Module.Inventory.Application.UseCases.Receptions.Create;
 
 namespace Module.Inventory.Infrastructure.Seeder;
 
@@ -18,10 +19,39 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
         if (await context.StockReceptions.AnyAsync()) return;
 
         var tenantInfo = await serviceProvider
-            .GetRequiredService<Common.Contracts.authentication.ITenantDatabaseResolver>()
+            .GetRequiredService<ITenantDatabaseResolver>()
             .GetByDisplayName("default");
 
         if (tenantInfo is null || tenantInfo.BranchIds.Count == 0) return;
+
+        var createProvider = serviceProvider.GetRequiredService<CreateProviderUc>();
+        var actor = new ActorContext(tenantInfo.TenantId, tenantInfo.OwnerUserId, "System", Guid.Empty, []);
+
+        var providerNames = InventorySeedData.Providers.Select(p => p.Name.ToLower()).ToList();
+        var existingProviders = await context.Providers
+            .Where(p => providerNames.Contains(p.Name.ToLower()))
+            .ToListAsync();
+
+        var providerIds = existingProviders.Select(p => p.Id).ToList();
+        foreach (var providerSeed in InventorySeedData.Providers)
+        {
+            if (await context.Providers.AnyAsync(p => p.Name.ToLower() == providerSeed.Name.ToLower())) continue;
+
+            var providerResult = await createProvider.Execute(actor, new CreateProviderRequest
+            {
+                Name = providerSeed.Name,
+                ContactName = providerSeed.ContactName,
+                Email = providerSeed.Email,
+                PhoneNumber = providerSeed.PhoneNumber,
+                Address = providerSeed.Address
+            });
+
+            if (!providerResult.IsSuccess)
+                throw new InvalidOperationException(
+                    $"Seeding provider {providerSeed.Name} failed: {providerResult.Error?.Code} - {providerResult.Error?.Message}");
+
+            providerIds.Add(providerResult.Value.Id);
+        }
 
         var productNames = InventorySeedData.Products.Select(p => p.Name).ToList();
 
@@ -32,76 +62,52 @@ public class StockReceptionSeeder(IServiceProvider serviceProvider) : IDataSeede
             .Where(pv => productNames.Contains(pv.Product.Name))
             .ToListAsync();
 
-        var branchIds = tenantInfo.BranchIds;
-        var stockSplit = DistributeStock(InventorySeedData.Products, branchIds.Count);
+        var variantByKey = variants.ToDictionary(
+            v => (v.Product.Name, v.Color.Name, v.Size.Name),
+            v => v.Id);
 
-        var providerNames = InventorySeedData.Providers.Select(p => p.Name.ToLower()).ToList();
-        var existingProviders = await context.Providers
-            .Where(p => providerNames.Contains(p.Name.ToLower()))
-            .ToListAsync();
+        var stockSplit = DistributeStock(InventorySeedData.Products, tenantInfo.BranchIds.Count);
+        var createReception = serviceProvider.GetRequiredService<CreateReceptionUc>();
 
-        var providers = existingProviders.ToList();
-        foreach (var providerSeed in InventorySeedData.Providers)
+        for (var i = 0; i < tenantInfo.BranchIds.Count; i++)
         {
-            if (providers.Any(p => p.Name.ToLower() == providerSeed.Name.ToLower())) continue;
+            var branchId = tenantInfo.BranchIds[i];
+            var providerId = providerIds[i % providerIds.Count];
 
-            var provider = Module.Inventory.Domain.Organization.Provider.Create(
-                providerSeed.Name,
-                tenantInfo.TenantId,
-                tenantInfo.OwnerUserId,
-                "System",
-                providerSeed.ContactName,
-                providerSeed.Email,
-                providerSeed.PhoneNumber,
-                providerSeed.Address);
-            context.Providers.Add(provider);
-            providers.Add(provider);
-        }
-
-        await using var transaction = await context.Database.BeginTransactionAsync();
-
-        try
-        {
-            var allMovements = new List<StockMovement>();
-
-            for (var i = 0; i < branchIds.Count; i++)
+            var dto = new CreateStockReceptionDto
             {
-                var branchId = branchIds[i];
-                var provider = providers[i % providers.Count];
-                var reception = StockReception.Create(branchId, tenantInfo.OwnerUserId, "System", "Stock inicial", provider.Id);
+                ProviderId = providerId,
+                Notes = "Stock inicial",
+                Items = new List<CreateStockReceptionItemDto>()
+            };
 
-                foreach (var prodSeed in InventorySeedData.Products)
+            foreach (var prodSeed in InventorySeedData.Products)
+            {
+                foreach (var varSeed in prodSeed.Variants)
                 {
-                    foreach (var varSeed in prodSeed.Variants)
+                    if (!variantByKey.TryGetValue((prodSeed.Name, varSeed.Color, varSeed.Size), out var variantId))
+                        continue;
+
+                    var qty = stockSplit[(prodSeed.Name, varSeed.Color, varSeed.Size)][i];
+                    if (qty <= 0) continue;
+
+                    dto.Items.Add(new CreateStockReceptionItemDto
                     {
-                        var variant = variants.FirstOrDefault(pv =>
-                            pv.Product.Name == prodSeed.Name &&
-                            pv.Color.Name == varSeed.Color &&
-                            pv.Size.Name == varSeed.Size);
-
-                        if (variant == null) continue;
-
-                        var qty = stockSplit[(prodSeed.Name, varSeed.Color, varSeed.Size)][i];
-                        if (qty <= 0) continue;
-
-                        reception.AddExistingVariant(variant.Id, tenantInfo.OwnerUserId, "System", qty, varSeed.UnitCost);
-                        variant.AddQuantity(qty, branchId, tenantInfo.OwnerUserId, "System");
-                        allMovements.Add(StockMovement.CreateReception(
-                            branchId, variant.Id, tenantInfo.OwnerUserId, "System", qty, reception.Id, "Stock inicial"));
-                    }
+                        ProductVariantId = variantId,
+                        QuantityReceived = qty,
+                        UnitCost = varSeed.UnitCost
+                    });
                 }
-
-                context.StockReceptions.Add(reception);
             }
 
-            context.StockMovements.AddRange(allMovements);
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
+            if (dto.Items.Count == 0) continue;
+
+            var branchActor = new ActorContext(tenantInfo.TenantId, tenantInfo.OwnerUserId, "System", branchId, [branchId]);
+            var result = await createReception.Execute(branchActor, dto);
+
+            if (!result.IsSuccess)
+                throw new InvalidOperationException(
+                    $"Seeding reception for branch {branchId} failed: {result.Error?.Code} - {result.Error?.Message}");
         }
     }
 

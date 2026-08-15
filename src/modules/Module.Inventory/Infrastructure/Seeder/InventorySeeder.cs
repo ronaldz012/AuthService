@@ -4,7 +4,8 @@ using Common.Contracts.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Module.Inventory.Application.Abstraction;
-using Module.Inventory.Domain.Products;
+using Module.Inventory.Application.UseCases.Brands.CreateBrand;
+using Module.Inventory.Application.UseCases.Products.Create;
 
 namespace Module.Inventory.Infrastructure.Seeder;
 
@@ -17,8 +18,9 @@ public class InventorySeeder(
     public async Task SeedAsync()
     {
         var context = serviceProvider.GetRequiredService<IInvDbContext>();
-        var codeService = serviceProvider.GetRequiredService<IProductCodeService>();
         var catalogProvisioner = serviceProvider.GetRequiredService<IDefaultCatalogProvisioner>();
+        var createBrand = serviceProvider.GetRequiredService<CreateBrandUc>();
+        var createProduct = serviceProvider.GetRequiredService<CreateProductUc>();
 
         if (await context.Categories.AnyAsync()) return;
 
@@ -32,14 +34,24 @@ public class InventorySeeder(
             "System",
             DefaultCatalogTemplates.Basic);
 
+        var actor = new ActorContext(tenantInfo.TenantId, tenantInfo.OwnerUserId, "System", Guid.Empty, []);
+
         // Marcas demo (cada tenant gestiona las propias)
         foreach (var brand in InventorySeedData.Brands)
         {
-            if (!await context.Brands.AnyAsync(b => b.Prefix.ToLower() == brand.Prefix.ToLower()))
-                context.Brands.Add(Brand.Create(brand.Name, brand.Prefix, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
-        }
+            if (await context.Brands.AnyAsync(b => b.Prefix.ToLower() == brand.Prefix.ToLower())) continue;
 
-        await context.SaveChangesAsync();
+            var brandResult = await createBrand.Execute(actor, new CreateBrandRequest
+            {
+                Name = brand.Name,
+                Prefix = brand.Prefix,
+                Description = string.Empty
+            });
+
+            if (!brandResult.IsSuccess)
+                throw new InvalidOperationException(
+                    $"Seeding brand {brand.Name} failed: {brandResult.Error?.Code} - {brandResult.Error?.Message}");
+        }
 
         // Productos demo usando el catálogo ya sembrado (se omiten los que no existan)
         foreach (var prodSeed in InventorySeedData.Products)
@@ -48,22 +60,37 @@ public class InventorySeeder(
             var category = await context.Categories.FirstOrDefaultAsync(c => c.Name == prodSeed.Category);
             if (brand is null || category is null) continue;
 
-            var code = await codeService.ReserveBrandCounter(brand.Id, brand.Prefix);
-            var product = Product.Create(prodSeed.Name, prodSeed.Description, category.Id, brand.Id, prodSeed.Gender, code, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System");
-            context.Products.Add(product);
-            await context.SaveChangesAsync();
-
+            var variants = new List<CreateProductVariantForProductDto>();
             foreach (var varSeed in prodSeed.Variants)
             {
                 var color = await context.Colors.FirstOrDefaultAsync(c => c.Name == varSeed.Color);
                 var size = await context.Sizes.FirstOrDefaultAsync(s => s.Name == varSeed.Size);
                 if (color is null || size is null) continue;
 
-                var sku = await codeService.ReserveVariantCounter(product.Id, product.InternalCode);
-                context.ProductVariants.Add(ProductVariant.Create(product.Id, color.Id, size.Id, varSeed.Price, sku, tenantInfo.TenantId, tenantInfo.OwnerUserId, "System"));
+                variants.Add(new CreateProductVariantForProductDto
+                {
+                    ColorId = color.Id,
+                    SizeId = size.Id,
+                    Price = varSeed.Price,
+                    Description = string.Empty
+                });
             }
-        }
 
-        await context.SaveChangesAsync();
+            if (variants.Count == 0) continue;
+
+            var productResult = await createProduct.Execute(actor, new CreateProductRequest
+            {
+                Name = prodSeed.Name,
+                Description = prodSeed.Description,
+                CategoryId = category.Id,
+                BrandId = brand.Id,
+                Gender = prodSeed.Gender,
+                Variants = variants
+            });
+
+            if (!productResult.IsSuccess)
+                throw new InvalidOperationException(
+                    $"Seeding product {prodSeed.Name} failed: {productResult.Error?.Code} - {productResult.Error?.Message}");
+        }
     }
 }

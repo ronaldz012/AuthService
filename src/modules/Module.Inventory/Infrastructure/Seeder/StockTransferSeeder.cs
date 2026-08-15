@@ -1,8 +1,10 @@
+using Common.Contracts.authentication;
 using Common.Contracts.Seeder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Module.Inventory.Application.Abstraction;
-using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Application.UseCases.Transfers.Create;
+using Module.Inventory.Application.UseCases.Transfers.Resolve;
 using Module.Inventory.Domain.Transfers;
 
 namespace Module.Inventory.Infrastructure.Seeder;
@@ -18,7 +20,7 @@ public class StockTransferSeeder(IServiceProvider serviceProvider) : IDataSeeder
         if (await context.StockTransfers.AnyAsync()) return;
 
         var tenantInfo = await serviceProvider
-            .GetRequiredService<Common.Contracts.authentication.ITenantDatabaseResolver>()
+            .GetRequiredService<ITenantDatabaseResolver>()
             .GetByDisplayName("default");
 
         if (tenantInfo is null || tenantInfo.BranchIds.Count < 2) return;
@@ -32,78 +34,54 @@ public class StockTransferSeeder(IServiceProvider serviceProvider) : IDataSeeder
             .Include(pv => pv.Product)
             .Include(pv => pv.Color)
             .Include(pv => pv.Size)
-            .Include(pv => pv.BranchInventories)
             .Where(pv => productNames.Contains(pv.Product.Name))
             .ToListAsync();
 
-        await using var transaction = await context.Database.BeginTransactionAsync();
+        var createTransfer = serviceProvider.GetRequiredService<CreateStockTransfer>();
+        var resolveTransfer = serviceProvider.GetRequiredService<ResolveStockTransfer>();
 
-        try
+        var transfers = new[]
         {
-            var userId = tenantInfo.OwnerUserId;
-            const string userName = "System";
-
-            // Transfer 1: Air Max 90 (Negro/42) — 3 units from Main to Secondary
-            var variant1 = variants.FirstOrDefault(pv =>
-                pv.Product.Name == "Air Max 90" && pv.Color.Name == "Negro" && pv.Size.Name == "42");
-
-            if (variant1 != null)
-            {
-                var transfer1 = CreateAndAcceptTransfer(context, variant1.Id, fromBranchId, toBranchId, 3, userId, userName);
-                variant1.AddQuantity(-3, fromBranchId, userId, userName);
-                variant1.AddQuantity(3, toBranchId, userId, userName);
-                var (movOut1, movIn1) = StockMovement.CreateTransfer(fromBranchId, toBranchId, variant1.Id, userId, userName, 3, transfer1.Id);
-                context.StockTransfers.Add(transfer1);
-                context.StockMovements.Add(movOut1);
-                context.StockMovements.Add(movIn1);
-            }
-
-            // Transfer 2: Revolution 7 (Plomo/40) — 5 units from Main to Secondary
-            var variant2 = variants.FirstOrDefault(pv =>
-                pv.Product.Name == "Revolution 7" && pv.Color.Name == "Plomo" && pv.Size.Name == "40");
-
-            if (variant2 != null)
-            {
-                var transfer2 = CreateAndAcceptTransfer(context, variant2.Id, fromBranchId, toBranchId, 5, userId, userName);
-                variant2.AddQuantity(-5, fromBranchId, userId, userName);
-                variant2.AddQuantity(5, toBranchId, userId, userName);
-                var (movOut2, movIn2) = StockMovement.CreateTransfer(fromBranchId, toBranchId, variant2.Id, userId, userName, 5, transfer2.Id);
-                context.StockTransfers.Add(transfer2);
-                context.StockMovements.Add(movOut2);
-                context.StockMovements.Add(movIn2);
-            }
-
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-    }
-
-    private static StockTransfer CreateAndAcceptTransfer(IInvDbContext context, Guid variantId, Guid fromBranchId, Guid toBranchId, int quantity, Guid userId, string userName)
-    {
-        var transfer = new StockTransfer
-        {
-            FromBranchId = fromBranchId,
-            ToBranchId = toBranchId,
-            RequestedByUserId = userId,
-            Notes = "Traspaso inicial entre sucursales",
-            CreatedBy = userId,
-            CreatedByName = userName
+            ("Air Max 90", "Negro", "42", 3),
+            ("Revolution 7", "Plomo", "40", 5),
         };
 
-        transfer.Items.Add(new StockTransferItem
+        foreach (var (productName, colorName, sizeName, quantity) in transfers)
         {
-            ProductVariantId = variantId,
-            QuantityRequested = quantity,
-            CreatedBy = userId,
-            CreatedByName = userName
-        });
+            var variant = variants.FirstOrDefault(pv =>
+                pv.Product.Name == productName && pv.Color.Name == colorName && pv.Size.Name == sizeName);
 
-        transfer.Accept(userId, userName, "Traspaso inicial entre sucursales");
-        return transfer;
+            if (variant is null) continue;
+
+            var createResult = await createTransfer.Execute(
+                new ActorContext(tenantInfo.TenantId, tenantInfo.OwnerUserId, "System", fromBranchId, [fromBranchId]),
+                new CreateStockTransferDto
+                {
+                    ToBranchId = toBranchId,
+                    Notes = "Traspaso inicial entre sucursales",
+                    Items = [new StockTransferItemDto { ProductVariantId = variant.Id, QuantityRequested = quantity }]
+                });
+
+            if (!createResult.IsSuccess)
+                throw new InvalidOperationException(
+                    $"Seeding transfer for {productName}/{colorName}/{sizeName} failed: {createResult.Error?.Code} - {createResult.Error?.Message}");
+
+            var transfer = await context.StockTransfers
+                .Where(t => t.FromBranchId == fromBranchId && t.ToBranchId == toBranchId && t.Status == TransferStatus.Pending)
+                .OrderByDescending(t => t.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (transfer is null)
+                throw new InvalidOperationException("Created transfer could not be resolved back from the database");
+
+            var resolveResult = await resolveTransfer.Execute(
+                new ActorContext(tenantInfo.TenantId, tenantInfo.OwnerUserId, "System", toBranchId, [toBranchId]),
+                transfer.Id,
+                new ResolveStockTransferDto { Complete = true, Notes = "Traspaso inicial entre sucursales" });
+
+            if (!resolveResult.IsSuccess)
+                throw new InvalidOperationException(
+                    $"Seeding resolve for {productName}/{colorName}/{sizeName} failed: {resolveResult.Error?.Code} - {resolveResult.Error?.Message}");
+        }
     }
 }

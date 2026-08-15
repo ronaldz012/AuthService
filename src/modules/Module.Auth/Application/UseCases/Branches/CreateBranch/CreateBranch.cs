@@ -26,15 +26,17 @@ public class CreateBranch(IAuthDbContext context)
 
         var branchFeatureKeys = BranchFeatureKeysResolver.Resolve(planAllowedKeys, request.Type, features);
 
-        var newBranch = new Branch
-        {
-            Name = request.Name,
-            Place = request.Place,
-            PhoneNumber = request.PhoneNumber,
-            BranchCode = request.BranchCode,
-            Type = request.Type,
-            AllowedFeatureKeys = branchFeatureKeys,
-        };
+        var newBranch = Branch.Create(
+            Guid.NewGuid(),
+            request.Name,
+            request.Place,
+            request.PhoneNumber,
+            request.Type,
+            ctx.UserId,
+            ctx.FullName);
+        newBranch.BranchCode = request.BranchCode;
+        newBranch.AllowedFeatureKeys = branchFeatureKeys;
+
         context.Branches.Add(newBranch);
         await context.SaveChangesAsync();
 
