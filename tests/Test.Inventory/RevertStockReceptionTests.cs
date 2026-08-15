@@ -2,7 +2,6 @@ using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Module.Inventory.Application.UseCases.Receptions.Revert;
 using Module.Inventory.Domain.Inventory;
 using Module.Inventory.Domain.Products;
@@ -36,17 +35,11 @@ public class RevertStockReceptionTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        mock.Setup(u => u.BranchIds).Returns(new List<Guid> { BranchId });
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", BranchId, [BranchId]);
 
     private static RevertStockReception CreateSut(TestAppDbContext ctx)
-        => new(ctx, CreateCurrentUser(), NullLogger<RevertStockReception>.Instance);
+        => new(ctx, NullLogger<RevertStockReception>.Instance);
 
     private static ProductVariant SeedVariant(TestAppDbContext ctx, int stock)
     {
@@ -98,7 +91,7 @@ public class RevertStockReceptionTests
         var reception = SeedReception(ctx, variant, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(reception.Id);
+        var result = await sut.Check(CreateActorContext(), reception.Id);
 
         Assert.True(result.IsSuccess);
         Assert.True(result.Value.CanRevert);
@@ -113,7 +106,7 @@ public class RevertStockReceptionTests
         var reception = SeedReception(ctx, variant, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(reception.Id);
+        var result = await sut.Check(CreateActorContext(), reception.Id);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value.CanRevert);
@@ -128,7 +121,7 @@ public class RevertStockReceptionTests
         var reception = SeedReception(ctx, variant, 10, receivedAt: DateTime.UtcNow.AddDays(-2));
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(reception.Id);
+        var result = await sut.Check(CreateActorContext(), reception.Id);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value.CanRevert);
@@ -143,7 +136,7 @@ public class RevertStockReceptionTests
         var reception = SeedReception(ctx, variant, 10, status: ReceptionStatus.Reverted);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(reception.Id);
+        var result = await sut.Check(CreateActorContext(), reception.Id);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value.CanRevert);
@@ -156,7 +149,7 @@ public class RevertStockReceptionTests
         using var ctx = CreateDbContext();
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(Guid.NewGuid());
+        var result = await sut.Check(CreateActorContext(), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
         Assert.Equal(RevertStockReceptionErrors.ReceptionNotFound, result.Error);
@@ -170,7 +163,7 @@ public class RevertStockReceptionTests
         var reception = SeedReception(ctx, variant, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(reception.Id);
+        var result = await sut.Execute(CreateActorContext(), reception.Id);
 
         Assert.True(result.IsSuccess);
 
@@ -195,7 +188,7 @@ public class RevertStockReceptionTests
         var reception = SeedReception(ctx, variant, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(reception.Id);
+        var result = await sut.Execute(CreateActorContext(), reception.Id);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(RevertStockReceptionErrors.NotEnoughStock, result.Error);

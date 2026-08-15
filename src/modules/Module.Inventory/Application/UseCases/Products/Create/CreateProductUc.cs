@@ -6,9 +6,9 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Products.Create;
 
-public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IProductCodeService codeService)
+public class CreateProductUc(IInvDbContext context, IProductCodeService codeService)
 {
-    public async Task<Result<ProductCreatedDto>> Execute(CreateProductRequest request)
+    public async Task<Result<ProductCreatedDto>> Execute(ActorContext ctx, CreateProductRequest request)
     {
         var brand = await context.Brands.FindAsync(request.BrandId);
         if (brand == null)
@@ -56,8 +56,8 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IP
                 Gender = request.Gender,
                 InternalCode = internalCode,
                 ProductVariantCounter = 0,
-                CreatedBy = currentUser.UserId,
-                CreatedByName = currentUser.FullName
+                CreatedBy = ctx.UserId,
+                CreatedByName = ctx.FullName
             };
 
             context.Products.Add(product);
@@ -75,8 +75,8 @@ public class CreateProductUc(IInvDbContext context, ICurrentUser currentUser, IP
                     Description = pv.Description,
                     Price = pv.Price,
                     Sku = sku,
-                    CreatedBy = currentUser.UserId,
-                    CreatedByName = currentUser.FullName
+                    CreatedBy = ctx.UserId,
+                    CreatedByName = ctx.FullName
                 });
             }
 

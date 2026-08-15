@@ -6,9 +6,9 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Users.GetAllUsers;
 
-public class GetAllUsers(IAuthDbContext context, ICurrentUser currentUser)
+public class GetAllUsers(IAuthDbContext context)
 {
-    public async Task<Result<GetUsersResponse>> Execute(UserQueryDto request)
+    public async Task<Result<GetUsersResponse>> Execute(ActorContext ctx, UserQueryDto request)
     {
         var query = context.Users.AsQueryable();
 
@@ -46,7 +46,7 @@ public class GetAllUsers(IAuthDbContext context, ICurrentUser currentUser)
         }).ToListAsync();
 
         var activeUsers = await context.Users
-            .CountAsync(u => u.TenantId == currentUser.TenantId && u.IsActive);
+            .CountAsync(u => u.TenantId == ctx.TenantId && u.IsActive);
 
         return new GetUsersResponse
         {

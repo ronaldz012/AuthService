@@ -6,9 +6,9 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Categories.Create;
 
-public class CreateCategory(IInvDbContext context, ICurrentUser currentUser)
+public class CreateCategory(IInvDbContext context)
 {
-    public async Task<Result<CategoryCreatedResponse>> Execute(CreateCategoryRequest request)
+    public async Task<Result<CategoryCreatedResponse>> Execute(ActorContext ctx, CreateCategoryRequest request)
     {
         var existing = await context.Categories
             .AnyAsync(x => x.Name.ToLower() == request.Name.ToLower());
@@ -19,8 +19,8 @@ public class CreateCategory(IInvDbContext context, ICurrentUser currentUser)
         var category = new Category
         {
             Name = request.Name,
-            CreatedBy = currentUser.UserId,
-            CreatedByName = currentUser.FullName
+            CreatedBy = ctx.UserId,
+            CreatedByName = ctx.FullName
         };
         context.Add(category);
         await context.SaveChangesAsync();

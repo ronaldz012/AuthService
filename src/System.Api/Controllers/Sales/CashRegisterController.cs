@@ -1,4 +1,5 @@
 using System.Api.Result;
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Sales.Application.UseCases;
@@ -12,36 +13,36 @@ namespace System.Api.Controllers.Sales
     [ApiController]
     [Tags("Sales | CashRegisters")]
     [Authorize]
-    public class CashRegisterController(RegisterUseCases registerUseCases) : ControllerBase
+    public class CashRegisterController(RegisterUseCases registerUseCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPost("Open")]
         public async Task<IActionResult> Open([FromBody] OpenCashRegisterDto dto)
         {
-            return await registerUseCases.OpenCashRegister.Execute(dto).ToValueOrProblemDetails();
+            return await registerUseCases.OpenCashRegister.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpPost("Close")]
         public async Task<IActionResult> Close([FromBody] CloseCashRegisterDto dto)
         {
-            return await registerUseCases.CloseCashRegister.Execute(dto).ToValueOrProblemDetails();
+            return await registerUseCases.CloseCashRegister.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpGet("Current")]
         public async Task<IActionResult> Current()
         {
-            return await registerUseCases.GetCurrentRegister.Execute().ToValueOrProblemDetails();
+            return await registerUseCases.GetCurrentRegister.Execute(currentUser.ToActorContext()).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetClosureDetail([FromRoute] Guid id, [FromQuery] bool includeStock = false)
         {
-            return await registerUseCases.GetClosureDetail.Execute(id, includeStock).ToValueOrProblemDetails();
+            return await registerUseCases.GetClosureDetail.Execute(currentUser.ToActorContext(), id, includeStock).ToValueOrProblemDetails();
         }
 
         [HttpGet]
         public async Task<IActionResult> ListClosures([FromQuery] ClosuresQueryDto queryDto)
         {
-            return await registerUseCases.ListClosures.Execute(queryDto).ToValueOrProblemDetails();
+            return await registerUseCases.ListClosures.Execute(currentUser.ToActorContext(), queryDto).ToValueOrProblemDetails();
         }
     }
 }

@@ -6,9 +6,9 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Brands.CreateBrand;
 
-public class CreateBrandUc(IInvDbContext context, ICurrentUser currentUser)
+public class CreateBrandUc(IInvDbContext context)
 {
-    public async Task<Result<BrandResponse>> Execute(CreateBrandRequest request)
+    public async Task<Result<BrandResponse>> Execute(ActorContext ctx, CreateBrandRequest request)
     {
         var uniquePrefix = await context.Brands.AnyAsync(b => b.Prefix.ToLower() == request.Prefix.ToLower());
             if(uniquePrefix) return CreateBrandErrors.BrandPrefixAlreadyExists;
@@ -21,8 +21,8 @@ public class CreateBrandUc(IInvDbContext context, ICurrentUser currentUser)
             Name = request.Name,
             Description = request.Description,
             Prefix = request.Prefix,
-            CreatedBy = currentUser.UserId,
-            CreatedByName = currentUser.FullName
+            CreatedBy = ctx.UserId,
+            CreatedByName = ctx.FullName
         };
         context.Brands.Add(newBrand);
         await context.SaveChangesAsync();

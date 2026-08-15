@@ -12,13 +12,14 @@ namespace Test.Auth.Users;
 
 public class CreateUserTests
 {
-    private static CreateUser CreateSut(IAuthDbContext dbContext, ITenantConnectionContext tenantConnectionContext, ICurrentUser? currentUser = null)
+    private static ActorContext CreateActorContext()
+        => new(Guid.NewGuid(), Guid.NewGuid(), "Test User", Guid.Empty, []);
+
+    private static CreateUser CreateSut(IAuthDbContext dbContext, ITenantConnectionContext tenantConnectionContext)
     {
-        currentUser ??= Mock.Of<ICurrentUser>(u => u.UserId == Guid.NewGuid() && u.FullName == "Test User");
         return new CreateUser(
             dbContext,
             tenantConnectionContext,
-            currentUser,
             Mock.Of<IEmailVerificationService>(),
             Options.Create(new ProjectInfo
             {
@@ -82,7 +83,7 @@ public class CreateUserTests
             BranchRoles = [new UserBranchRoleDto { BranchId = branchId, RoleId = roleId }],
         };
 
-        var result = await sut.Execute(request);
+        var result = await sut.Execute(CreateActorContext(), request);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
@@ -143,7 +144,7 @@ public class CreateUserTests
             BranchRoles = [],
         };
 
-        var result = await sut.Execute(request);
+        var result = await sut.Execute(CreateActorContext(), request);
 
         Assert.Equal(CreateUserErrors.EmailOrUsernameTaken, result.Error);
     }
@@ -178,7 +179,7 @@ public class CreateUserTests
             BranchRoles = [],
         };
 
-        var result = await sut.Execute(request);
+        var result = await sut.Execute(CreateActorContext(), request);
 
         Assert.Equal(CreateUserErrors.EmailOrUsernameTaken, result.Error);
     }
@@ -208,7 +209,7 @@ public class CreateUserTests
             BranchRoles = [new UserBranchRoleDto { BranchId = branchId, RoleId = roleId }],
         };
 
-        var result = await sut.Execute(request);
+        var result = await sut.Execute(CreateActorContext(), request);
 
         Assert.Equal(CreateUserErrors.MissingRoles, result.Error);
     }

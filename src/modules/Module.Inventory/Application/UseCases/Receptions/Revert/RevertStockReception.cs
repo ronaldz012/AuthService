@@ -11,14 +11,13 @@ namespace Module.Inventory.Application.UseCases.Receptions.Revert;
 
 public class RevertStockReception(
     IInvDbContext context,
-    ICurrentUser currentUser,
     ILogger<RevertStockReception> logger)
 {
     private const int MaxReceptionAgeDays = 1;
 
-    public async Task<Result<StockReceptionRevertCheckDto>> Check(Guid id)
+    public async Task<Result<StockReceptionRevertCheckDto>> Check(ActorContext ctx, Guid id)
     {
-        var loadResult = await LoadWithVariantsAsync(id);
+        var loadResult = await LoadWithVariantsAsync(ctx, id);
         if (!loadResult.IsSuccess)
             return loadResult.Error;
 
@@ -33,9 +32,9 @@ public class RevertStockReception(
         };
     }
 
-    public async Task<Result<bool>> Execute(Guid id)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id)
     {
-        var loadResult = await LoadWithVariantsAsync(id);
+        var loadResult = await LoadWithVariantsAsync(ctx, id);
         if (!loadResult.IsSuccess)
             return loadResult.Error;
 
@@ -44,7 +43,8 @@ public class RevertStockReception(
         if (blockReason != RevertBlockReason.None)
             return ReasonError(blockReason);
 
-        var userId = currentUser.UserId;
+        var userId = ctx.UserId;
+        var userName = ctx.FullName;
         var branchId = reception.BranchId;
 
         await using var transaction = await context.Database.BeginTransactionAsync();
@@ -57,7 +57,7 @@ public class RevertStockReception(
                 variant.RemoveQuantity(item.QuantityReceived, branchId);
 
                 context.StockMovements.Add(StockMovement.CreateReceptionRevert(
-                    branchId, variant.Id, userId, currentUser.FullName, item.QuantityReceived, reception.Id));
+                    branchId, variant.Id, userId, userName, item.QuantityReceived, reception.Id));
             }
 
             reception.Status = ReceptionStatus.Reverted;
@@ -74,9 +74,9 @@ public class RevertStockReception(
         }
     }
 
-    private async Task<Result<(StockReception Reception, List<ProductVariant> Variants)>> LoadWithVariantsAsync(Guid id)
+    private async Task<Result<(StockReception Reception, List<ProductVariant> Variants)>> LoadWithVariantsAsync(ActorContext ctx, Guid id)
     {
-        var branchId = currentUser.BranchIds[0];
+        var branchId = ctx.BranchIds[0];
 
         var reception = await context.StockReceptions
             .Include(r => r.Items)

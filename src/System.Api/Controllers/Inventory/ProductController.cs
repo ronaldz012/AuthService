@@ -1,5 +1,6 @@
 using System.Api.Attributes;
 using System.Api.Result;
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Inventory.Application.UseCases.Products;
@@ -14,19 +15,19 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | Products")]
     [Authorize]
-    public class ProductController(ProductUseCases productUseCases) : ControllerBase
+    public class ProductController(ProductUseCases productUseCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPost]
         [RequireFeature("products", "create")]
         public async Task<IActionResult> CreateProduct([FromBody]  CreateProductRequest request)
         {
-            return await productUseCases.CreateProductUc.Execute(request).ToValueOrProblemDetails();
+            return await productUseCases.CreateProductUc.Execute(currentUser.ToActorContext(), request).ToValueOrProblemDetails();
         }
 
         [HttpGet]
         public async Task<IActionResult> GetProducts([FromQuery] ProductQueryDto request)
         {
-            return await productUseCases.GetProductsUc.Execute(request).ToValueOrProblemDetails();
+            return await productUseCases.GetProductsUc.Execute(currentUser.ToActorContext(), request).ToValueOrProblemDetails();
         }
 
         [HttpGet("Search")]
@@ -39,26 +40,26 @@ namespace System.Api.Controllers.Inventory
         [RequireFeature("products", "read", true)]
         public async Task<IActionResult> GetProduct([FromRoute] Guid id)
         {
-            return await productUseCases.ProductDetails.Execute(id).ToValueOrProblemDetails();
+            return await productUseCases.ProductDetails.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
         
 
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto request, [FromRoute] Guid id)
         {
-            return await productUseCases.UpdateProduct.Execute(request, id).ToValueOrProblemDetails();
+            return await productUseCases.UpdateProduct.Execute(currentUser.ToActorContext(), request, id).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
         public async Task<IActionResult> UpdateProductStatus([FromRoute] Guid id, [FromBody] UpdateProductStatusDto request)
         {
-            return await productUseCases.UpdateProductStatus.Execute(id, request).ToValueOrProblemDetails();
+            return await productUseCases.UpdateProductStatus.Execute(currentUser.ToActorContext(), id, request).ToValueOrProblemDetails();
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteProduct([FromRoute] Guid id)
         {
-            return await productUseCases.DeleteProduct.Execute(id).ToValueOrProblemDetails();
+            return await productUseCases.DeleteProduct.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
     }
 }

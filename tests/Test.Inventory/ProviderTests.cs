@@ -32,13 +32,8 @@ public class ProviderTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", Guid.Empty, []);
 
     private static async Task SeedProvider(TestAppDbContext ctx, Guid id, string name, bool isActive)
     {
@@ -87,8 +82,8 @@ public class ProviderTests
         using var ctx = CreateDbContext();
         await SeedProvider(ctx, ProviderId, "Old Name", true);
 
-        var sut = new UpdateProvider(ctx, CreateCurrentUser());
-        var result = await sut.Execute(ProviderId, new UpdateProviderRequest
+        var sut = new UpdateProvider(ctx);
+        var result = await sut.Execute(CreateActorContext(), ProviderId, new UpdateProviderRequest
         {
             Name = "New Name",
             ContactName = "Carlos",
@@ -115,8 +110,8 @@ public class ProviderTests
         await SeedProvider(ctx, ProviderId, "Original", true);
         await SeedProvider(ctx, Guid.NewGuid(), "Taken Name", true);
 
-        var sut = new UpdateProvider(ctx, CreateCurrentUser());
-        var result = await sut.Execute(ProviderId, new UpdateProviderRequest { Name = "Taken Name" });
+        var sut = new UpdateProvider(ctx);
+        var result = await sut.Execute(CreateActorContext(), ProviderId, new UpdateProviderRequest { Name = "Taken Name" });
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateProviderErrors.ProviderNameAlreadyExists, result.Error);
@@ -128,8 +123,8 @@ public class ProviderTests
         using var ctx = CreateDbContext();
         await SeedProvider(ctx, ProviderId, "Provider", true);
 
-        var sut = new UpdateProvider(ctx, CreateCurrentUser());
-        var result = await sut.ChangeStatus(ProviderId);
+        var sut = new UpdateProvider(ctx);
+        var result = await sut.ChangeStatus(CreateActorContext(), ProviderId);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value);
@@ -144,9 +139,9 @@ public class ProviderTests
     public async Task ToggleProvider_ShouldReturnNotFound_WhenMissing()
     {
         using var ctx = CreateDbContext();
-        var sut = new UpdateProvider(ctx, CreateCurrentUser());
+        var sut = new UpdateProvider(ctx);
 
-        var result = await sut.ChangeStatus(Guid.NewGuid());
+        var result = await sut.ChangeStatus(CreateActorContext(), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateProviderErrors.ProviderNotFound, result.Error);

@@ -1,4 +1,5 @@
 using System.Api.Result;
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace System.Api.Controllers.Inventory
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ColorController(ColoreUseCases useCases) : ControllerBase
+    public class ColorController(ColoreUseCases useCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] bool? includeInactive)
@@ -23,19 +24,19 @@ namespace System.Api.Controllers.Inventory
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateColorDto colorNameDto)
         {
-            return await useCases.createColor.Execute(colorNameDto.Name).ToValueOrProblemDetails();
+            return await useCases.createColor.Execute(currentUser.ToActorContext(), colorNameDto.Name).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
         public async Task<IActionResult> ToggleColorStatus([FromRoute] Guid id)
         {
-            return await useCases.UpdateColor.ChangeStatus(id).ToValueOrProblemDetails();
+            return await useCases.UpdateColor.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateColor([FromRoute] Guid id, [FromBody] UpdateColorDto dto)
         {
-            return await useCases.UpdateColor.Execute(id, dto).ToValueOrProblemDetails();
+            return await useCases.UpdateColor.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
         }
     }
 }

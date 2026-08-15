@@ -41,13 +41,8 @@ public class CatalogStatusTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", Guid.Empty, []);
 
     private static async Task SeedCatalog(TestAppDbContext ctx)
     {
@@ -184,14 +179,14 @@ public class CatalogStatusTests
         using var ctx = CreateDbContext();
         await SeedCatalog(ctx);
 
-        var sut = new UpdateBrand(ctx, CreateCurrentUser());
-        var result = await sut.ChangeStatus(BrandId);
+        var sut = new UpdateBrand(ctx);
+        var result = await sut.ChangeStatus(CreateActorContext(), BrandId);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value);
         Assert.False((await ctx.Brands.FindAsync(BrandId))!.IsActive);
 
-        var second = await sut.ChangeStatus(BrandId);
+        var second = await sut.ChangeStatus(CreateActorContext(), BrandId);
         Assert.True(second.IsSuccess);
         Assert.True(second.Value);
     }
@@ -202,8 +197,8 @@ public class CatalogStatusTests
         using var ctx = CreateDbContext();
         await SeedCatalog(ctx);
 
-        var sut = new UpdateCategory(ctx, CreateCurrentUser());
-        var result = await sut.ChangeStatus(CategoryId);
+        var sut = new UpdateCategory(ctx);
+        var result = await sut.ChangeStatus(CreateActorContext(), CategoryId);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value);
@@ -216,8 +211,8 @@ public class CatalogStatusTests
         using var ctx = CreateDbContext();
         await SeedCatalog(ctx);
 
-        var sut = new UpdateColor(ctx, CreateCurrentUser());
-        var result = await sut.ChangeStatus(ColorId);
+        var sut = new UpdateColor(ctx);
+        var result = await sut.ChangeStatus(CreateActorContext(), ColorId);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value);
@@ -230,8 +225,8 @@ public class CatalogStatusTests
         using var ctx = CreateDbContext();
         await SeedCatalog(ctx);
 
-        var sut = new UpdateSize(ctx, CreateCurrentUser());
-        var result = await sut.ChangeStatus(SizeId);
+        var sut = new UpdateSize(ctx);
+        var result = await sut.ChangeStatus(CreateActorContext(), SizeId);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value);
@@ -242,9 +237,9 @@ public class CatalogStatusTests
     public async Task UpdateBrandStatus_ShouldReturnNotFound_WhenMissing()
     {
         using var ctx = CreateDbContext();
-        var sut = new UpdateBrand(ctx, CreateCurrentUser());
+        var sut = new UpdateBrand(ctx);
 
-        var result = await sut.ChangeStatus(Guid.NewGuid());
+        var result = await sut.ChangeStatus(CreateActorContext(), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateBrandErrors.BrandNotFound, result.Error);
@@ -256,8 +251,8 @@ public class CatalogStatusTests
         using var ctx = CreateDbContext();
         await SeedCatalog(ctx);
 
-        var sut = new UpdateBrand(ctx, CreateCurrentUser());
-        var result = await sut.Execute(BrandId, new UpdateBrandDto { Name = "Nike Updated", Description = "New desc" });
+        var sut = new UpdateBrand(ctx);
+        var result = await sut.Execute(CreateActorContext(), BrandId, new UpdateBrandDto { Name = "Nike Updated", Description = "New desc" });
 
         Assert.True(result.IsSuccess);
         var brand = await ctx.Brands.FindAsync(BrandId);
@@ -274,8 +269,8 @@ public class CatalogStatusTests
         ctx.Brands.Add(new Brand { Id = Guid.NewGuid(), Name = "Adidas", Prefix = "ADI", CreatedBy = TenantId, CreatedByName = "Test User" });
         await ctx.SaveChangesAsync();
 
-        var sut = new UpdateBrand(ctx, CreateCurrentUser());
-        var result = await sut.Execute(BrandId, new UpdateBrandDto { Name = "Adidas" });
+        var sut = new UpdateBrand(ctx);
+        var result = await sut.Execute(CreateActorContext(), BrandId, new UpdateBrandDto { Name = "Adidas" });
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateBrandErrors.BrandNameAlreadyExists, result.Error);
@@ -287,8 +282,8 @@ public class CatalogStatusTests
         using var ctx = CreateDbContext();
         await SeedCatalog(ctx);
 
-        var sut = new UpdateCategory(ctx, CreateCurrentUser());
-        var result = await sut.Execute(CategoryId, new UpdateCategoryDto { Name = "Running", Description = "d" });
+        var sut = new UpdateCategory(ctx);
+        var result = await sut.Execute(CreateActorContext(), CategoryId, new UpdateCategoryDto { Name = "Running", Description = "d" });
 
         Assert.True(result.IsSuccess);
         var category = await ctx.Categories.FindAsync(CategoryId);
@@ -302,8 +297,8 @@ public class CatalogStatusTests
         using var ctx = CreateDbContext();
         await SeedCatalog(ctx);
 
-        var sut = new UpdateColor(ctx, CreateCurrentUser());
-        var result = await sut.Execute(ColorId, new UpdateColorDto { Name = "Negro Mate" });
+        var sut = new UpdateColor(ctx);
+        var result = await sut.Execute(CreateActorContext(), ColorId, new UpdateColorDto { Name = "Negro Mate" });
 
         Assert.True(result.IsSuccess);
         var color = await ctx.Colors.FindAsync(ColorId);
@@ -316,8 +311,8 @@ public class CatalogStatusTests
         using var ctx = CreateDbContext();
         await SeedCatalog(ctx);
 
-        var sut = new UpdateSize(ctx, CreateCurrentUser());
-        var result = await sut.Execute(SizeId, new UpdateSizeDto { Name = "42.5", SortOrder = 8 });
+        var sut = new UpdateSize(ctx);
+        var result = await sut.Execute(CreateActorContext(), SizeId, new UpdateSizeDto { Name = "42.5", SortOrder = 8 });
 
         Assert.True(result.IsSuccess);
         var size = await ctx.Sizes.FindAsync(SizeId);

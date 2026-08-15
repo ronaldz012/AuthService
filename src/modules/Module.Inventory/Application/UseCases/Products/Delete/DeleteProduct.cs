@@ -5,9 +5,9 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Products.Delete;
 
-public class DeleteProduct(IInvDbContext context, ICurrentUser currentUser)
+public class DeleteProduct(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(Guid id)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id)
     {
 
         var hasStock = await context.ProductVariants
@@ -23,8 +23,8 @@ public class DeleteProduct(IInvDbContext context, ICurrentUser currentUser)
             .Where(p => p.Id == id && p.DeletedAt == null)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(p => p.DeletedAt, DateTime.UtcNow)
-                .SetProperty(p => p.DeletedBy, currentUser.UserId)
-                .SetProperty(p => p.DeletedByName, currentUser.FullName));
+                .SetProperty(p => p.DeletedBy, ctx.UserId)
+                .SetProperty(p => p.DeletedByName, ctx.FullName));
 
         if (affectedRows == 0) 
             return DeleteProductErrors.ProductNotFound;

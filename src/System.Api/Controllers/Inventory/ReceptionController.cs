@@ -1,4 +1,5 @@
 using System.Api.Result;
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Inventory.Application.UseCases.Receptions;
@@ -11,24 +12,24 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | Receptions")]
     [Authorize]
-    public class ReceptionController(ReceptionUseCases service) : ControllerBase
+    public class ReceptionController(ReceptionUseCases service, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> CreateReception(CreateStockReceptionDto dto)
         {
-            return await service.CreateReceptionUc.Execute(dto).ToValueOrProblemDetails();
+            return await service.CreateReceptionUc.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
         public async Task<IActionResult> ListReceptions([FromQuery] ReceptionQueryDto dto)
         {
-            return await service.ListReceptions.Execute(dto).ToValueOrProblemDetails();
+            return await service.ListReceptions.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetReception([FromRoute] Guid id)
         {
-            return await service.GetReception.Execute(id).ToValueOrProblemDetails();
+            return await service.GetReception.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}/labels")]
@@ -40,13 +41,13 @@ namespace System.Api.Controllers.Inventory
         [HttpGet("{id:guid}/can-revert")]
         public async Task<IActionResult> CheckCanRevert([FromRoute] Guid id)
         {
-            return await service.RevertStockReception.Check(id).ToValueOrProblemDetails();
+            return await service.RevertStockReception.Check(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpPost("{id:guid}/revert")]
         public async Task<IActionResult> Revert([FromRoute] Guid id)
         {
-            return await service.RevertStockReception.Execute(id).ToValueOrProblemDetails();
+            return await service.RevertStockReception.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
     }
 }

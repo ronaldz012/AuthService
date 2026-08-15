@@ -26,15 +26,8 @@ public class CreateSaleStockTests
     private static AppDbContext CreateDbContext(ITenantConnectionContext tenant, string? dbName = null)
         => TestSalesDbContextFactory.Create(tenant, dbName ?? $"SalesStock_{Guid.NewGuid()}");
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        mock.Setup(u => u.BranchId).Returns(BranchId);
-        mock.Setup(u => u.BranchIds).Returns([BranchId]);
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", BranchId, [BranchId]);
 
     private static void SeedCatalog(AppDbContext ctx)
     {
@@ -81,7 +74,7 @@ public class CreateSaleStockTests
     private static CreateSale CreateSut(AppDbContext ctx)
     {
         var inventoryService = new InventoryIntegrationService(ctx);
-        return new CreateSale(ctx, CreateCurrentUser(), inventoryService, Mock.Of<ILogger<CreateSale>>());
+        return new CreateSale(ctx, inventoryService, Mock.Of<ILogger<CreateSale>>());
     }
 
     private static CreateSaleDto CreateDto(int quantity)
@@ -102,7 +95,7 @@ public class CreateSaleStockTests
         SeedCatalog(ctx);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateDto(3));
+        var result = await sut.Execute(CreateActorContext(), CreateDto(3));
 
         Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Code} - {result.Error?.Message}");
 
@@ -127,7 +120,7 @@ public class CreateSaleStockTests
         SeedCatalog(ctx);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateDto(50));
+        var result = await sut.Execute(CreateActorContext(), CreateDto(50));
 
         Assert.False(result.IsSuccess);
 

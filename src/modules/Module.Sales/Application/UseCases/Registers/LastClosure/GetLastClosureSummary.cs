@@ -8,14 +8,13 @@ namespace Module.Sales.Application.UseCases.Registers.LastClosure;
 
 public class GetLastClosureSummary(
     ISalesDbContext context,
-    IInventoryIntegrationService inventoryService,
-    ICurrentUser currentUser)
+    IInventoryIntegrationService inventoryService)
 {
-    public async Task<Result<LastClosureSummaryDto>> Execute()
+    public async Task<Result<LastClosureSummaryDto>> Execute(ActorContext ctx)
     {
         var closure = await context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.BranchId == currentUser.BranchId && !c.IsOpen)
+            .Where(c => c.BranchId == ctx.BranchId && !c.IsOpen)
             .OrderByDescending(c => c.OpenAt)
             .Select(c => new
             {
@@ -33,13 +32,13 @@ public class GetLastClosureSummary(
 
         var variantIds = await context.Sales
             .AsNoTracking()
-            .Where(s => s.CashRegisterClosureId == closure.Id && s.BranchId == currentUser.BranchId)
+            .Where(s => s.CashRegisterClosureId == closure.Id && s.BranchId == ctx.BranchId)
             .SelectMany(s => s.SaleItems)
             .Select(si => si.ProductVariantId)
             .Distinct()
             .ToListAsync();
 
-        var stockResult = await inventoryService.GetVariantsWithStock(variantIds, currentUser.BranchId);
+        var stockResult = await inventoryService.GetVariantsWithStock(variantIds, ctx.BranchId);
         if (!stockResult.IsSuccess)
             return stockResult.Error;
 

@@ -6,9 +6,9 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.Create;
 
-public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentUser, IProductCodeService codeService)
+public class CreateProductVariantUc(IInvDbContext context, IProductCodeService codeService)
 {
-    public async Task<Result<List<ProductVariantCreatedDto>>> Execute(Guid productId, CreateProductVariantsRequest request)
+    public async Task<Result<List<ProductVariantCreatedDto>>> Execute(ActorContext ctx, Guid productId, CreateProductVariantsRequest request)
     {
         var dto = request.Variants;
 
@@ -83,8 +83,8 @@ public class CreateProductVariantUc(IInvDbContext context, ICurrentUser currentU
                     Description = x.Description,
                     Price = x.Price,
                     Sku = sku,
-                    CreatedBy = currentUser.UserId,
-                    CreatedByName = currentUser.FullName
+                    CreatedBy = ctx.UserId,
+                    CreatedByName = ctx.FullName
                 });
             }
 

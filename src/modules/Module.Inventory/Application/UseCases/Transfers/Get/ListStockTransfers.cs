@@ -7,11 +7,11 @@ using Module.Inventory.Domain.Transfers;
 
 namespace Module.Inventory.Application.UseCases.Transfers.Get;
 
-public class ListStockTransfers(IInvDbContext context, IUserIntegrationService userIntegrationService, ICurrentUser currentUser, IBranchService branchService)
+public class ListStockTransfers(IInvDbContext context, IUserIntegrationService userIntegrationService, IBranchService branchService)
 {
-    public async Task<Result<PagedResultDto<ListStockTransferDto>>> Execute(StockTransferQueryDto queryDto)
+    public async Task<Result<PagedResultDto<ListStockTransferDto>>> Execute(ActorContext ctx, StockTransferQueryDto queryDto)
     {
-        var currentBranchId = currentUser.BranchIds[0];
+        var currentBranchId = ctx.BranchIds[0];
 
         IQueryable<StockTransfer> query = context.StockTransfers.AsQueryable();
 

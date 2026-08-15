@@ -9,15 +9,15 @@ namespace Module.Inventory.Application.UseCases.StockMovements.Get;
 
 public class ListStockMovements(
     IInvDbContext context,
-    ICurrentUser currentUser,
     IUserIntegrationService userIntegrationService,
     IBranchService branchService)
 {
     public async Task<Result<PagedResultDto<ListStockMovementDto>>> Execute(
+        ActorContext ctx,
         Guid productVariantId,
         StockMovementQueryDto queryDto)
     {
-        var currentBranchId = currentUser.BranchId;
+        var currentBranchId = ctx.BranchId;
 
         IQueryable<StockMovement> query = context.StockMovements
             .Where(sm => sm.ProductVariantId == productVariantId

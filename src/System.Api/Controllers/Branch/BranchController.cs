@@ -1,4 +1,5 @@
 using System.Api.Result;
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Auth.Application.UseCases.Branches;
@@ -12,12 +13,12 @@ namespace System.Api.Controllers.Branch
     [Route("api/[controller]")]
     [ApiController]
     [Tags("Branch")]
-    public class BranchController (BranchesUseCases features): ControllerBase
+    public class BranchController (BranchesUseCases features, ICurrentUser currentUser): ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> CreateBranch([FromBody]CreateBranchRequest request)
         { 
-            return await features.CreateBranch.Execute(request).ToValueOrProblemDetails();
+            return await features.CreateBranch.Execute(currentUser.ToActorContext(), request).ToValueOrProblemDetails();
         }
 
         [HttpGet]

@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.GetById;
-public class GetProductVariantDetails(IInvDbContext context, ICurrentUser currentUser)
+public class GetProductVariantDetails(IInvDbContext context)
 {
-public async Task<Result<ProductVariantDetailsDto>> Execute(Guid id)
+public async Task<Result<ProductVariantDetailsDto>> Execute(ActorContext ctx, Guid id)
 {
-    var currentBranchId = currentUser.BranchIds.First();
+    var currentBranchId = ctx.BranchIds.First();
     
     var result = await context.ProductVariants
         .Where(pv => pv.Id == id)

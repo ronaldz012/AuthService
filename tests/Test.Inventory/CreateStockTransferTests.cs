@@ -33,14 +33,8 @@ public class CreateStockTransferTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        mock.Setup(u => u.BranchIds).Returns([FromBranchId]);
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", FromBranchId, [FromBranchId]);
 
     private static async Task SeedVariantWithStock(TestAppDbContext ctx, int stock, bool productActive = true)
     {
@@ -84,7 +78,7 @@ public class CreateStockTransferTests
     }
 
     private static CreateStockTransfer CreateSut(TestAppDbContext ctx)
-        => new(ctx, CreateCurrentUser());
+        => new(ctx);
 
     [Fact]
     public async Task Execute_ShouldCreatePendingTransfer_WithoutMovingStock()
@@ -93,7 +87,7 @@ public class CreateStockTransferTests
         await SeedVariantWithStock(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateDto(3, ToBranchId));
+        var result = await sut.Execute(CreateActorContext(), CreateDto(3, ToBranchId));
 
         Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Code} - {result.Error?.Message}");
 
@@ -115,7 +109,7 @@ public class CreateStockTransferTests
         await SeedVariantWithStock(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateDto(3, FromBranchId));
+        var result = await sut.Execute(CreateActorContext(), CreateDto(3, FromBranchId));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(CreateStockTransferErrors.SameBranchTransfer, result.Error);
@@ -128,7 +122,7 @@ public class CreateStockTransferTests
         await SeedVariantWithStock(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(new CreateStockTransferDto
+        var result = await sut.Execute(CreateActorContext(), new CreateStockTransferDto
         {
             ToBranchId = ToBranchId,
             Items = [new StockTransferItemDto { ProductVariantId = Guid.NewGuid(), QuantityRequested = 1 }]
@@ -145,7 +139,7 @@ public class CreateStockTransferTests
         await SeedVariantWithStock(ctx, 2);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateDto(5, ToBranchId));
+        var result = await sut.Execute(CreateActorContext(), CreateDto(5, ToBranchId));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(CreateStockTransferErrors.InsufficientStock, result.Error);
@@ -158,7 +152,7 @@ public class CreateStockTransferTests
         await SeedVariantWithStock(ctx, 10, productActive: false);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateDto(1, ToBranchId));
+        var result = await sut.Execute(CreateActorContext(), CreateDto(1, ToBranchId));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(CreateStockTransferErrors.ProductInactive, result.Error);

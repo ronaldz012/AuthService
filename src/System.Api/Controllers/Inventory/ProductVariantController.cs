@@ -1,4 +1,5 @@
 using System.Api.Result;
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Inventory.Application.UseCases.Products.Create;
@@ -15,52 +16,52 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | ProductVariants")]
     [Authorize]
-    public class ProductVariantController(ProductVariantUseCases useCases, StockMovementUseCases stockMovementUseCases) : ControllerBase
+    public class ProductVariantController(ProductVariantUseCases useCases, StockMovementUseCases stockMovementUseCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateProductVariant([FromRoute] Guid id,[FromBody]UpdateProductVariantDto dto)
         {
-            return await useCases.UpdateProductVariant.Execute(dto, id).ToValueOrProblemDetails();
+            return await useCases.UpdateProductVariant.Execute(currentUser.ToActorContext(), dto, id).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}")]
         public async Task<IActionResult> UpdateStock([FromRoute] Guid id, [FromBody] UpdateProductVariantStockDto dto)
         {
-            return await useCases.CorrectProductVariantStock.Execute(dto, id).ToValueOrProblemDetails();
+            return await useCases.CorrectProductVariantStock.Execute(currentUser.ToActorContext(), dto, id).ToValueOrProblemDetails();
         }
         [HttpGet]
         public async Task<IActionResult> GetVariantProductByCode([FromQuery] string request)
         {
-            return await useCases.GetProductVariantByCode.Execute(request).ToValueOrProblemDetails();
+            return await useCases.GetProductVariantByCode.Execute(currentUser.ToActorContext(), request).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}/details")]
         public async Task<IActionResult> GeProductVariantById([FromRoute] Guid id)
         {
-            return await useCases.GetProductVariantDetails.Execute(id).ToValueOrProblemDetails();
+            return await useCases.GetProductVariantDetails.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
         [HttpPost("{productId:guid}")]
         public async Task<IActionResult> CreateProductVariants([FromRoute]Guid productId, [FromBody] CreateProductVariantsRequest request)
         {
-            return await useCases.CreateProductVariantUc.Execute(productId, request).ToValueOrProblemDetails();
+            return await useCases.CreateProductVariantUc.Execute(currentUser.ToActorContext(), productId, request).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}/can-delete")]
         public async Task<IActionResult> CanDeleteVariant([FromRoute] Guid id)
         {
-            return await useCases.DeleteProductVariantUc.Check(id).ToValueOrProblemDetails();
+            return await useCases.DeleteProductVariantUc.Check(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteProductVariant([FromRoute] Guid id)
         {
-            return await useCases.DeleteProductVariantUc.Execute(id).ToValueOrProblemDetails();
+            return await useCases.DeleteProductVariantUc.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}/movements")]
         public async Task<IActionResult> GetProductVariantMovements([FromRoute] Guid id, [FromQuery] StockMovementQueryDto query)
         {
-            return await stockMovementUseCases.ListStockMovements.Execute(id, query).ToValueOrProblemDetails();
+            return await stockMovementUseCases.ListStockMovements.Execute(currentUser.ToActorContext(), id, query).ToValueOrProblemDetails();
         }
     }
 }

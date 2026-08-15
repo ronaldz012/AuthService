@@ -10,13 +10,13 @@ namespace Module.Inventory.Application.UseCases.Receptions.Create;
 
 public class CreateReceptionUc(
     IInvDbContext context,
-    ICurrentUser currentUser,
     ILogger<CreateReceptionUc> logger)
 {
-    public async Task<Result<StockReceptionResultDto>> Execute(CreateStockReceptionDto dto)
+    public async Task<Result<StockReceptionResultDto>> Execute(ActorContext ctx, CreateStockReceptionDto dto)
     {
-        var userId = currentUser.UserId;
-        var branchId = currentUser.BranchIds[0];
+        var userId = ctx.UserId;
+        var branchId = ctx.BranchId;
+        var userName = ctx.FullName;
 
         var variantIds = dto.Items.Select(x => x.ProductVariantId).ToList();
 
@@ -48,7 +48,7 @@ public class CreateReceptionUc(
 
         try
         {
-            var reception = StockReception.Create(branchId, userId, currentUser.FullName, dto.Notes, dto.ProviderId);
+            var reception = StockReception.Create(branchId, userId, userName, dto.Notes, dto.ProviderId);
             var stockMovements = new List<StockMovement>();
             var variantMap = variants.ToDictionary(v => v.Id);
 
@@ -56,11 +56,11 @@ public class CreateReceptionUc(
             {
                 var variant = variantMap[item.ProductVariantId];
 
-                reception.AddExistingVariant(variant.Id, userId, currentUser.FullName, item.QuantityReceived, item.UnitCost);
-                variant.AddQuantity(item.QuantityReceived, branchId, userId, currentUser.FullName);
+                reception.AddExistingVariant(variant.Id, userId, userName, item.QuantityReceived, item.UnitCost);
+                variant.AddQuantity(item.QuantityReceived, branchId, userId, userName);
 
                 stockMovements.Add(StockMovement.CreateReception(
-                    branchId, variant.Id, userId, currentUser.FullName, item.QuantityReceived, reception.Id));
+                    branchId, variant.Id, userId, userName, item.QuantityReceived, reception.Id));
             }
 
             context.StockReceptions.Add(reception);

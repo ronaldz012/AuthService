@@ -5,9 +5,9 @@ using Module.Sales.Application.Abstraction;
 
 namespace Module.Sales.Application.UseCases.Movements.Update;
 
-public class UpdateMovement(ISalesDbContext context, ICurrentUser currentUser)
+public class UpdateMovement(ISalesDbContext context)
 {
-    public async Task<Result<bool>> Execute(Guid id, UpdateMovementDto dto)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id, UpdateMovementDto dto)
     {
         var movement = await context.CashRegisterMovements
             .Include(m => m.CashRegisterClosure)
@@ -19,7 +19,7 @@ public class UpdateMovement(ISalesDbContext context, ICurrentUser currentUser)
         if (!movement.CashRegisterClosure.IsOpen)
             return UpdateMovementErrors.ClosureClosed;
 
-        movement.Update(dto.Amount, dto.Description, currentUser.UserId, currentUser.FullName);
+        movement.Update(dto.Amount, dto.Description, ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
 

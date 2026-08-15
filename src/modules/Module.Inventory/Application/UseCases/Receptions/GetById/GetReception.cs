@@ -5,11 +5,11 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Receptions.GetById;
 
-public class GetReception(IInvDbContext context, ICurrentUser currentUser)
+public class GetReception(IInvDbContext context)
 {
-    public async Task<Result<StockReceptionDetailDto>> Execute(Guid id)
+    public async Task<Result<StockReceptionDetailDto>> Execute(ActorContext ctx, Guid id)
     {
-        var currentBranch = currentUser.BranchIds[0];
+        var currentBranch = ctx.BranchIds[0];
        
         var reception =  await context.StockReceptions
             .Where(r => r.Id == id &&  r.BranchId == currentBranch)

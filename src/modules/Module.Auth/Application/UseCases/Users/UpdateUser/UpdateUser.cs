@@ -6,9 +6,9 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Users.UpdateUser;
 
-public class UpdateUser(IAuthDbContext context, ICurrentUser currentUser)
+public class UpdateUser(IAuthDbContext context)
 {
-    public async Task<Result<UpdateUserResponse>> Execute(Guid id, UpdateUserRequest dto)
+    public async Task<Result<UpdateUserResponse>> Execute(ActorContext ctx, Guid id, UpdateUserRequest dto)
     {
         var user = await context.Users
             .Include(u => u.UserBranchRoles)
@@ -46,7 +46,7 @@ public class UpdateUser(IAuthDbContext context, ICurrentUser currentUser)
 
             var toAdd = dto.BranchRoles
                 .Where(br => !existing.Any(e => e.BranchId == br.BranchId && e.RoleId == br.RoleId))
-                .Select(br => UserBranchRole.Create(user.Id, br.BranchId, br.RoleId, currentUser.UserId, currentUser.FullName))
+                .Select(br => UserBranchRole.Create(user.Id, br.BranchId, br.RoleId, ctx.UserId, ctx.FullName))
                 .ToList();
 
             foreach (var item in toRemove)
@@ -56,7 +56,7 @@ public class UpdateUser(IAuthDbContext context, ICurrentUser currentUser)
                 user.UserBranchRoles.Add(item);
         }
 
-        user.UpdateProfile(dto.FirstName, dto.LastName, dto.Ci, dto.Nationality, dto.BirthDate, currentUser.UserId, currentUser.FullName);
+        user.UpdateProfile(dto.FirstName, dto.LastName, dto.Ci, dto.Nationality, dto.BirthDate, ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
 

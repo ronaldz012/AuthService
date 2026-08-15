@@ -6,13 +6,13 @@ using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Registers.TodaySales;
 
-public class GetTodaySales(ISalesDbContext context, ICurrentUser currentUser)
+public class GetTodaySales(ISalesDbContext context)
 {
-    public async Task<Result<TodaySalesDto>> Execute()
+    public async Task<Result<TodaySalesDto>> Execute(ActorContext ctx)
     {
         var closure = await context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.BranchId == currentUser.BranchId && c.IsOpen)
+            .Where(c => c.BranchId == ctx.BranchId && c.IsOpen)
             .Select(c => new
             {
                 c.Id,

@@ -5,9 +5,9 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.Delete;
 
-public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentUser)
+public class DeleteProductVariantUc(IInvDbContext context)
 {
-    public async Task<Result<ProductVariantDeleteCheckDto>> Check(Guid id)
+    public async Task<Result<ProductVariantDeleteCheckDto>> Check(ActorContext ctx, Guid id)
     {
         var data = await context.ProductVariants
             .Where(x => x.Id == id)
@@ -33,7 +33,7 @@ public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentU
         };
     }
 
-    public async Task<Result<bool>> Execute(Guid id)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id)
     {
         // 1. Traemos la entidad trackeada y el cálculo en un solo viaje a la base de datos
         var variantData = await context.ProductVariants
@@ -56,7 +56,7 @@ public class DeleteProductVariantUc(IInvDbContext context, ICurrentUser currentU
             return DeleteProductVariantErrors.VariantHasTransfers;
 
         // 4. Ejecutamos el método de tu modelo de dominio (Mantiene encapsulamiento)
-        variantData.Entity.SoftDelete(currentUser.UserId, currentUser.FullName);
+        variantData.Entity.SoftDelete(ctx.UserId, ctx.FullName);
 
         // 5. Persistimos los cambios en la base de datos
         var rowsAffected = await context.SaveChangesAsync();

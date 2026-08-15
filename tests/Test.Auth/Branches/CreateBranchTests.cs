@@ -2,7 +2,6 @@ using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Domain;
-using Moq;
 
 namespace Test.Auth.Branches;
 
@@ -38,9 +37,7 @@ public class CreateBranchTests
             OwnerId = Guid.NewGuid()
         });
         await dbContext.SaveChangesAsync();
-
-        var currentUser = Mock.Of<ICurrentUser>(u => u.TenantId == tenantId && u.UserId == Guid.NewGuid());
-        var sut = new CreateBranch(dbContext, currentUser);
+        var sut = new CreateBranch(dbContext);
 
         var request = new CreateBranchRequest
         {
@@ -51,7 +48,7 @@ public class CreateBranchTests
             Type = BranchType.Warehouse,
         };
 
-        var result = await sut.Execute(request);
+        var result = await sut.Execute(new ActorContext(tenantId, Guid.NewGuid(), "Test User", Guid.Empty, []), request);
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
@@ -71,11 +68,9 @@ public class CreateBranchTests
         var tenantId = Guid.NewGuid();
         var tenantContext = TestAuthDbContextFactory.CreateTenantContext(tenantId);
         using var dbContext = TestAuthDbContextFactory.Create(tenantContext);
+        var sut = new CreateBranch(dbContext);
 
-        var currentUser = Mock.Of<ICurrentUser>(u => u.TenantId == tenantId);
-        var sut = new CreateBranch(dbContext, currentUser);
-
-        var result = await sut.Execute(new CreateBranchRequest
+        var result = await sut.Execute(new ActorContext(tenantId, Guid.NewGuid(), "Test User", Guid.Empty, []), new CreateBranchRequest
         {
             Name = "Test Branch",
             Place = "Test Place",

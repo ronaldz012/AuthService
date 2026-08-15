@@ -6,13 +6,13 @@ using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Registers.List;
 
-public class ListClosures(ISalesDbContext context, ICurrentUser currentUser)
+public class ListClosures(ISalesDbContext context)
 {
-    public async Task<Result<PagedResultDto<ClosureListDto>>> Execute(ClosuresQueryDto queryDto)
+    public async Task<Result<PagedResultDto<ClosureListDto>>> Execute(ActorContext ctx, ClosuresQueryDto queryDto)
     {
         var query = context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.BranchId == currentUser.BranchId);
+            .Where(c => c.BranchId == ctx.BranchId);
 
         if (queryDto.DateFrom.HasValue)
             query = query.Where(c => c.OpenAt >= queryDto.DateFrom.Value);

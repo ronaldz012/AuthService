@@ -6,18 +6,18 @@ using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Movements.Create;
 
-public class CreateMovement(ISalesDbContext context, ICurrentUser currentUser)
+public class CreateMovement(ISalesDbContext context)
 {
-    public async Task<Result<Guid>> Execute(CreateMovementDto dto)
+    public async Task<Result<Guid>> Execute(ActorContext ctx, CreateMovementDto dto)
     {
         var closure = await context.CashRegisterClosures
-            .FirstOrDefaultAsync(c => c.BranchId == currentUser.BranchId && c.IsOpen);
+            .FirstOrDefaultAsync(c => c.BranchId == ctx.BranchId && c.IsOpen);
 
         if (closure is null)
             return CreateMovementErrors.NoOpenClosure;
 
         var movement = CashRegisterMovement.Create(
-            closure.Id, dto.Amount, dto.Description, CashRegisterMovementType.Outflow, currentUser.UserId, currentUser.FullName);
+            closure.Id, dto.Amount, dto.Description, CashRegisterMovementType.Outflow, ctx.UserId, ctx.FullName);
 
         context.CashRegisterMovements.Add(movement);
         await context.SaveChangesAsync();

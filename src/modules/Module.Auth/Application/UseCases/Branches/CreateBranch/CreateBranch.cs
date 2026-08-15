@@ -6,11 +6,11 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Branches.CreateBranch;
 
-public class CreateBranch(IAuthDbContext context, ICurrentUser currentUser)
+public class CreateBranch(IAuthDbContext context)
 {
-    public async Task<Result<BranchCreatedResponse>> Execute(CreateBranchRequest request)
+    public async Task<Result<BranchCreatedResponse>> Execute(ActorContext ctx, CreateBranchRequest request)
     {
-        var tenantId = currentUser.TenantId;
+        var tenantId = ctx.TenantId;
 
         var planAllowedKeys = await context.Tenants
             .Where(t => t.Id == tenantId)

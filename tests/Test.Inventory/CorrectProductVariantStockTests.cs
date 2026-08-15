@@ -31,14 +31,8 @@ public class CorrectProductVariantStockTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        mock.Setup(u => u.BranchIds).Returns([BranchId]);
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", BranchId, [BranchId]);
 
     private static async Task SeedVariant(TestAppDbContext ctx, int stock)
     {
@@ -72,7 +66,7 @@ public class CorrectProductVariantStockTests
     }
 
     private static CorrectProductVariantStock CreateSut(TestAppDbContext ctx)
-        => new(ctx, CreateCurrentUser());
+        => new(ctx);
 
     private static async Task<decimal> MovementSum(TestAppDbContext ctx)
         => await ctx.StockMovements
@@ -86,7 +80,7 @@ public class CorrectProductVariantStockTests
         await SeedVariant(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(new UpdateProductVariantStockDto { Stock = 15, Notes = "Ajuste" }, VariantId);
+        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 15, Notes = "Ajuste" }, VariantId);
 
         Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Code} - {result.Error?.Message}");
 
@@ -107,7 +101,7 @@ public class CorrectProductVariantStockTests
         await SeedVariant(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(new UpdateProductVariantStockDto { Stock = 3, Notes = "Baja" }, VariantId);
+        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 3, Notes = "Baja" }, VariantId);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(3, (await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == VariantId)).Stock);
@@ -121,7 +115,7 @@ public class CorrectProductVariantStockTests
         await SeedVariant(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(new UpdateProductVariantStockDto { Stock = 10, Notes = "Sin cambio" }, VariantId);
+        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 10, Notes = "Sin cambio" }, VariantId);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(10, (await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == VariantId)).Stock);
@@ -134,7 +128,7 @@ public class CorrectProductVariantStockTests
         using var ctx = CreateDbContext();
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(new UpdateProductVariantStockDto { Stock = 5, Notes = "Ajuste" }, Guid.NewGuid());
+        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 5, Notes = "Ajuste" }, Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
         Assert.Equal(CorrectProductVariantStockErrors.VariantNotFound, result.Error);
@@ -147,7 +141,7 @@ public class CorrectProductVariantStockTests
         await SeedVariant(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(new UpdateProductVariantStockDto { Stock = 15, Notes = "" }, VariantId);
+        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 15, Notes = "" }, VariantId);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(CorrectProductVariantStockErrors.StockCorrectionFailed, result.Error);

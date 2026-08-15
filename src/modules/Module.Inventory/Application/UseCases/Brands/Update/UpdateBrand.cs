@@ -5,9 +5,9 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Brands.Update;
 
-public class UpdateBrand(IInvDbContext context, ICurrentUser currentUser)
+public class UpdateBrand(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(Guid id, UpdateBrandDto dto)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id, UpdateBrandDto dto)
     {
         var brand = await context.Brands.FirstOrDefaultAsync(b => b.Id == id);
         if (brand is null)
@@ -23,19 +23,19 @@ public class UpdateBrand(IInvDbContext context, ICurrentUser currentUser)
                 return UpdateBrandErrors.BrandNameAlreadyExists;
         }
 
-        brand.Update(newName, dto.Description ?? brand.Description, currentUser.UserId, currentUser.FullName);
+        brand.Update(newName, dto.Description ?? brand.Description, ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<Result<bool>> ChangeStatus(Guid id)
+    public async Task<Result<bool>> ChangeStatus(ActorContext ctx, Guid id)
     {
         var brand = await context.Brands.FirstOrDefaultAsync(b => b.Id == id);
         if (brand is null)
             return UpdateBrandErrors.BrandNotFound;
 
-        brand.ToggleActive(currentUser.UserId, currentUser.FullName);
+        brand.ToggleActive(ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return brand.IsActive;

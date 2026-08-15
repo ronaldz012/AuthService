@@ -5,11 +5,11 @@ using Module.Sales.Application.Abstraction;
 
 namespace Module.Sales.Application.UseCases.Sales.Get;
 
-public class GetListSales(ISalesDbContext context, ICurrentUser currentUser)
+public class GetListSales(ISalesDbContext context)
 {
-    public async Task<Result<PagedResultDto<SaleListDto>>> Execute(SalesQueryDto queryDto)
+    public async Task<Result<PagedResultDto<SaleListDto>>> Execute(ActorContext ctx, SalesQueryDto queryDto)
     {
-        var currentBranch = currentUser.BranchIds[0];
+        var currentBranch = ctx.BranchIds[0];
 
         var query = context.Sales
             .AsNoTracking()

@@ -19,6 +19,10 @@ public class CreateProductTests
     private static readonly Guid CategoryId = Guid.NewGuid();
     private static readonly Guid ColorId = Guid.NewGuid();
     private static readonly Guid SizeId = Guid.NewGuid();
+    private static readonly Guid UserId = Guid.NewGuid();
+
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", Guid.Empty, []);
 
     private static IProductCodeService CreateCodeService(string internalCode, string sku)
     {
@@ -33,12 +37,9 @@ public class CreateProductTests
     {
         using var ctx = CreateDbContext();
         SeedCategory(ctx);
-        var currentUser = new Mock<ICurrentUser>();
-        currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
-        currentUser.Setup(u => u.FullName).Returns("Test User");
-        var sut = new CreateProductUc(ctx, currentUser.Object, Mock.Of<IProductCodeService>());
+        var sut = new CreateProductUc(ctx, Mock.Of<IProductCodeService>());
 
-        var result = await sut.Execute(new CreateProductRequest
+        var result = await sut.Execute(CreateActorContext(), new CreateProductRequest
         {
             Name = "Test Product",
             BrandId = Guid.NewGuid(),
@@ -55,12 +56,9 @@ public class CreateProductTests
         using var ctx = CreateDbContext();
         SeedBrand(ctx);
         SeedCategory(ctx);
-        var currentUser = new Mock<ICurrentUser>();
-        currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
-        currentUser.Setup(u => u.FullName).Returns("Test User");
-        var sut = new CreateProductUc(ctx, currentUser.Object, Mock.Of<IProductCodeService>());
+        var sut = new CreateProductUc(ctx, Mock.Of<IProductCodeService>());
 
-        var result = await sut.Execute(new CreateProductRequest
+        var result = await sut.Execute(CreateActorContext(), new CreateProductRequest
         {
             Name = "Test Product",
             BrandId = BrandId,
@@ -82,13 +80,10 @@ public class CreateProductTests
         SeedCategory(ctx);
         SeedColor(ctx);
         SeedSize(ctx);
-        var currentUser = new Mock<ICurrentUser>();
-        currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
-        currentUser.Setup(u => u.FullName).Returns("Test User");
         var codeService = CreateCodeService("BRD-1", "BRD-1-001");
-        var sut = new CreateProductUc(ctx, currentUser.Object, codeService);
+        var sut = new CreateProductUc(ctx, codeService);
 
-        var result = await sut.Execute(new CreateProductRequest
+        var result = await sut.Execute(CreateActorContext(), new CreateProductRequest
         {
             Name = "Test Product",
             Description = "A test product",
@@ -123,13 +118,10 @@ public class CreateProductTests
         SeedCategory(ctx);
         SeedColor(ctx);
         SeedSize(ctx);
-        var currentUser = new Mock<ICurrentUser>();
-        currentUser.Setup(u => u.UserId).Returns(Guid.NewGuid());
-        currentUser.Setup(u => u.FullName).Returns("Test User");
         var codeService = CreateCodeService("BRD-1", "BRD-1-001");
-        var sut = new CreateProductUc(ctx, currentUser.Object, codeService);
+        var sut = new CreateProductUc(ctx, codeService);
 
-        var first = await sut.Execute(new CreateProductRequest
+        var first = await sut.Execute(CreateActorContext(), new CreateProductRequest
         {
             Name = "Test Product",
             BrandId = BrandId,
@@ -141,7 +133,7 @@ public class CreateProductTests
         });
         Assert.True(first.IsSuccess, $"Expected success but got: {first.Error?.Code} - {first.Error?.Message}");
 
-        var second = await sut.Execute(new CreateProductRequest
+        var second = await sut.Execute(CreateActorContext(), new CreateProductRequest
         {
             Name = "test product",
             BrandId = BrandId,

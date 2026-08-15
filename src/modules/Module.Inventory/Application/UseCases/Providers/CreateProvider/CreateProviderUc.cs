@@ -6,9 +6,9 @@ using Module.Inventory.Domain.Organization;
 
 namespace Module.Inventory.Application.UseCases.Providers.CreateProvider;
 
-public class CreateProviderUc(IInvDbContext context, ICurrentUser currentUser)
+public class CreateProviderUc(IInvDbContext context)
 {
-    public async Task<Result<ProviderResponse>> Execute(CreateProviderRequest request)
+    public async Task<Result<ProviderResponse>> Execute(ActorContext ctx, CreateProviderRequest request)
     {
         var duplicate = await context.Providers
             .AnyAsync(p => p.Name.ToLower() == request.Name.ToLower());
@@ -18,9 +18,9 @@ public class CreateProviderUc(IInvDbContext context, ICurrentUser currentUser)
 
         var provider = Provider.Create(
             request.Name,
-            currentUser.TenantId,
-            currentUser.UserId,
-            currentUser.FullName,
+            ctx.TenantId,
+            ctx.UserId,
+            ctx.FullName,
             request.ContactName,
             request.Email,
             request.PhoneNumber,

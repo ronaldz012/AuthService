@@ -45,15 +45,8 @@ public class ProductStatusTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        mock.Setup(u => u.BranchId).Returns(BranchId);
-        mock.Setup(u => u.BranchIds).Returns([BranchId]);
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", BranchId, [BranchId]);
 
     private static void SeedCatalog(TestAppDbContext ctx)
     {
@@ -109,8 +102,8 @@ public class ProductStatusTests
         var active = SeedProduct(ctx, "Active Product", "PRD-1", isActive: true);
         SeedProduct(ctx, "Inactive Product", "PRD-2", isActive: false);
 
-        var sut = new GetProductsUc(ctx, CreateCurrentUser());
-        var result = await sut.Execute(new ProductQueryDto { Page = 1, PageSize = 20 });
+        var sut = new GetProductsUc(ctx);
+        var result = await sut.Execute(CreateActorContext(), new ProductQueryDto { Page = 1, PageSize = 20 });
 
         Assert.True(result.IsSuccess);
         var item = result.Value.Items.Single();
@@ -126,8 +119,8 @@ public class ProductStatusTests
         SeedProduct(ctx, "Active Product", "PRD-1", isActive: true);
         SeedProduct(ctx, "Inactive Product", "PRD-2", isActive: false);
 
-        var sut = new GetProductsUc(ctx, CreateCurrentUser());
-        var result = await sut.Execute(new ProductQueryDto { Page = 1, PageSize = 20, IncludeInactive = true });
+        var sut = new GetProductsUc(ctx);
+        var result = await sut.Execute(CreateActorContext(), new ProductQueryDto { Page = 1, PageSize = 20, IncludeInactive = true });
 
         Assert.True(result.IsSuccess);
         Assert.Equal(2, result.Value.TotalCount);
@@ -142,8 +135,8 @@ public class ProductStatusTests
         var low = SeedProductWithStock(ctx, "Low Stock", "PRD-1", 5);
         var high = SeedProductWithStock(ctx, "High Stock", "PRD-2", 20);
 
-        var sut = new GetProductsUc(ctx, CreateCurrentUser());
-        var result = await sut.Execute(new ProductQueryDto
+        var sut = new GetProductsUc(ctx);
+        var result = await sut.Execute(CreateActorContext(), new ProductQueryDto
         {
             Page = 1,
             PageSize = 20,
@@ -166,8 +159,8 @@ public class ProductStatusTests
         var low = SeedProductWithStock(ctx, "Low Stock", "PRD-1", 5);
         var high = SeedProductWithStock(ctx, "High Stock", "PRD-2", 20);
 
-        var sut = new GetProductsUc(ctx, CreateCurrentUser());
-        var result = await sut.Execute(new ProductQueryDto
+        var sut = new GetProductsUc(ctx);
+        var result = await sut.Execute(CreateActorContext(), new ProductQueryDto
         {
             Page = 1,
             PageSize = 20,
@@ -188,8 +181,8 @@ public class ProductStatusTests
         SeedCatalog(ctx);
         var product = SeedProduct(ctx, "Inactive Product", "PRD-1", isActive: false);
 
-        var sut = new GetProductVariantByCode(ctx, CreateCurrentUser());
-        var result = await sut.Execute($"{product.InternalCode}-001");
+        var sut = new GetProductVariantByCode(ctx);
+        var result = await sut.Execute(CreateActorContext(), $"{product.InternalCode}-001");
 
         Assert.False(result.IsSuccess);
         Assert.Equal(GetProductVariantByCodeErrors.ProductInactive, result.Error);
@@ -203,8 +196,8 @@ public class ProductStatusTests
         var product = SeedProduct(ctx, "Inactive Product", "PRD-1", isActive: false);
         var variant = await ctx.ProductVariants.FirstAsync(v => v.ProductId == product.Id);
 
-        var sut = new CreateReceptionUc(ctx, CreateCurrentUser(), NullLogger<CreateReceptionUc>.Instance);
-        var result = await sut.Execute(new CreateStockReceptionDto
+        var sut = new CreateReceptionUc(ctx, NullLogger<CreateReceptionUc>.Instance);
+        var result = await sut.Execute(new ActorContext(TenantId, UserId, "Test User", BranchId, [BranchId]), new CreateStockReceptionDto
         {
             ProviderId = ProviderId,
             Items = [new CreateStockReceptionItemDto { ProductVariantId = variant.Id, QuantityReceived = 5, UnitCost = 50m }]
@@ -221,8 +214,8 @@ public class ProductStatusTests
         SeedCatalog(ctx);
         var product = SeedProduct(ctx, "Active Product", "PRD-1", isActive: true);
 
-        var sut = new UpdateProductStatus(ctx, CreateCurrentUser());
-        var result = await sut.Execute(product.Id, new UpdateProductStatusDto { IsActive = false });
+        var sut = new UpdateProductStatus(ctx);
+        var result = await sut.Execute(CreateActorContext(), product.Id, new UpdateProductStatusDto { IsActive = false });
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value);
@@ -235,9 +228,9 @@ public class ProductStatusTests
     public async Task UpdateProductStatus_ShouldReturnNotFound_WhenProductMissing()
     {
         using var ctx = CreateDbContext();
-        var sut = new UpdateProductStatus(ctx, CreateCurrentUser());
+        var sut = new UpdateProductStatus(ctx);
 
-        var result = await sut.Execute(Guid.NewGuid(), new UpdateProductStatusDto { IsActive = false });
+        var result = await sut.Execute(CreateActorContext(), Guid.NewGuid(), new UpdateProductStatusDto { IsActive = false });
 
         Assert.False(result.IsSuccess);
         Assert.Equal(UpdateProductStatusErrors.ProductNotFound, result.Error);

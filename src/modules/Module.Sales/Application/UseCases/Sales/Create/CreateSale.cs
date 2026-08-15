@@ -10,13 +10,15 @@ namespace Module.Sales.Application.UseCases.Sales.Create;
 
 public class CreateSale(
     ISalesDbContext context,
-    ICurrentUser currentUser,
     IInventoryIntegrationService inventoryService,
     ILogger<CreateSale> logger)
 {
-    public async Task<Result<bool>> Execute(CreateSaleDto dto)
+    public async Task<Result<bool>> Execute(ActorContext ctx, CreateSaleDto dto)
     {
-        var branchId = currentUser.BranchIds[0];
+        var branchId = ctx.BranchId;
+        var userId = ctx.UserId;
+        var userName = ctx.FullName;
+
         var variantIds = dto.Items.Select(i => i.ProductVariantId).Distinct().ToList();
 
         var stockResult = await inventoryService.GetVariantsWithStock(variantIds, branchId);
@@ -50,10 +52,10 @@ public class CreateSale(
             {
                 sale = Sale.CreateSaleWithTicket(
                     branchId,
-                    currentUser.UserId,
-                    currentUser.FullName,
-                    currentUser.UserId,
-                    currentUser.FullName,
+                    userId,
+                    userName,
+                    userId,
+                    userName,
                     cashClosure.Id,
                     dto.PaymentMethod,
                     dto.TransactionCode,
@@ -65,10 +67,10 @@ public class CreateSale(
             {
                 sale = Sale.CreateSaleWithInvoice(
                     branchId,
-                    currentUser.UserId,
-                    currentUser.FullName,
-                    currentUser.UserId,
-                    currentUser.FullName,
+                    userId,
+                    userName,
+                    userId,
+                    userName,
                     cashClosure.Id,
                     dto.PaymentMethod,
                     dto.DocumentType, 
@@ -83,7 +85,7 @@ public class CreateSale(
                 .Select(i => new StockDeductionDto(i.ProductVariantId, i.Quantity))
                 .ToList();
 
-            var deductResult = await inventoryService.DeductStock(deductions, branchId, currentUser.UserId, currentUser.FullName, sale.Id);
+            var deductResult = await inventoryService.DeductStock(deductions, branchId, userId, userName, sale.Id);
             if (!deductResult.IsSuccess)
             {
                 await transaction.RollbackAsync();

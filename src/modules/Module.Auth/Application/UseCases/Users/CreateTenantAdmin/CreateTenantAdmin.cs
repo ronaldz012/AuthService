@@ -10,11 +10,10 @@ namespace Module.Auth.Application.UseCases.Users.CreateTenantAdmin;
 public class CreateTenantAdmin(
     IAuthDbContext context,
     ITenantConnectionContext tenantConnectionContext,
-    ICurrentUser currentUser,
     IEmailVerificationService emailVerificationService,
     IOptions<ProjectInfo> projectInfo)
 {
-    public async Task<Result<CreateTenantAdminResponse>> Execute(CreateTenantAdminRequest dto)
+    public async Task<Result<CreateTenantAdminResponse>> Execute(ActorContext ctx, CreateTenantAdminRequest dto)
     {
         var displayName = await context.Tenants
             .Where(t => t.Id == tenantConnectionContext.TenantId)
@@ -38,7 +37,7 @@ public class CreateTenantAdmin(
 
         var newUser = User.CreateTenantAdmin(
             dto.Email, globalUsername, dto.FirstName, dto.LastName,
-            dto.Ci, dto.Nationality, dto.BirthDate, currentUser.UserId, currentUser.FullName);
+            dto.Ci, dto.Nationality, dto.BirthDate, ctx.UserId, ctx.FullName);
 
         var verificationCode = EmailVerificationCode.CreateForAccountSetup(dto.Email ?? string.Empty);
         newUser.EmailVerificationCodes.Add(verificationCode);

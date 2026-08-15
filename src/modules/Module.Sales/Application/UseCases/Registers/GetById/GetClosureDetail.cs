@@ -9,14 +9,13 @@ namespace Module.Sales.Application.UseCases.Registers.GetById;
 
 public class GetClosureDetail(
     ISalesDbContext context,
-    ICurrentUser currentUser,
     IInventoryIntegrationService inventoryService)
 {
-    public async Task<Result<ClosureDetailDto>> Execute(Guid id, bool includeStock = false)
+    public async Task<Result<ClosureDetailDto>> Execute(ActorContext ctx, Guid id, bool includeStock = false)
     {
         var closure = await context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.Id == id && c.BranchId == currentUser.BranchId)
+            .Where(c => c.Id == id && c.BranchId == ctx.BranchId)
             .Select(c => new ClosureDetailDto
             {
                 Id = c.Id,

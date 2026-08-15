@@ -6,11 +6,11 @@ using Module.Inventory.Domain.Inventory;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.PatchStock;
 
-public class CorrectProductVariantStock(IInvDbContext context, ICurrentUser currentUser)
+public class CorrectProductVariantStock(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(UpdateProductVariantStockDto request, Guid id)
+    public async Task<Result<bool>> Execute(ActorContext ctx, UpdateProductVariantStockDto request, Guid id)
     {
-        var currentBranch = currentUser.BranchIds.FirstOrDefault();
+        var currentBranch = ctx.BranchIds.FirstOrDefault();
         
         var pv = await context.ProductVariants
             .Where(p => p.Id == id)
@@ -26,18 +26,18 @@ public class CorrectProductVariantStock(IInvDbContext context, ICurrentUser curr
             var previousStock = existingInventory?.Stock ?? 0;
             var delta = request.Stock - previousStock;
 
-            // Se valida el movimiento primero (CreateAdjustment exige Notes); si falla, no se muta stock
+            // Se valida el movimi ento primero (CreateAdjustment exige Notes); si falla, no se muta stock
             var movement = delta != 0
                 ? StockMovement.CreateAdjustment(
                     currentBranch,
                     pv.Id,
-                    currentUser.UserId,
-                    currentUser.FullName,
+                    ctx.UserId,
+                    ctx.FullName,
                     delta,
                     request.Notes)
                 : null;
 
-            pv.CorrectQuantity(request.Stock, currentBranch, currentUser.UserId, currentUser.FullName);
+            pv.CorrectQuantity(request.Stock, currentBranch, ctx.UserId, ctx.FullName);
 
             if (movement is not null)
                 context.StockMovements.Add(movement);

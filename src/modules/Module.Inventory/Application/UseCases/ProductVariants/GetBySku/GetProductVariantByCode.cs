@@ -6,11 +6,11 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.ProductVariants.GetBySku;
 
-public class GetProductVariantByCode(IInvDbContext context, ICurrentUser currentUser)
+public class GetProductVariantByCode(IInvDbContext context)
 {
-    public async Task<Result<ProductVariantBySkuDto>> Execute(string skuRequested)
+    public async Task<Result<ProductVariantBySkuDto>> Execute(ActorContext ctx, string skuRequested)
     {
-        var branch = currentUser.BranchIds[0];
+        var branch = ctx.BranchIds[0];
         var result = await context.ProductVariants.Select(pv => new ProductVariantBySkuDto
             {
                 Id = pv.Id,

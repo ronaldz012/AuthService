@@ -2,7 +2,6 @@ using Common.Contracts.authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Module.Inventory.Application.UseCases.Receptions.Create;
 using Module.Inventory.Domain.Inventory;
 using Module.Inventory.Domain.Organization;
@@ -35,15 +34,8 @@ public class CreateReceptionTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        mock.Setup(u => u.BranchId).Returns(BranchId);
-        mock.Setup(u => u.BranchIds).Returns([BranchId]);
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", BranchId, [BranchId]);
 
     private static async Task SeedCatalog(TestAppDbContext ctx, bool providerActive = true, bool productActive = true)
     {
@@ -92,7 +84,7 @@ public class CreateReceptionTests
     }
 
     private static CreateReceptionUc CreateSut(TestAppDbContext ctx)
-        => new(ctx, CreateCurrentUser(), NullLogger<CreateReceptionUc>.Instance);
+        => new(ctx, NullLogger<CreateReceptionUc>.Instance);
 
     [Fact]
     public async Task Execute_ShouldIncreaseStock_AndCreateReceptionMovement()
@@ -101,7 +93,7 @@ public class CreateReceptionTests
         await SeedCatalog(ctx);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateDto(5));
+        var result = await sut.Execute(CreateActorContext(), CreateDto(5));
 
         Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Code} - {result.Error?.Message}");
 
@@ -124,7 +116,7 @@ public class CreateReceptionTests
         await SeedCatalog(ctx);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(new CreateStockReceptionDto
+        var result = await sut.Execute(CreateActorContext(), new CreateStockReceptionDto
         {
             ProviderId = ProviderId,
             Items = [new CreateStockReceptionItemDto { ProductVariantId = Guid.NewGuid(), QuantityReceived = 1, UnitCost = 50m }]
@@ -141,7 +133,7 @@ public class CreateReceptionTests
         await SeedCatalog(ctx, providerActive: false);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateDto(1));
+        var result = await sut.Execute(CreateActorContext(), CreateDto(1));
 
         Assert.False(result.IsSuccess);
         Assert.Equal(CreateReceptionErrors.ProviderInactive, result.Error);
@@ -154,7 +146,7 @@ public class CreateReceptionTests
         await SeedCatalog(ctx);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(new CreateStockReceptionDto
+        var result = await sut.Execute(CreateActorContext(), new CreateStockReceptionDto
         {
             ProviderId = Guid.NewGuid(),
             Items = [new CreateStockReceptionItemDto { ProductVariantId = VariantId, QuantityReceived = 1, UnitCost = 50m }]

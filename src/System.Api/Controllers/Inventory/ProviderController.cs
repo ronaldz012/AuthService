@@ -1,4 +1,5 @@
 using System.Api.Result;
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Inventory.Application.UseCases.Providers;
@@ -11,12 +12,12 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | Providers")]
     [Authorize]
-    public class ProviderController(ProviderUseCases useCases) : ControllerBase
+    public class ProviderController(ProviderUseCases useCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> CreateProvider([FromBody] CreateProviderRequest dto)
         {
-            return await useCases.CreateProvider.Execute(dto).ToValueOrProblemDetails();
+            return await useCases.CreateProvider.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
@@ -28,13 +29,13 @@ namespace System.Api.Controllers.Inventory
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateProvider([FromRoute] Guid id, [FromBody] UpdateProviderRequest dto)
         {
-            return await useCases.UpdateProvider.Execute(id, dto).ToValueOrProblemDetails();
+            return await useCases.UpdateProvider.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
         public async Task<IActionResult> ToggleProvider([FromRoute] Guid id)
         {
-            return await useCases.UpdateProvider.ChangeStatus(id).ToValueOrProblemDetails();
+            return await useCases.UpdateProvider.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
     }
 }

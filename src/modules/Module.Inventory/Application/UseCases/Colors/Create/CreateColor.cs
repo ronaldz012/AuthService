@@ -6,9 +6,9 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Colors.Create;
 
-public class CreateColor(IInvDbContext context, ICurrentUser currentUser)
+public class CreateColor(IInvDbContext context)
 {
-    public async Task<Result<ColorDto>> Execute(string colorName)
+    public async Task<Result<ColorDto>> Execute(ActorContext ctx, string colorName)
     {
         // Buscamos si existe conflicto con nombre (case-insensitive, incluyendo eliminados si usas filtros globales)
         var existing = await context.Colors.AnyAsync(x => x.Name.ToLower() == colorName.ToLower());
@@ -23,8 +23,8 @@ public class CreateColor(IInvDbContext context, ICurrentUser currentUser)
         var newColor = new Color
         {
             Name = colorName,
-            CreatedBy = currentUser.UserId,
-            CreatedByName = currentUser.FullName
+            CreatedBy = ctx.UserId,
+            CreatedByName = ctx.FullName
         };
 
         context.Add(newColor);

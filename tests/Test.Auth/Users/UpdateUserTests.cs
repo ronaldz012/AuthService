@@ -10,11 +10,11 @@ namespace Test.Auth.Users;
 
 public class UpdateUserTests
 {
-    private static UpdateUser CreateSut(IAuthDbContext dbContext, ICurrentUser? currentUser = null)
-    {
-        currentUser ??= Mock.Of<ICurrentUser>(u => u.UserId == Guid.NewGuid() && u.FullName == "Test User");
-        return new UpdateUser(dbContext, currentUser);
-    }
+    private static ActorContext CreateActorContext()
+        => new(Guid.NewGuid(), Guid.NewGuid(), "Test User", Guid.Empty, []);
+
+    private static UpdateUser CreateSut(IAuthDbContext dbContext)
+        => new(dbContext);
 
     private static (Guid TenantId, Guid BranchId, Guid RoleId, Guid UserId) Seed(IAuthDbContext dbContext, Guid tenantId)
     {
@@ -83,7 +83,7 @@ public class UpdateUserTests
             ],
         };
 
-        var result = await sut.Execute(userId, request);
+        var result = await sut.Execute(CreateActorContext(), userId, request);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(userId, result.Value.UserId);
@@ -119,7 +119,7 @@ public class UpdateUserTests
             BranchRoles = [new BranchRoleDto { BranchId = Guid.NewGuid(), RoleId = Guid.NewGuid() }],
         };
 
-        var result = await sut.Execute(Guid.NewGuid(), request);
+        var result = await sut.Execute(CreateActorContext(), Guid.NewGuid(), request);
 
         Assert.Equal(UpdateUserErrors.UserNotFound, result.Error);
     }
@@ -141,7 +141,7 @@ public class UpdateUserTests
             BranchRoles = [new BranchRoleDto { BranchId = Guid.NewGuid(), RoleId = roleId }],
         };
 
-        var result = await sut.Execute(userId, request);
+        var result = await sut.Execute(CreateActorContext(), userId, request);
 
         Assert.Equal(UpdateUserErrors.BranchesNotFound, result.Error);
     }
@@ -163,7 +163,7 @@ public class UpdateUserTests
             BranchRoles = [new BranchRoleDto { BranchId = branchId, RoleId = Guid.NewGuid() }],
         };
 
-        var result = await sut.Execute(userId, request);
+        var result = await sut.Execute(CreateActorContext(), userId, request);
 
         Assert.Equal(UpdateUserErrors.RolesNotFound, result.Error);
     }
@@ -205,7 +205,7 @@ public class UpdateUserTests
             ],
         };
 
-        var result = await sut.Execute(userId, request);
+        var result = await sut.Execute(CreateActorContext(), userId, request);
 
         Assert.True(result.IsSuccess);
 
@@ -245,7 +245,7 @@ public class UpdateUserTests
             BranchRoles = null,
         };
 
-        var result = await sut.Execute(userId, request);
+        var result = await sut.Execute(CreateActorContext(), userId, request);
 
         Assert.True(result.IsSuccess);
 

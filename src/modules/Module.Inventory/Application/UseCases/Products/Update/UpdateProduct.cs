@@ -5,9 +5,9 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Products.Update;
 
-public class UpdateProduct(IInvDbContext context, ICurrentUser currentUser)
+public class UpdateProduct(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(UpdateProductDto dto, Guid id)
+    public async Task<Result<bool>> Execute(ActorContext ctx, UpdateProductDto dto, Guid id)
     {
         var product = await context.Products.FindAsync(id);
         if(product == null) return 
@@ -29,8 +29,8 @@ public class UpdateProduct(IInvDbContext context, ICurrentUser currentUser)
         product.Description = dto.Description ?? product.Description;
         product.Gender = dto.Gender ?? product.Gender;
         product.CategoryId = dto.CategoryId ?? product.CategoryId;
-        product.UpdatedBy = currentUser.UserId;
-        product.UpdatedByName = currentUser.FullName;
+        product.UpdatedBy = ctx.UserId;
+        product.UpdatedByName = ctx.FullName;
         product.UpdatedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();
         return true;

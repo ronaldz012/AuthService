@@ -5,9 +5,9 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Providers.Update;
 
-public class UpdateProvider(IInvDbContext context, ICurrentUser currentUser)
+public class UpdateProvider(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(Guid id, UpdateProviderRequest request)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id, UpdateProviderRequest request)
     {
         var provider = await context.Providers.FirstOrDefaultAsync(p => p.Id == id);
         if (provider is null)
@@ -29,20 +29,20 @@ public class UpdateProvider(IInvDbContext context, ICurrentUser currentUser)
             request.Email ?? provider.Email,
             request.PhoneNumber ?? provider.PhoneNumber,
             request.Address ?? provider.Address,
-            currentUser.UserId,
-            currentUser.FullName);
+            ctx.UserId,
+            ctx.FullName);
 
         await context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<Result<bool>> ChangeStatus(Guid id)
+    public async Task<Result<bool>> ChangeStatus(ActorContext ctx, Guid id)
     {
         var provider = await context.Providers.FirstOrDefaultAsync(p => p.Id == id);
         if (provider is null)
             return UpdateProviderErrors.ProviderNotFound;
 
-        provider.ToggleActive(currentUser.UserId, currentUser.FullName);
+        provider.ToggleActive(ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return provider.IsActive;

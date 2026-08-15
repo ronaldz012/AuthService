@@ -7,11 +7,13 @@ using Module.Inventory.Domain.Transfers;
 
 namespace Module.Inventory.Application.UseCases.Transfers.Resolve;
 
-public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUser)
+public class ResolveStockTransfer(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(Guid transferId, ResolveStockTransferDto dto)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid transferId, ResolveStockTransferDto dto)
     {
-        var toBranchId = currentUser.BranchIds[0];
+        var toBranchId = ctx.BranchId;
+        var userId = ctx.UserId;
+        var userName = ctx.FullName;
 
         var transfer = await context.StockTransfers
             .Include(t => t.Items)
@@ -28,7 +30,7 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
 
         if (!dto.Complete)
         {
-            transfer.Reject(currentUser.UserId, currentUser.FullName, dto.Notes);
+            transfer.Reject(userId, userName, dto.Notes);
             await context.SaveChangesAsync();
             return true;
         }
@@ -49,7 +51,7 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
         await using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
-            transfer.Accept(currentUser.UserId, currentUser.FullName, dto.Notes);
+            transfer.Accept(userId, userName, dto.Notes);
             var productVariants = await context.ProductVariants
                 .Include(pv => pv.BranchInventories)
                 .Where(pv => variantIds.Contains(pv.Id))
@@ -58,16 +60,16 @@ public class ResolveStockTransfer(IInvDbContext context, ICurrentUser currentUse
             {
                 var productVariant = productVariants.First(pv => pv.Id == item.ProductVariantId);
 
-                productVariant.AddQuantity(-item.QuantityRequested, transfer.FromBranchId, currentUser.UserId, currentUser.FullName);
-                productVariant.AddQuantity(item.QuantityRequested, transfer.ToBranchId, currentUser.UserId, currentUser.FullName);
+                productVariant.AddQuantity(-item.QuantityRequested, transfer.FromBranchId, userId, userName);
+                productVariant.AddQuantity(item.QuantityRequested, transfer.ToBranchId, userId, userName);
 
                 // StockMovements
                 var (movOut, movIn) = StockMovement.CreateTransfer(
                     transfer.FromBranchId,
                     transfer.ToBranchId,
                     item.ProductVariantId,
-                    currentUser.UserId,
-                    currentUser.FullName,
+                    userId,
+                    userName,
                     item.QuantityRequested,
                     transfer.Id
 

@@ -1,4 +1,5 @@
 using System.Api.Result;
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Sales.Application.UseCases;
@@ -11,29 +12,29 @@ namespace System.Api.Controllers.Sales;
 [ApiController]
 [Tags("Sales | CashRegisterMovements")]
 [Authorize]
-public class CashRegisterMovementController(MovementUseCases movementUseCases) : ControllerBase
+public class CashRegisterMovementController(MovementUseCases movementUseCases, ICurrentUser currentUser) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateMovementDto dto)
     {
-        return await movementUseCases.CreateMovement.Execute(dto).ToValueOrProblemDetails();
+        return await movementUseCases.CreateMovement.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
     }
 
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        return await movementUseCases.ListMovements.Execute().ToValueOrProblemDetails();
+        return await movementUseCases.ListMovements.Execute(currentUser.ToActorContext()).ToValueOrProblemDetails();
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateMovementDto dto)
     {
-        return await movementUseCases.UpdateMovement.Execute(id, dto).ToValueOrProblemDetails();
+        return await movementUseCases.UpdateMovement.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        return await movementUseCases.DeleteMovement.Execute(id).ToValueOrProblemDetails();
+        return await movementUseCases.DeleteMovement.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
     }
 }

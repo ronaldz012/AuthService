@@ -1,4 +1,5 @@
 using System.Api.Result; 
+using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Module.Inventory.Application.UseCases.Categories;
@@ -12,12 +13,12 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | Categories")]
     [Authorize]
-    public class CategoryController(CategoryUseCases categoryUseCases) : ControllerBase
+    public class CategoryController(CategoryUseCases categoryUseCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest dto)
         {
-            return await categoryUseCases.CreateCategory.Execute(dto).ToValueOrProblemDetails();
+            return await categoryUseCases.CreateCategory.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
@@ -29,13 +30,13 @@ namespace System.Api.Controllers.Inventory
         [HttpPatch("{id:guid}/status")]
         public async Task<IActionResult> ToggleCategoryStatus([FromRoute] Guid id)
         {
-            return await categoryUseCases.UpdateCategory.ChangeStatus(id).ToValueOrProblemDetails();
+            return await categoryUseCases.UpdateCategory.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateCategory([FromRoute] Guid id, [FromBody] UpdateCategoryDto dto)
         {
-            return await categoryUseCases.UpdateCategory.Execute(id, dto).ToValueOrProblemDetails();
+            return await categoryUseCases.UpdateCategory.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
         }
     }
 }

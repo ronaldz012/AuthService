@@ -5,9 +5,9 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Colors.Update;
 
-public class UpdateColor(IInvDbContext context, ICurrentUser currentUser)
+public class UpdateColor(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(Guid id, UpdateColorDto dto)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id, UpdateColorDto dto)
     {
         var color = await context.Colors.FirstOrDefaultAsync(c => c.Id == id);
         if (color is null)
@@ -23,19 +23,19 @@ public class UpdateColor(IInvDbContext context, ICurrentUser currentUser)
                 return UpdateColorErrors.ColorNameAlreadyExists;
         }
 
-        color.Update(newName, currentUser.UserId, currentUser.FullName);
+        color.Update(newName, ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<Result<bool>> ChangeStatus(Guid id)
+    public async Task<Result<bool>> ChangeStatus(ActorContext ctx, Guid id)
     {
         var color = await context.Colors.FirstOrDefaultAsync(c => c.Id == id);
         if (color is null)
             return UpdateColorErrors.ColorNotFound;
 
-        color.ToggleActive(currentUser.UserId, currentUser.FullName);
+        color.ToggleActive(ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return color.IsActive;

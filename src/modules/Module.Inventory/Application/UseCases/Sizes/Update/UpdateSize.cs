@@ -5,9 +5,9 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Sizes.Update;
 
-public class UpdateSize(IInvDbContext context, ICurrentUser currentUser)
+public class UpdateSize(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(Guid id, UpdateSizeDto dto)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id, UpdateSizeDto dto)
     {
         var size = await context.Sizes.FirstOrDefaultAsync(s => s.Id == id);
         if (size is null)
@@ -23,19 +23,19 @@ public class UpdateSize(IInvDbContext context, ICurrentUser currentUser)
                 return UpdateSizeErrors.SizeNameAlreadyExists;
         }
 
-        size.Update(newName, dto.SortOrder ?? size.SortOrder, currentUser.UserId, currentUser.FullName);
+        size.Update(newName, dto.SortOrder ?? size.SortOrder, ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<Result<bool>> ChangeStatus(Guid id)
+    public async Task<Result<bool>> ChangeStatus(ActorContext ctx, Guid id)
     {
         var size = await context.Sizes.FirstOrDefaultAsync(s => s.Id == id);
         if (size is null)
             return UpdateSizeErrors.SizeNotFound;
 
-        size.ToggleActive(currentUser.UserId, currentUser.FullName);
+        size.ToggleActive(ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return size.IsActive;

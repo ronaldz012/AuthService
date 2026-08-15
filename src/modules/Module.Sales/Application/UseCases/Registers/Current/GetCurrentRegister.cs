@@ -5,13 +5,13 @@ using Module.Sales.Application.Abstraction;
 
 namespace Module.Sales.Application.UseCases.Registers.Current;
 
-public class GetCurrentRegister(ISalesDbContext context, ICurrentUser currentUser)
+public class GetCurrentRegister(ISalesDbContext context)
 {
-    public async Task<Result<CurrentRegisterDto>> Execute()
+    public async Task<Result<CurrentRegisterDto>> Execute(ActorContext ctx)
     {
         var closure = await context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.BranchId == currentUser.BranchId && c.IsOpen)
+            .Where(c => c.BranchId == ctx.BranchId && c.IsOpen)
             .Select(c => new CurrentRegisterDto
             {
                 IsOpen = true,

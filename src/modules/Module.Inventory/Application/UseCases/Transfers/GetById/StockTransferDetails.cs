@@ -7,11 +7,11 @@ using Module.Inventory.Domain.Transfers;
 
 namespace Module.Inventory.Application.UseCases.Transfers.GetById;
 
-public class StockTransferDetails(IInvDbContext context, IBranchService branchService, IUserIntegrationService userService, ICurrentUser currentUser)
+public class StockTransferDetails(IInvDbContext context, IBranchService branchService, IUserIntegrationService userService)
 {
-    public async Task<Result<StockTransferDetailDto>> Execute(Guid stockTransferId)
+    public async Task<Result<StockTransferDetailDto>> Execute(ActorContext ctx, Guid stockTransferId)
     {
-        var currentBranchIds = currentUser.BranchIds[0];
+        var currentBranchIds = ctx.BranchIds[0];
         var transfer = await context.StockTransfers
             .Include(st => st.Items)
                 .ThenInclude(i => i.ProductVariant)

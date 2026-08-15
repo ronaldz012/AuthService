@@ -6,19 +6,19 @@ using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Registers.Close;
 
-public class CloseCashRegister(ISalesDbContext context, ICurrentUser currentUser)
+public class CloseCashRegister(ISalesDbContext context)
 {
-    public async Task<Result<CloseCashRegisterResponseDto>> Execute(CloseCashRegisterDto dto)
+    public async Task<Result<CloseCashRegisterResponseDto>> Execute(ActorContext ctx, CloseCashRegisterDto dto)
     {
         var closure = await context.CashRegisterClosures
             .Include(c => c.Sales)
             .Include(c => c.Movements)
-            .FirstOrDefaultAsync(c => c.BranchId == currentUser.BranchId && c.IsOpen);
+            .FirstOrDefaultAsync(c => c.BranchId == ctx.BranchId && c.IsOpen);
 
         if (closure is null)
             return CloseCashRegisterErrors.NotFound;
 
-        closure.Close(dto.RealCountedAmount, currentUser.UserId, currentUser.FullName);
+        closure.Close(dto.RealCountedAmount, ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
 

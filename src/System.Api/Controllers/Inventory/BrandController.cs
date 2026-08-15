@@ -1,4 +1,5 @@
 using System.Api.Result;
+using Common.Contracts.authentication;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +14,12 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | Brands")]
     [Authorize]
-    public class BrandController(BrandUseCases service) : ControllerBase
+    public class BrandController(BrandUseCases service, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPost]
         public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequest dto)
         {
-            return await service.CreateBrand.Execute(dto).ToValueOrProblemDetails();
+            return await service.CreateBrand.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
@@ -30,13 +31,13 @@ namespace System.Api.Controllers.Inventory
         [HttpPatch("{id:guid}/status")]
         public async Task<IActionResult> ToggleBrandStatus([FromRoute] Guid id)
         {
-            return await service.UpdateBrand.ChangeStatus(id).ToValueOrProblemDetails();
+            return await service.UpdateBrand.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateBrand([FromRoute] Guid id, [FromBody] UpdateBrandDto dto)
         {
-            return await service.UpdateBrand.Execute(id, dto).ToValueOrProblemDetails();
+            return await service.UpdateBrand.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
         }
     }
 }

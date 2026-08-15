@@ -34,14 +34,8 @@ public class ResolveStockTransferTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser(Guid branch)
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        mock.Setup(u => u.BranchIds).Returns([branch]);
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext(Guid branch)
+        => new(TenantId, UserId, "Test User", branch, [branch]);
 
     private static async Task SeedVariant(TestAppDbContext ctx, int fromStock, int toStock)
     {
@@ -107,17 +101,17 @@ public class ResolveStockTransferTests
         await ctx.SaveChangesAsync();
     }
 
-    private static ResolveStockTransfer CreateSut(TestAppDbContext ctx, Guid branch)
-        => new(ctx, CreateCurrentUser(branch));
+    private static ResolveStockTransfer CreateSut(TestAppDbContext ctx)
+        => new(ctx);
 
     [Fact]
     public async Task Execute_ShouldMoveStock_AndCreateMovements()
     {
         using var ctx = CreateDbContext();
         await SeedPendingTransfer(ctx, 3, 10, 0);
-        var sut = CreateSut(ctx, ToBranchId);
+        var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(TransferId, new ResolveStockTransferDto { Complete = true });
+        var result = await sut.Execute(CreateActorContext(ToBranchId), TransferId, new ResolveStockTransferDto { Complete = true });
 
         Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Code} - {result.Error?.Message}");
 
@@ -140,9 +134,9 @@ public class ResolveStockTransferTests
     {
         using var ctx = CreateDbContext();
         await SeedPendingTransfer(ctx, 3, 10, 0);
-        var sut = CreateSut(ctx, ToBranchId);
+        var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(TransferId, new ResolveStockTransferDto { Complete = false, Notes = "Rechazado" });
+        var result = await sut.Execute(CreateActorContext(ToBranchId), TransferId, new ResolveStockTransferDto { Complete = false, Notes = "Rechazado" });
 
         Assert.True(result.IsSuccess);
         Assert.Equal(TransferStatus.Rejected, (await ctx.StockTransfers.SingleAsync()).Status);
@@ -157,9 +151,9 @@ public class ResolveStockTransferTests
     {
         using var ctx = CreateDbContext();
         await SeedPendingTransfer(ctx, 5, 2, 0);
-        var sut = CreateSut(ctx, ToBranchId);
+        var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(TransferId, new ResolveStockTransferDto { Complete = true });
+        var result = await sut.Execute(CreateActorContext(ToBranchId), TransferId, new ResolveStockTransferDto { Complete = true });
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ResolveStockTransferErrors.InsufficientStock, result.Error);
@@ -175,9 +169,9 @@ public class ResolveStockTransferTests
     {
         using var ctx = CreateDbContext();
         await SeedPendingTransfer(ctx, 1, 10, 0);
-        var sut = CreateSut(ctx, FromBranchId);
+        var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(TransferId, new ResolveStockTransferDto { Complete = true });
+        var result = await sut.Execute(CreateActorContext(FromBranchId), TransferId, new ResolveStockTransferDto { Complete = true });
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ResolveStockTransferErrors.Forbidden, result.Error);
@@ -192,8 +186,8 @@ public class ResolveStockTransferTests
         transfer.Status = TransferStatus.Completed;
         await ctx.SaveChangesAsync();
 
-        var sut = CreateSut(ctx, ToBranchId);
-        var result = await sut.Execute(TransferId, new ResolveStockTransferDto { Complete = true });
+        var sut = CreateSut(ctx);
+        var result = await sut.Execute(CreateActorContext(ToBranchId), TransferId, new ResolveStockTransferDto { Complete = true });
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ResolveStockTransferErrors.AlreadyResolved, result.Error);

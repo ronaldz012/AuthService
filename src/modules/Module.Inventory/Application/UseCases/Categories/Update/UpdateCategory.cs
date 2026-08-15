@@ -5,9 +5,9 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Categories.Update;
 
-public class UpdateCategory(IInvDbContext context, ICurrentUser currentUser)
+public class UpdateCategory(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(Guid id, UpdateCategoryDto dto)
+    public async Task<Result<bool>> Execute(ActorContext ctx, Guid id, UpdateCategoryDto dto)
     {
         var category = await context.Categories.FirstOrDefaultAsync(c => c.Id == id);
         if (category is null)
@@ -23,19 +23,19 @@ public class UpdateCategory(IInvDbContext context, ICurrentUser currentUser)
                 return UpdateCategoryErrors.CategoryNameAlreadyExists;
         }
 
-        category.Update(newName, dto.Description ?? category.Description, currentUser.UserId, currentUser.FullName);
+        category.Update(newName, dto.Description ?? category.Description, ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return true;
     }
 
-    public async Task<Result<bool>> ChangeStatus(Guid id)
+    public async Task<Result<bool>> ChangeStatus(ActorContext ctx, Guid id)
     {
         var category = await context.Categories.FirstOrDefaultAsync(c => c.Id == id);
         if (category is null)
             return UpdateCategoryErrors.CategoryNotFound;
 
-        category.ToggleActive(currentUser.UserId, currentUser.FullName);
+        category.ToggleActive(ctx.UserId, ctx.FullName);
 
         await context.SaveChangesAsync();
         return category.IsActive;

@@ -6,12 +6,12 @@ using Module.Inventory.Domain.Receptions;
 
 namespace Module.Inventory.Application.UseCases.Receptions.Get;
 
-public class ListReceptions(IInvDbContext context, ICurrentUser currentUser)
+public class ListReceptions(IInvDbContext context)
 {
-    public async Task<Result<PagedResultDto<StockReceptionListDto>>> Execute(ReceptionQueryDto queryDto)
+    public async Task<Result<PagedResultDto<StockReceptionListDto>>> Execute(ActorContext ctx, ReceptionQueryDto queryDto)
     {
         IQueryable<StockReception> query = context.StockReceptions;
-        var branches = currentUser.BranchIds;
+        var branches = ctx.BranchIds;
 
         if (queryDto.DateFrom.HasValue)
             query = query.Where(x => x.ReceivedAt >= queryDto.DateFrom.Value);
@@ -31,7 +31,7 @@ public class ListReceptions(IInvDbContext context, ICurrentUser currentUser)
 
 
         var receptions = await query
-            .Where(x => x.BranchId == currentUser.BranchIds[0])
+            .Where(x => x.BranchId == ctx.BranchIds[0])
             .OrderByDescending(r => r.ReceivedAt)
             .ApplyPagination(queryDto)
             .Select(r => new StockReceptionListDto

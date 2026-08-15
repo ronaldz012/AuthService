@@ -32,13 +32,8 @@ public class DeleteProductVariantTests
         return new TestAppDbContext(options, tenantCtx);
     }
 
-    private static ICurrentUser CreateCurrentUser()
-    {
-        var mock = new Mock<ICurrentUser>();
-        mock.Setup(u => u.UserId).Returns(UserId);
-        mock.Setup(u => u.FullName).Returns("Test User");
-        return mock.Object;
-    }
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", Guid.Empty, []);
 
     private static async Task SeedVariant(TestAppDbContext ctx, bool withMovement)
     {
@@ -93,7 +88,7 @@ public class DeleteProductVariantTests
     }
 
     private static DeleteProductVariantUc CreateSut(TestAppDbContext ctx)
-        => new(ctx, CreateCurrentUser());
+        => new(ctx);
 
     [Fact]
     public async Task Check_ShouldReturnCanDelete_WhenNoMovements()
@@ -102,7 +97,7 @@ public class DeleteProductVariantTests
         await SeedVariant(ctx, withMovement: false);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(VariantId);
+        var result = await sut.Check(CreateActorContext(), VariantId);
 
         Assert.True(result.IsSuccess);
         Assert.True(result.Value.CanDelete);
@@ -116,7 +111,7 @@ public class DeleteProductVariantTests
         await SeedVariant(ctx, withMovement: true);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(VariantId);
+        var result = await sut.Check(CreateActorContext(), VariantId);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value.CanDelete);
@@ -129,7 +124,7 @@ public class DeleteProductVariantTests
         using var ctx = CreateDbContext();
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(Guid.NewGuid());
+        var result = await sut.Check(CreateActorContext(), Guid.NewGuid());
 
         Assert.False(result.IsSuccess);
         Assert.Equal(DeleteProductVariantErrors.VariantNotFound, result.Error);
@@ -142,7 +137,7 @@ public class DeleteProductVariantTests
         await SeedVariant(ctx, withMovement: false);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(VariantId);
+        var result = await sut.Execute(CreateActorContext(), VariantId);
 
         Assert.True(result.IsSuccess);
 
@@ -159,7 +154,7 @@ public class DeleteProductVariantTests
         await SeedVariant(ctx, withMovement: true);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(VariantId);
+        var result = await sut.Execute(CreateActorContext(), VariantId);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(DeleteProductVariantErrors.VariantHasMovements, result.Error);
@@ -175,7 +170,7 @@ public class DeleteProductVariantTests
         await SeedVariantInTransfer(ctx);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Check(VariantId);
+        var result = await sut.Check(CreateActorContext(), VariantId);
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value.CanDelete);
@@ -189,7 +184,7 @@ public class DeleteProductVariantTests
         await SeedVariantInTransfer(ctx);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(VariantId);
+        var result = await sut.Execute(CreateActorContext(), VariantId);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(DeleteProductVariantErrors.VariantHasTransfers, result.Error);

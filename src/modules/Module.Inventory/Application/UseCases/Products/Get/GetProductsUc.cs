@@ -6,9 +6,9 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Products.Get;
 
-public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
+public class GetProductsUc(IInvDbContext context)
 {
-    public async Task<Result<PagedResultDto<ListProductRequest>>> Execute(ProductQueryDto queryDto)
+    public async Task<Result<PagedResultDto<ListProductRequest>>> Execute(ActorContext ctx, ProductQueryDto queryDto)
     {
         var query = context.Products.AsQueryable();
         if (!string.IsNullOrEmpty(queryDto.Filter))
@@ -44,14 +44,14 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
                 ? query
                     .OrderByDescending(p => p.ProductVariants
                         .SelectMany(pv => pv.BranchInventories)
-                        .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
+                        .Where(bi => ctx.BranchIds.Contains(bi.BranchId))
                         .Sum(bi => bi.Stock))
                     .ThenBy(p => p.Name)
                     .ThenBy(p => p.Id)
                 : query
                     .OrderBy(p => p.ProductVariants
                         .SelectMany(pv => pv.BranchInventories)
-                        .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
+                        .Where(bi => ctx.BranchIds.Contains(bi.BranchId))
                         .Sum(bi => bi.Stock))
                     .ThenBy(p => p.Name)
                     .ThenBy(p => p.Id);
@@ -92,7 +92,7 @@ public class GetProductsUc(IInvDbContext context, ICurrentUser currentUser)
                 VariantsCount = p.ProductVariants.Count,
                 TotalStock = p.ProductVariants
                     .SelectMany(pv => pv.BranchInventories)
-                    .Where(bi => currentUser.BranchIds.Contains(bi.BranchId))
+                    .Where(bi => ctx.BranchIds.Contains(bi.BranchId))
                     .Sum(bi => bi.Stock),
             })
             .ToListAsync();

@@ -32,7 +32,7 @@ public class CreateSaleTests
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
 
-        var result = await sut.Execute(new CreateSaleDto
+        var result = await sut.Execute(CreateActorContext(), new CreateSaleDto
         {
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
@@ -59,7 +59,7 @@ public class CreateSaleTests
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
 
-        var result = await sut.Execute(new CreateSaleDto
+        var result = await sut.Execute(CreateActorContext(), new CreateSaleDto
         {
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
@@ -86,7 +86,7 @@ public class CreateSaleTests
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
 
-        var result = await sut.Execute(new CreateSaleDto
+        var result = await sut.Execute(CreateActorContext(), new CreateSaleDto
         {
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
@@ -117,7 +117,7 @@ public class CreateSaleTests
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
 
-        var result = await sut.Execute(new CreateSaleDto
+        var result = await sut.Execute(CreateActorContext(), new CreateSaleDto
         {
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
@@ -144,7 +144,7 @@ public class CreateSaleTests
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
 
-        var result = await sut.Execute(new CreateSaleDto
+        var result = await sut.Execute(CreateActorContext(), new CreateSaleDto
         {
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
@@ -174,7 +174,7 @@ public class CreateSaleTests
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
 
-        var result = await sut.Execute(new CreateSaleDto
+        var result = await sut.Execute(CreateActorContext(), new CreateSaleDto
         {
             PaymentMethod = PaymentMethod.Cash,
             DocumentType = DocumentType.Ticket,
@@ -199,19 +199,15 @@ public class CreateSaleTests
         Assert.Equal("Test Product - Negro / 42", savedItem.ProductDisplayName);
     }
 
+    private static ActorContext CreateActorContext()
+        => new(TenantId, UserId, "Test User", BranchId, [BranchId]);
+
     private static CreateSale CreateSut(
         ISalesDbContext dbContext,
         IInventoryIntegrationService? inventoryService = null)
     {
-        var currentUser = new Mock<ICurrentUser>();
-        currentUser.Setup(u => u.UserId).Returns(UserId);
-        currentUser.Setup(u => u.FullName).Returns("Test User");
-        currentUser.Setup(u => u.BranchId).Returns(BranchId);
-        currentUser.Setup(u => u.BranchIds).Returns([BranchId]);
-
         return new CreateSale(
             dbContext,
-            currentUser.Object,
             inventoryService ?? new Mock<IInventoryIntegrationService>().Object,
             new Mock<ILogger<CreateSale>>().Object);
     }

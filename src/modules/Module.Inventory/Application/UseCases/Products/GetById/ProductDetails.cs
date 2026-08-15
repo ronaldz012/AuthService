@@ -5,11 +5,11 @@ using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Products.GetById;
 
-public class ProductDetails(IInvDbContext context, ICurrentUser currentUser)
+public class ProductDetails(IInvDbContext context)
 {
-    public async Task<Result<ProductDetailDto>> Execute(Guid productId)
+    public async Task<Result<ProductDetailDto>> Execute(ActorContext ctx, Guid productId)
     {
-        var userBranches = currentUser.BranchIds;
+        var userBranches = ctx.BranchIds;
 
         var result = await context.Products.Select(p => new ProductDetailDto
         {

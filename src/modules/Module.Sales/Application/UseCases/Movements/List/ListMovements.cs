@@ -5,13 +5,13 @@ using Module.Sales.Application.Abstraction;
 
 namespace Module.Sales.Application.UseCases.Movements.List;
 
-public class ListMovements(ISalesDbContext context, ICurrentUser currentUser)
+public class ListMovements(ISalesDbContext context)
 {
-    public async Task<Result<List<MovementListDto>>> Execute()
+    public async Task<Result<List<MovementListDto>>> Execute(ActorContext ctx)
     {
         var closure = await context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.BranchId == currentUser.BranchId && c.IsOpen)
+            .Where(c => c.BranchId == ctx.BranchId && c.IsOpen)
             .Select(c => c.Id)
             .FirstOrDefaultAsync();
 

@@ -13,11 +13,11 @@ public static class OpenCashRegisterErrors
     public static readonly Error Failed = new(ErrorCode.InternalError, "Could not open cash register.");
 }
 
-public class OpenCashRegister(ISalesDbContext context, ICurrentUser currentUser)
+public class OpenCashRegister(ISalesDbContext context)
 {
-    public async Task<Result<Guid>> Execute(OpenCashRegisterDto dto)
+    public async Task<Result<Guid>> Execute(ActorContext ctx, OpenCashRegisterDto dto)
     {
-        var branchId = currentUser.BranchId;
+        var branchId = ctx.BranchId;
 
         var alreadyOpen = await context.CashRegisterClosures
             .AnyAsync(c => c.BranchId == branchId && c.IsOpen);
@@ -25,7 +25,7 @@ public class OpenCashRegister(ISalesDbContext context, ICurrentUser currentUser)
         if (alreadyOpen)
             return OpenCashRegisterErrors.AlreadyOpen;
 
-        var closure = CashRegisterClosure.Open(branchId, dto.OpeningBalance, currentUser.UserId, currentUser.FullName);
+        var closure = CashRegisterClosure.Open(branchId, dto.OpeningBalance, ctx.UserId, ctx.FullName);
 
         context.CashRegisterClosures.Add(closure);
         await context.SaveChangesAsync();

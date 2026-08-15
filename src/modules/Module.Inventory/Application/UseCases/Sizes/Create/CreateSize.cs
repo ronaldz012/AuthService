@@ -6,9 +6,9 @@ using Module.Inventory.Domain.Products;
 
 namespace Module.Inventory.Application.UseCases.Sizes.Create;
 
-public class CreateSize(IInvDbContext context, ICurrentUser currentUser)
+public class CreateSize(IInvDbContext context)
 {
-    public async Task<Result<SizeDto>> Execute(CreateSizeDto dto)
+    public async Task<Result<SizeDto>> Execute(ActorContext ctx, CreateSizeDto dto)
     {
         var name = dto.Name.Trim();
 
@@ -20,8 +20,8 @@ public class CreateSize(IInvDbContext context, ICurrentUser currentUser)
         {
             Name = name,
             SortOrder = dto.SortOrder,
-            CreatedBy = currentUser.UserId,
-            CreatedByName = currentUser.FullName
+            CreatedBy = ctx.UserId,
+            CreatedByName = ctx.FullName
         };
 
         context.Sizes.Add(size);

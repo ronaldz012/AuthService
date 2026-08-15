@@ -6,11 +6,11 @@ using Module.Inventory.Domain.Transfers;
 
 namespace Module.Inventory.Application.UseCases.Transfers.Create;
 
-public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser)
+public class CreateStockTransfer(IInvDbContext context)
 {
-    public async Task<Result<bool>> Execute(CreateStockTransferDto dto)
+    public async Task<Result<bool>> Execute(ActorContext ctx, CreateStockTransferDto dto)
     {
-        var fromBranchId = currentUser.BranchIds[0];
+        var fromBranchId = ctx.BranchId;
 
         // Validar que no es la misma sucursal
         if (fromBranchId == dto.ToBranchId)
@@ -43,10 +43,10 @@ public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser
         {
             FromBranchId = fromBranchId,
             ToBranchId = dto.ToBranchId,
-            RequestedByUserId = currentUser.UserId,
+            RequestedByUserId = ctx.UserId,
             Notes = dto.Notes,
-            CreatedBy = currentUser.UserId,
-            CreatedByName = currentUser.FullName
+            CreatedBy = ctx.UserId,
+            CreatedByName = ctx.FullName
         };
 
         foreach (var item in dto.Items)
@@ -55,8 +55,8 @@ public class CreateStockTransfer(IInvDbContext context, ICurrentUser currentUser
             {
                 ProductVariantId = item.ProductVariantId,
                 QuantityRequested = item.QuantityRequested,
-                CreatedBy = currentUser.UserId,
-                CreatedByName = currentUser.FullName
+                CreatedBy = ctx.UserId,
+                CreatedByName = ctx.FullName
             });
         }
 
