@@ -1,11 +1,12 @@
 using Common.Contracts.authentication;
+using Common.Contracts.branches;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Inventory.Application.Abstraction;
 
 namespace Module.Inventory.Application.UseCases.Products.GetById;
 
-public class ProductDetails(IInvDbContext context)
+public class ProductDetails(IInvDbContext context, IBranchService branchService)
 {
     public async Task<Result<ProductDetailDto>> Execute(ActorContext ctx, Guid productId)
     {
@@ -45,6 +46,15 @@ public class ProductDetails(IInvDbContext context)
         }).FirstOrDefaultAsync(x => x.Id == productId);
 
         if (result is null) return ProductDetailsErrors.ProductNotFound;
+
+        var branchesResult = await branchService.GetBranchesByIds(userBranches.ToList());
+        if (!branchesResult.IsSuccess)
+            return ProductDetailsErrors.BranchLookupFailed;
+
+        var branchNames = branchesResult.Value.ToDictionary(b => b.Id, b => b.Name);
+
+        foreach (var stock in result.Variants.SelectMany(v => v.BranchStocks))
+            stock.BranchName = branchNames.GetValueOrDefault(stock.BranchId) ?? "Unknown";
 
         result.TotalAvailable = result.Variants.Sum(v => v.TotalAvailable);
         return result;

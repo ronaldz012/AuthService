@@ -38,6 +38,7 @@ public class ProductVarianListDto
 public class BranchStockDto
 {
     public Guid BranchId { get; set; }
+    public string BranchName { get; set; } = string.Empty;
     public int Stock { get; set; }
 }
 

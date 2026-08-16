@@ -43,7 +43,7 @@ public class GetClosureDetail(
                         DocumentType = s.DocumentType.ToString(),
                         InvoiceNumber = s.InvoiceNumber,
                         TransactionCode = s.TransactionCode,
-                        ItemsCount = s.SaleItems.Count,
+                        ItemsCount = s.SaleItems.Sum(si => si.Quantity),
                         Items = s.SaleItems.Select(si => new ClosureSaleItemDetailDto
                         {
                             ProductVariantId = si.ProductVariantId,
