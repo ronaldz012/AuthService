@@ -69,7 +69,7 @@ public class SessionStateService(
             .Include(t => t.Branches)
             .FirstAsync(t => t.Id == tenantId);
 
-        List<PermissionsByModuleDto> branches;
+        List<PermissionsByBranchDto> branches;
 
         if (userType is UserType.TenantAdmin or UserType.Owner)
         {
@@ -79,28 +79,25 @@ public class SessionStateService(
 
             branches = tenantInfo.Branches
                 .Where(b => b.IsActive)
-                .Select(branch => new PermissionsByModuleDto
+                .Select(branch => new PermissionsByBranchDto
                 {
                     BranchId = branch.Id,
                     BranchName = branch.Name,
                     Role = "Admin",
-                    Modules = planFeatures
+                    Features = planFeatures
                         .Where(f => branch.AllowedFeatureKeys.Contains(f.Key))
-                        .GroupBy(f => f.Module.ToString())
-                        .Select(moduleGroup => new PermissiónByModuleDto
+                        .OrderBy(f => f.Module)
+                        .Select(f => new SessionFeatureDto
                         {
-                            Name = moduleGroup.Key,
-                            Route = $"/{moduleGroup.Key.ToLower()}",
-                            Features = moduleGroup.Select(f => new FeaturePermissionByModuleDto
-                            {
-                                key = f.Key,
-                                DisplayName = f.DisplayName,
-                                route = f.Route,
-                                icon = f.Icon,
-                                Permission = ["*"],
-                                IsMenu = f.IsMenu,
-                            }).ToList()
-                        }).ToList()
+                            Key = f.Key,
+                            DisplayName = f.DisplayName,
+                            Route = f.Route,
+                            Icon = f.Icon,
+                            Module = f.Module.ToString().ToLower(),
+                            IsMenu = f.IsMenu,
+                            Permissions = ["*"]
+                        })
+                        .ToList()
                 }).ToList();
         }
         else
@@ -127,28 +124,25 @@ public class SessionStateService(
                 })
                 .ToListAsync();
 
-            branches = rawPermissions.Select(b => new PermissionsByModuleDto
+            branches = rawPermissions.Select(b => new PermissionsByBranchDto
             {
                 BranchId = b.BranchId,
                 BranchName = b.BranchName,
                 Role = b.RoleName,
-                Modules = b.Features
+                Features = b.Features
                     .Where(f => b.AllowedFeatureKeys.Contains(f.FeatureKey))
-                    .GroupBy(f => f.Module.ToString())
-                    .Select(moduleGroup => new PermissiónByModuleDto
+                    .OrderBy(f => f.Module)
+                    .Select(f => new SessionFeatureDto
                     {
-                        Name = moduleGroup.Key,
-                        Route = $"/{moduleGroup.Key.ToLower()}",
-                        Features = moduleGroup.Select(f => new FeaturePermissionByModuleDto
-                        {
-                            key = f.FeatureKey,
-                            DisplayName = f.DisplayName,
-                            route = f.Route,
-                            icon = f.Icon,
-                            Permission = f.Permissions,
-                            IsMenu = f.IsMenu,
-                        }).ToList()
-                    }).ToList()
+                        Key = f.FeatureKey,
+                        DisplayName = f.DisplayName,
+                        Route = f.Route,
+                        Icon = f.Icon,
+                        Module = f.Module.ToString().ToLower(),
+                        IsMenu = f.IsMenu,
+                        Permissions = f.Permissions
+                    })
+                    .ToList()
             }).ToList();
         }
 

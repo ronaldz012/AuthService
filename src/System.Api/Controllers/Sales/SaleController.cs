@@ -1,4 +1,5 @@
 using System.Api.Result;
+using System.Diagnostics.CodeAnalysis;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
