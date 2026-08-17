@@ -36,10 +36,9 @@ public class PlanSeeder(IAuthDbContext context) : IDataSeeder
                     Permissions =
                     [
                         new() { FeatureKey = "products",  Actions = ["read"] },
-                        new() { FeatureKey = "transfers", Actions = ["read"] },
+                        new() { FeatureKey = "transfers", Actions = ["read", "create", "update"] },
                         new() { FeatureKey = "pos",       Actions = ["read", "create", "update"] },
-                        new() { FeatureKey = "sales",     Actions = ["read"] },
-                        new() { FeatureKey = "closures",  Actions = ["read"] }
+                        new() { FeatureKey = "closures",  Actions = ["create"] }
                     ]
                 },
                 new DefaultRoleTemplate
@@ -63,8 +62,8 @@ public class PlanSeeder(IAuthDbContext context) : IDataSeeder
                         new() { FeatureKey = "transfers",  Actions = ["read", "create", "update", "delete"] },
                         new() { FeatureKey = "receptions", Actions = ["read", "create", "update", "delete"] },
                         new() { FeatureKey = "pos",        Actions = ["read", "create", "update"] },
-                        new() { FeatureKey = "sales",      Actions = ["read", "refund", "void_invoice", "export"] },
-                        new() { FeatureKey = "closures",   Actions = ["read", "export"] }
+                        new() { FeatureKey = "sales",      Actions = ["read"] },
+                        new() { FeatureKey = "closures",   Actions = ["read", "create", "update"] }
                     ]
                 },
             ],

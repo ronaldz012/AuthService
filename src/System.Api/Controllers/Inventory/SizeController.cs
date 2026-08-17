@@ -1,3 +1,4 @@
+using System.Api.Attributes;
 using System.Api.Result;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -15,24 +16,28 @@ namespace System.Api.Controllers.Inventory
     public class SizeController(SizeUseCases useCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpGet]
+        [RequireFeature("products", "read")]
         public async Task<IActionResult> Get([FromQuery] bool? includeInactive)
         {
             return await useCases.GetListSizes.Execute(includeInactive).ToValueOrProblemDetails();
         }
 
         [HttpPost]
+        [RequireFeature("products", "create")]
         public async Task<IActionResult> Create([FromBody] CreateSizeDto dto)
         {
             return await useCases.CreateSize.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
+        [RequireFeature("products", "update")]
         public async Task<IActionResult> ToggleSizeStatus([FromRoute] Guid id)
         {
             return await useCases.UpdateSize.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
+        [RequireFeature("products", "update")]
         public async Task<IActionResult> UpdateSize([FromRoute] Guid id, [FromBody] UpdateSizeDto dto)
         {
             return await useCases.UpdateSize.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();

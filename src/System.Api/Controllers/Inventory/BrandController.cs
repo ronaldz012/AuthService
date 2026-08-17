@@ -1,3 +1,4 @@
+using System.Api.Attributes;
 using System.Api.Result;
 using Common.Contracts.authentication;
 
@@ -17,24 +18,28 @@ namespace System.Api.Controllers.Inventory
     public class BrandController(BrandUseCases service, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPost]
+        [RequireFeature("products", "create")]
         public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequest dto)
         {
             return await service.CreateBrand.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
+        [RequireFeature("products", "read")]
         public async Task<IActionResult> GetBrands([FromQuery] bool? includeInactive)
         {
             return await  service.GetBrands.Execute(includeInactive).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
+        [RequireFeature("products", "update")]
         public async Task<IActionResult> ToggleBrandStatus([FromRoute] Guid id)
         {
             return await service.UpdateBrand.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
+        [RequireFeature("products", "update")]
         public async Task<IActionResult> UpdateBrand([FromRoute] Guid id, [FromBody] UpdateBrandDto dto)
         {
             return await service.UpdateBrand.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();

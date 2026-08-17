@@ -64,7 +64,7 @@ public class RequireFeatureFilter(
         bool hasPermission = requestedBranches.All(branch =>
             branch.Features.Any(f =>
                 f.Key == feature &&
-                f.Permissions.Contains(permission)));
+                (f.Permissions.Contains("*") || f.Permissions.Contains(permission))));
 
         if (!hasPermission)
         {

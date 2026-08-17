@@ -1,4 +1,4 @@
-using System.Api.Filters;
+using System.Api.Attributes;
 using System.Api.Result;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -16,17 +16,20 @@ namespace System.Api.Controllers.Inventory
     public class StockTransferController(StockTransferUseCases useCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpGet]
+        [RequireFeature("transfers", "read")]
         public async Task<IActionResult> LisStockTransfers([FromQuery] StockTransferQueryDto queryDto)
         {
             return await useCases.ListStockTransfers.Execute(currentUser.ToActorContext(), queryDto).ToValueOrProblemDetails();
         }
 
         [HttpPost]
+        [RequireFeature("transfers", "create")]
         public async Task<IActionResult> CreateStockTransfer([FromBody] CreateStockTransferDto createStockTransferDto)
         {
             return await useCases.CreateStockTransfer.Execute(currentUser.ToActorContext(), createStockTransferDto).ToValueOrProblemDetails();
         }
         [HttpPost("Resolve/{transferId:guid}")]
+        [RequireFeature("transfers", "update")]
         public async Task<IActionResult> ResolveStockTransfer([FromRoute] Guid transferId, [FromBody] ResolveStockTransferDto resolveStockTransferDto)
         {
             return await useCases.ResolveStockTransfer
@@ -34,12 +37,14 @@ namespace System.Api.Controllers.Inventory
                 .ToValueOrProblemDetails();
         }
         [HttpGet("{transferId:guid}")]
+        [RequireFeature("transfers", "read")]
         public async Task<IActionResult> GetStockTransferDetails([FromRoute] Guid transferId)
         {
             return await useCases.StockTransferDetails.Execute(currentUser.ToActorContext(), transferId).ToValueOrProblemDetails();
         }
 
         [HttpPatch("Cancel/{transferId:guid}")]
+        [RequireFeature("transfers", "delete")]
         public async Task<IActionResult> CancelStockTransfer([FromRoute] Guid transferId)
         {
             return await useCases.CancelStockTransfer.Execute(currentUser.ToActorContext(), transferId).ToValueOrProblemDetails();

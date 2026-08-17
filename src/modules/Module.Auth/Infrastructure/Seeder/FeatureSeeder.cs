@@ -91,10 +91,7 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                 IsMenu = true,
                 CreatedAt   = DateTime.UtcNow,
                 AvailableActions = [
-                    new() { Key = "read", DisplayName = "Ver Ventas", Description = "Permite listar el historial de ventas realizadas." },
-                    new() { Key = "refund", DisplayName = "Devoluciones", Description = "Permite realizar notas de crédito o devoluciones de productos." },
-                    new() { Key = "void_invoice", DisplayName = "Anular Facturas", Description = "Permite la cancelación/anulación total de un comprobante emitido." },
-                    new() { Key = "export", DisplayName = "Exportar Reportes", Description = "Permite descargar listados de ventas en formatos externos (Excel/PDF)." }
+                    new() { Key = "read", DisplayName = "Ver Ventas", Description = "Permite listar el historial de ventas realizadas." }
                 ]
             },
             new()
@@ -110,7 +107,8 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                 AvailableActions =
                 [
                     new() { Key = "read",   DisplayName = "Ver",     Description = "Permite listar y ver detalle de cierres de caja." },
-                    new() { Key = "export", DisplayName = "Exportar", Description = "Permite descargar reportes de cierres." }
+                    new() { Key = "create", DisplayName = "Abrir Caja", Description = "Permite iniciar el turno de caja." },
+                    new() { Key = "update", DisplayName = "Cerrar Caja", Description = "Permite confirmar el cierre de la caja." }
                 ]
             },
         };

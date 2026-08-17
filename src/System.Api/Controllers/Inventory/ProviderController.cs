@@ -1,3 +1,4 @@
+using System.Api.Attributes;
 using System.Api.Result;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -15,24 +16,28 @@ namespace System.Api.Controllers.Inventory
     public class ProviderController(ProviderUseCases useCases, ICurrentUser currentUser) : ControllerBase
     {
         [HttpPost]
+        [RequireFeature("receptions", "create")]
         public async Task<IActionResult> CreateProvider([FromBody] CreateProviderRequest dto)
         {
             return await useCases.CreateProvider.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
+        [RequireFeature("receptions", "read")]
         public async Task<IActionResult> GetProviders([FromQuery] bool? includeInactive)
         {
             return await useCases.GetProviders.Execute(includeInactive).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
+        [RequireFeature("receptions", "update")]
         public async Task<IActionResult> UpdateProvider([FromRoute] Guid id, [FromBody] UpdateProviderRequest dto)
         {
             return await useCases.UpdateProvider.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
+        [RequireFeature("receptions", "delete")]
         public async Task<IActionResult> ToggleProvider([FromRoute] Guid id)
         {
             return await useCases.UpdateProvider.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
