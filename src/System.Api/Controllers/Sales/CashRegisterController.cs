@@ -37,11 +37,18 @@ namespace System.Api.Controllers.Sales
             return await registerUseCases.GetCurrentRegister.Execute(currentUser.ToActorContext()).ToValueOrProblemDetails();
         }
 
+        [HttpGet("Current/details")]
+        [RequireFeature("pos", "read")]
+        public async Task<IActionResult> CurrentDetails()
+        {
+            return await registerUseCases.GetClosureDetail.ExecuteCurrent(currentUser.ToActorContext()).ToValueOrProblemDetails();
+        }
+
         [HttpGet("{id:guid}")]
         [RequireFeature("closures", "read")]
-        public async Task<IActionResult> GetClosureDetail([FromRoute] Guid id, [FromQuery] bool includeStock = false)
+        public async Task<IActionResult> GetClosureDetail([FromRoute] Guid id)
         {
-            return await registerUseCases.GetClosureDetail.Execute(currentUser.ToActorContext(), id, includeStock).ToValueOrProblemDetails();
+            return await registerUseCases.GetClosureDetail.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
         }
 
         [HttpGet]

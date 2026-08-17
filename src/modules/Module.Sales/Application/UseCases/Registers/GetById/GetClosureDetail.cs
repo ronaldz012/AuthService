@@ -11,11 +11,38 @@ public class GetClosureDetail(
     ISalesDbContext context,
     IInventoryIntegrationService inventoryService)
 {
-    public async Task<Result<ClosureDetailDto>> Execute(ActorContext ctx, Guid id, bool includeStock = false)
+    public async Task<Result<ClosureDetailDto>> Execute(ActorContext ctx, Guid id)
     {
-        var closure = await context.CashRegisterClosures
+        var closure = await GetClosureAsync(ctx.BranchId, id);
+        if (closure is null)
+            return GetClosureErrors.NotFound;
+
+        return await AttachStockAsync(closure);
+    }
+
+    public async Task<Result<ClosureDetailDto>> ExecuteCurrent(ActorContext ctx)
+    {
+        var closureId = await GetActiveClosureIdAsync(ctx.BranchId);
+        if (closureId is null)
+            return GetClosureErrors.NoActiveClosure;
+
+        return await Execute(ctx, closureId.Value);
+    }
+
+    private async Task<Guid?> GetActiveClosureIdAsync(Guid branchId)
+    {
+        return await context.CashRegisterClosures
             .AsNoTracking()
-            .Where(c => c.Id == id && c.BranchId == ctx.BranchId)
+            .Where(c => c.BranchId == branchId && c.IsOpen)
+            .Select(c => (Guid?)c.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    private async Task<ClosureDetailDto?> GetClosureAsync(Guid branchId, Guid id)
+    {
+        return await context.CashRegisterClosures
+            .AsNoTracking()
+            .Where(c => c.Id == id && c.BranchId == branchId)
             .Select(c => new ClosureDetailDto
             {
                 Id = c.Id,
@@ -67,33 +94,30 @@ public class GetClosureDetail(
                     }).ToList()
             })
             .FirstOrDefaultAsync();
+    }
 
-        if (closure is null)
-            return GetClosureErrors.NotFound;
+    private async Task<Result<ClosureDetailDto>> AttachStockAsync(ClosureDetailDto closure)
+    {
+        var variantIds = closure.Sales
+            .SelectMany(s => s.Items)
+            .Select(i => i.ProductVariantId)
+            .Distinct()
+            .ToList();
 
-        if (includeStock)
-        {
-            var variantIds = closure.Sales
-                .SelectMany(s => s.Items)
-                .Select(i => i.ProductVariantId)
-                .Distinct()
-                .ToList();
+        var stockResult = await inventoryService.GetVariantsWithStock(variantIds, closure.BranchId);
+        if (!stockResult.IsSuccess)
+            return stockResult.Error;
 
-            var stockResult = await inventoryService.GetVariantsWithStock(variantIds, closure.BranchId);
-            if (!stockResult.IsSuccess)
-                return stockResult.Error;
-
-            closure.VariantStocks = stockResult.Value
-                .Select(v => new ClosureVariantStockDto
-                {
-                    ProductVariantId = v.Id,
-                    ProductSku = v.Sku,
-                    ProductDisplayName = v.DisplayName,
-                    CurrentStock = v.Stock
-                })
-                .OrderBy(v => v.CurrentStock)
-                .ToList();
-        }
+        closure.VariantStocks = stockResult.Value
+            .Select(v => new ClosureVariantStockDto
+            {
+                ProductVariantId = v.Id,
+                ProductSku = v.Sku,
+                ProductDisplayName = v.DisplayName,
+                CurrentStock = v.Stock
+            })
+            .OrderBy(v => v.CurrentStock)
+            .ToList();
 
         return closure;
     }
