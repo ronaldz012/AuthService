@@ -2,12 +2,17 @@ using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.Abstraction;
+using System.Security.Claims;
 
 namespace System.Api.Middlewares;
 
 public class TenantMiddleware(RequestDelegate next)
 {
-    public async Task InvokeAsync(HttpContext context, ITenantConnectionContext tenantConnectionContext, ITenantDatabaseResolver resolver)
+    public async Task InvokeAsync(
+        HttpContext context,
+        ITenantConnectionContext tenantConnectionContext,
+        ISessionStateService sessionState)
     {
         var endpoint = context.GetEndpoint();
 
@@ -23,28 +28,52 @@ public class TenantMiddleware(RequestDelegate next)
             return;
         }
 
-        var tenantIdClaim = context.User.FindFirst("tenantId")?.Value;
-        if (!Guid.TryParse(tenantIdClaim, out var tenantId))
+        // El JWT de Auth0 identifica al usuario por su "sub" (= ExternalAuthId, ej. auth0|...)
+        var externalAuthId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                             ?? context.User.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(externalAuthId))
         {
-            await WriteProblemDetails(context, StatusCodes.Status400BadRequest,
-                ErrorCode.BadRequest, "Invalid token: missing tenantId");
+            await WriteProblemDetails(context, StatusCodes.Status401Unauthorized,
+                ErrorCode.Unauthorized, "Invalid token: missing subject claim");
             return;
         }
 
-        var info = await resolver.GetTenantDatabaseInfo(tenantId);
-        if (info is null || string.IsNullOrEmpty(info.Schema))
+        var result = await sessionState.AuthenticateByExternalIdAsync(externalAuthId);
+
+        if (!result.IsSuccess)
         {
-            await WriteProblemDetails(context, StatusCodes.Status404NotFound,
-                ErrorCode.NotFound, "Customer environment not found");
+            await WriteProblemDetails(context, ResultStatus(result.Error.Code),
+                result.Error.Code, result.Error.Message);
             return;
         }
 
-        tenantConnectionContext.TenantId = tenantId;
-        tenantConnectionContext.Schema = info.Schema;
-        tenantConnectionContext.DatabaseName = info.DatabaseName;
+        var data = result.Value;
+
+        tenantConnectionContext.TenantId = data.Session.User.TenantId;
+        tenantConnectionContext.Schema = data.Schema;
+        tenantConnectionContext.DatabaseName = data.DatabaseName;
+
+        var userContext = new CurrentUserContext(
+            data.Session.User.TenantId,
+            data.Session.User.Id,
+            $"{data.Session.User.FirstName} {data.Session.User.LastName}".Trim(),
+            data.Session.User.Username,
+            data.Session.User.UserType,
+            externalAuthId);
+
+        context.Items[CurrentUserContextKeys.HttpContextKey] = userContext;
 
         await next(context);
     }
+
+    private static int ResultStatus(ErrorCode code) => code switch
+    {
+        ErrorCode.Unauthorized => StatusCodes.Status401Unauthorized,
+        ErrorCode.Forbidden => StatusCodes.Status403Forbidden,
+        ErrorCode.NotFound => StatusCodes.Status404NotFound,
+        _ => StatusCodes.Status400BadRequest,
+    };
 
     private static async Task WriteProblemDetails(HttpContext context, int statusCode, ErrorCode errorCode, string detail)
     {

@@ -1,8 +1,8 @@
 using System.Api.Attributes;
 using System.Api.Result;
-using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Providers;
 using Module.Inventory.Application.UseCases.Providers.CreateProvider;
 using Module.Inventory.Application.UseCases.Providers.Update;
@@ -13,13 +13,15 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | Providers")]
     [Authorize]
-    public class ProviderController(ProviderUseCases useCases, ICurrentUser currentUser) : ControllerBase
+    public class ProviderController(ProviderUseCases useCases, ISessionStateService currentUser) : ControllerBase
     {
         [HttpPost]
         [RequireFeature("receptions", "create")]
         public async Task<IActionResult> CreateProvider([FromBody] CreateProviderRequest dto)
         {
-            return await useCases.CreateProvider.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.CreateProvider.Execute(actorResult.Value, dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
@@ -33,14 +35,18 @@ namespace System.Api.Controllers.Inventory
         [RequireFeature("receptions", "update")]
         public async Task<IActionResult> UpdateProvider([FromRoute] Guid id, [FromBody] UpdateProviderRequest dto)
         {
-            return await useCases.UpdateProvider.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.UpdateProvider.Execute(actorResult.Value, id, dto).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
         [RequireFeature("receptions", "delete")]
         public async Task<IActionResult> ToggleProvider([FromRoute] Guid id)
         {
-            return await useCases.UpdateProvider.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.UpdateProvider.ChangeStatus(actorResult.Value, id).ToValueOrProblemDetails();
         }
     }
 }

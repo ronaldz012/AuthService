@@ -3,6 +3,7 @@ using System.Api.Result;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Application.UseCases.ProductVariants;
 using Module.Inventory.Application.UseCases.StockMovements;
@@ -17,59 +18,75 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | ProductVariants")]
     [Authorize]
-    public class ProductVariantController(ProductVariantUseCases useCases, StockMovementUseCases stockMovementUseCases, ICurrentUser currentUser) : ControllerBase
+    public class ProductVariantController(ProductVariantUseCases useCases, StockMovementUseCases stockMovementUseCases, ISessionStateService currentUser) : ControllerBase
     {
         [HttpPut("{id:guid}")]
         [RequireFeature("products", "update")]
         public async Task<IActionResult> UpdateProductVariant([FromRoute] Guid id,[FromBody]UpdateProductVariantDto dto)
         {
-            return await useCases.UpdateProductVariant.Execute(currentUser.ToActorContext(), dto, id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.UpdateProductVariant.Execute(actorResult.Value, dto, id).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}")]
         [RequireFeature("products", "update")]
         public async Task<IActionResult> UpdateStock([FromRoute] Guid id, [FromBody] UpdateProductVariantStockDto dto)
         {
-            return await useCases.CorrectProductVariantStock.Execute(currentUser.ToActorContext(), dto, id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.CorrectProductVariantStock.Execute(actorResult.Value, dto, id).ToValueOrProblemDetails();
         }
         [HttpGet]
         public async Task<IActionResult> GetVariantProductByCode([FromQuery] string request)
         {
-            return await useCases.GetProductVariantByCode.Execute(currentUser.ToActorContext(), request).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.GetProductVariantByCode.Execute(actorResult.Value, request).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}/details")]
         [RequireFeature("products", "read")]
         public async Task<IActionResult> GeProductVariantById([FromRoute] Guid id)
         {
-            return await useCases.GetProductVariantDetails.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.GetProductVariantDetails.Execute(actorResult.Value, id).ToValueOrProblemDetails();
         }
         [HttpPost("{productId:guid}")]
         [RequireFeature("products", "update")]
         public async Task<IActionResult> CreateProductVariants([FromRoute]Guid productId, [FromBody] CreateProductVariantsRequest request)
         {
-            return await useCases.CreateProductVariantUc.Execute(currentUser.ToActorContext(), productId, request).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.CreateProductVariantUc.Execute(actorResult.Value, productId, request).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}/can-delete")]
         [RequireFeature("products", "delete")]
         public async Task<IActionResult> CanDeleteVariant([FromRoute] Guid id)
         {
-            return await useCases.DeleteProductVariantUc.Check(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.DeleteProductVariantUc.Check(actorResult.Value, id).ToValueOrProblemDetails();
         }
 
         [HttpDelete("{id:guid}")]
         [RequireFeature("products", "delete")]
         public async Task<IActionResult> DeleteProductVariant([FromRoute] Guid id)
         {
-            return await useCases.DeleteProductVariantUc.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.DeleteProductVariantUc.Execute(actorResult.Value, id).ToValueOrProblemDetails();
         }
 
         [HttpGet("{id:guid}/movements")]
         [RequireFeature("products", "read")]
         public async Task<IActionResult> GetProductVariantMovements([FromRoute] Guid id, [FromQuery] StockMovementQueryDto query)
         {
-            return await stockMovementUseCases.ListStockMovements.Execute(currentUser.ToActorContext(), id, query).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await stockMovementUseCases.ListStockMovements.Execute(actorResult.Value, id, query).ToValueOrProblemDetails();
         }
     }
 }

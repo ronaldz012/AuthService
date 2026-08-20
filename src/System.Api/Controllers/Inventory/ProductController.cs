@@ -3,6 +3,7 @@ using System.Api.Result;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Products;
 using Module.Inventory.Application.UseCases.Products.Create;
 using Module.Inventory.Application.UseCases.Products.Get;
@@ -15,20 +16,24 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | Products")]
     [Authorize]
-    public class ProductController(ProductUseCases productUseCases, ICurrentUser currentUser) : ControllerBase
+    public class ProductController(ProductUseCases productUseCases, ISessionStateService currentUser) : ControllerBase
     {
         [HttpPost]
         [RequireFeature("products", "create")]
         public async Task<IActionResult> CreateProduct([FromBody]  CreateProductRequest request)
         {
-            return await productUseCases.CreateProductUc.Execute(currentUser.ToActorContext(), request).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await productUseCases.CreateProductUc.Execute(actorResult.Value, request).ToValueOrProblemDetails();
         }
 
         [HttpGet]
         [RequireFeature("products", "read", true)]
         public async Task<IActionResult> GetProducts([FromQuery] ProductQueryDto request)
         {
-            return await productUseCases.GetProductsUc.Execute(currentUser.ToActorContext(), request).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await productUseCases.GetProductsUc.Execute(actorResult.Value, request).ToValueOrProblemDetails();
         }
 
         [HttpGet("Search")]
@@ -42,7 +47,9 @@ namespace System.Api.Controllers.Inventory
         [RequireFeature("products", "read", true)]
         public async Task<IActionResult> GetProduct([FromRoute] Guid id)
         {
-            return await productUseCases.ProductDetails.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await productUseCases.ProductDetails.Execute(actorResult.Value, id).ToValueOrProblemDetails();
         }
         
 
@@ -50,21 +57,27 @@ namespace System.Api.Controllers.Inventory
         [RequireFeature("products", "update")]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductDto request, [FromRoute] Guid id)
         {
-            return await productUseCases.UpdateProduct.Execute(currentUser.ToActorContext(), request, id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await productUseCases.UpdateProduct.Execute(actorResult.Value, request, id).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
         [RequireFeature("products", "update")]
         public async Task<IActionResult> UpdateProductStatus([FromRoute] Guid id, [FromBody] UpdateProductStatusDto request)
         {
-            return await productUseCases.UpdateProductStatus.Execute(currentUser.ToActorContext(), id, request).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await productUseCases.UpdateProductStatus.Execute(actorResult.Value, id, request).ToValueOrProblemDetails();
         }
 
         [HttpDelete("{id:guid}")]
         [RequireFeature("products", "delete")]
         public async Task<IActionResult> DeleteProduct([FromRoute] Guid id)
         {
-            return await productUseCases.DeleteProduct.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await productUseCases.DeleteProduct.Execute(actorResult.Value, id).ToValueOrProblemDetails();
         }
     }
 }

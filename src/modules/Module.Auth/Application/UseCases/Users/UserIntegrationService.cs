@@ -7,7 +7,7 @@ using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Users;
 
-public class UserIntegrationService(IAuthDbContext context, ITokenGenerator tokenGenerator) : IUserIntegrationService
+public class UserIntegrationService(IAuthDbContext context ) : IUserIntegrationService
 {
     public async Task<Result<List<UserDetailsDto>>> GetUsersByIds(List<Guid> userIds)
     {

@@ -21,3 +21,11 @@ public class Google
     public string ClientSecret { get; set; } = string.Empty;
     public bool TrustEmailVerification { get; set; } = true;
 }
+
+public class Auth0Settings
+{
+    public const string SectionName = "Auth0";
+    public string Domain { get; set; } = string.Empty;
+    public string Audience { get; set; } = string.Empty;
+    public string SpaClientSecret { get; set; } = string.Empty;
+}

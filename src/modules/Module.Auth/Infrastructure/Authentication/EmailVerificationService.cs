@@ -29,7 +29,7 @@ public class EmailVerificationService(IAuthDbContext dbContext,
             {
                 UserId = user.Id,
                 Code = verificationCode,
-                Email = user.Email,
+                Email = user.Email ?? "",
                 SentAt = sentAt,
                 ExpiresAt = expiresAt,
                 IsUsed = false,

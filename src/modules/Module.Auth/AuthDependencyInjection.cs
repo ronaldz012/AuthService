@@ -8,8 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Autentication;
 using Module.Auth.Application.UseCases.Autentication.AuthMe;
-using Module.Auth.Application.UseCases.Autentication.Login;
-using Module.Auth.Application.UseCases.Autentication.PublicLogin;
 using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Application.UseCases.Autentication.RefreshToken;
 using Module.Auth.Application.UseCases.Autentication.VerifiUser;
@@ -79,8 +77,6 @@ public static class SharedDependencyInjection
          services.AddScoped<AutenticationUseCases>()
                .AddScoped<RegisterUser>()
                .AddScoped<RegisterDefaultUser>()
-               .AddScoped<Login>()
-               .AddScoped<CompletePublicRegister>()
                .AddScoped<VerifyUser>()
                .AddScoped<SetupUserPassword>()
                .AddScoped<VerifyToken>()
@@ -108,6 +104,9 @@ public static class SharedDependencyInjection
          IConfigurationSection authSettingsSection = configuration.GetSection(AuthenticationSettings.SectionName);
          services.Configure<AuthenticationSettings>(authSettingsSection);
 
+         IConfigurationSection auth0SettingsSection = configuration.GetSection(Auth0Settings.SectionName);
+         services.Configure<Auth0Settings>(auth0SettingsSection);
+
          IConfigurationSection smtpSettingsSection = configuration.GetSection(SmtpSettings.SectionName);
          services.Configure<SmtpSettings>(smtpSettingsSection);
 
@@ -117,6 +116,11 @@ public static class SharedDependencyInjection
          services.AddScoped<IRefreshTokenService, ImplementationRefreshTokenService>();
          services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
          services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
+         services.AddSingleton<IAuth0TokenValidator, Auth0TokenValidator>();
+         services.AddHttpClient<IAuth0ProvisioningService, Auth0ProvisioningService>(client =>
+         {
+             client.Timeout = TimeSpan.FromSeconds(30);
+         });
 
          services.AddSingleton<EmailTemplateRenderer>();
 
@@ -136,7 +140,8 @@ public static class SharedDependencyInjection
          services.AddScoped<IDataSeeder, TenantDataBaseSeeder>()
              .AddScoped<IDataSeeder, FeatureSeeder>()
              .AddScoped<IDataSeeder, PlanSeeder>()
-             .AddScoped<IDataSeeder, TenantSeeder>();
+             .AddScoped<IDataSeeder, TenantSeeder>()
+             .AddScoped<IDataSeeder, Auth0Seeder>();
 
         services.AddScoped<ITenantConnectionContext, TenantConnectionContext>();
 

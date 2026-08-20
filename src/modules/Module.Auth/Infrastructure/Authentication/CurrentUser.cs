@@ -1,11 +1,7 @@
-using System.Security.Claims;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Http;
 
 namespace Module.Auth.Infrastructure.Authentication;
-
-
-
 
 public class CurrentUserService : ICurrentUser
 {
@@ -15,6 +11,7 @@ public class CurrentUserService : ICurrentUser
     public IReadOnlyList<Guid> BranchIds { get; }
     public string FullName { get; }
     public string Username { get; }
+    public string? ExternalAuthId { get; }
     public int UserType { get; }
     public bool IsAdmin => UserType is 1 or 2;
     public bool IsAuthenticated { get; }
@@ -23,11 +20,11 @@ public class CurrentUserService : ICurrentUser
     public CurrentUserService(IHttpContextAccessor httpContextAccessor)
     {
         var context = httpContextAccessor.HttpContext;
-        var user = context?.User;
+        var userContext = context?.Items[CurrentUserContextKeys.HttpContextKey] as CurrentUserContext;
 
-        IsAuthenticated = user?.Identity?.IsAuthenticated ?? false;
+        IsAuthenticated = userContext is not null;
 
-        if (!IsAuthenticated)
+        if (userContext is null)
         {
             FullName = "";
             Username = "Anonymous";
@@ -35,15 +32,16 @@ public class CurrentUserService : ICurrentUser
             return;
         }
 
-        UserId = Guid.TryParse(user?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var uGuid) ? uGuid : Guid.Empty;
-        TenantId = Guid.TryParse(user?.FindFirst("tenantId")?.Value, out var tGuid) ? tGuid : Guid.Empty;
-        FullName = user?.FindFirst(ClaimTypes.Name)?.Value ?? "";
-        Username = user?.FindFirst("username")?.Value ?? FullName;
-        UserType = int.TryParse(user?.FindFirst("user_type")?.Value, out var ut) ? ut : 0;
+        TenantId = userContext.TenantId;
+        UserId = userContext.UserId;
+        FullName = userContext.FullName;
+        Username = userContext.Username;
+        UserType = userContext.UserType;
+        ExternalAuthId = userContext.ExternalAuthId;
         Token = context?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
         var branchHeader = context?.Request.Headers["X-Branch-Id"].ToString();
-        
+
         var parsedIds = string.IsNullOrWhiteSpace(branchHeader)
             ? Array.Empty<Guid>()
             : branchHeader.Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -52,7 +50,7 @@ public class CurrentUserService : ICurrentUser
                 .ToArray();
 
         BranchIds = parsedIds;
-        
+
         // El BranchId operativo siempre será el primero que envíe el cliente (o Empty si no mandó nada)
         BranchId = parsedIds.FirstOrDefault();
     }

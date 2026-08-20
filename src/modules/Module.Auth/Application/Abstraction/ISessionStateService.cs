@@ -1,11 +1,14 @@
+using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
-using Module.Auth.Domain;
+using Common.Utilities;
 
 namespace Module.Auth.Application.Abstraction;
 
 public interface ISessionStateService
 {
-    Task<SessionStateDto> GetOrBuildAsync(Guid userId, Guid tenantId, UserType userType);
-    void Invalidate(Guid userId);
+    Task<Result<AuthenticatedSessionDto>> AuthenticateByExternalIdAsync(string externalAuthId);
+    Result<SessionStateDto> GetSessionAsync();
+    Result<ActorContext> GetActorContext();
+    void Invalidate(string externalAuthId);
     void InvalidateTenant(Guid tenantId);
 }

@@ -3,6 +3,7 @@ using System.Api.Result;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Categories;
 using Module.Inventory.Application.UseCases.Categories.Create;
 using Module.Inventory.Application.UseCases.Categories.Get;
@@ -14,13 +15,16 @@ namespace System.Api.Controllers.Inventory
     [ApiController]
     [Tags("Inventory | Categories")]
     [Authorize]
-    public class CategoryController(CategoryUseCases categoryUseCases, ICurrentUser currentUser) : ControllerBase
+    public class CategoryController(CategoryUseCases categoryUseCases, ISessionStateService currentUser) : ControllerBase
     {
         [HttpPost]
         [RequireFeature("products", "create")]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest dto)
         {
-            return await categoryUseCases.CreateCategory.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)
+                return actorResult.ToValueOrProblemDetails();
+            return await categoryUseCases.CreateCategory.Execute(actorResult.Value, dto).ToValueOrProblemDetails();
         }
 
         [HttpGet]
@@ -34,14 +38,20 @@ namespace System.Api.Controllers.Inventory
         [RequireFeature("products", "update")]
         public async Task<IActionResult> ToggleCategoryStatus([FromRoute] Guid id)
         {
-            return await categoryUseCases.UpdateCategory.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)
+                return actorResult.ToValueOrProblemDetails();
+            return await categoryUseCases.UpdateCategory.ChangeStatus(actorResult.Value, id).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
         [RequireFeature("products", "update")]
         public async Task<IActionResult> UpdateCategory([FromRoute] Guid id, [FromBody] UpdateCategoryDto dto)
         {
-            return await categoryUseCases.UpdateCategory.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)
+                return actorResult.ToValueOrProblemDetails();
+            return await categoryUseCases.UpdateCategory.Execute(actorResult.Value, id, dto).ToValueOrProblemDetails();
         }
     }
 }

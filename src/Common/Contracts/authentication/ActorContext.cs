@@ -9,6 +9,8 @@ public record ActorContext(
 
 public static class ActorContextExtensions
 {
+    public const string HttpContextKey = "CurrentActor";
+
     public static ActorContext ToActorContext(this ICurrentUser currentUser)
         => new(
             currentUser.TenantId,

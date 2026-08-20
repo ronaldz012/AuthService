@@ -20,7 +20,7 @@ public class GetTenantDatabaseDetails(IAuthDbContext context, IDbConnectionTeste
                 DisplayName = t.DisplayName,
                 IsActive = t.IsActive,
                 CreatedAt = t.CreatedAt,
-                OwnerEmail = t.OwnerUser.Email,
+                OwnerEmail = t.OwnerUser.Email ?? "",
                 OwnerName = t.OwnerUser.FirstName + " " + t.OwnerUser.LastName,
                 PlaneName = t.Plan.Name
             })

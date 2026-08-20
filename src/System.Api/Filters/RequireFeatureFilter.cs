@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Module.Auth.Application.Abstraction;
-using Module.Auth.Domain;
 
 namespace System.Api.Filters;
 
@@ -13,16 +12,29 @@ public class RequireFeatureFilter(
     string feature,
     string permission,
     bool multiBranch,
-    ICurrentUser currentUser,
-    ITenantConnectionContext tenantConnectionContext,
-    ISessionStateService sessionState, 
+    ISessionStateService sessionState,
     ILogger<RequireFeatureFilter> logger) : IAsyncAuthorizationFilter
 {
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        if (currentUser.IsAdmin) return;
+        var sessionResult = sessionState.GetSessionAsync();
+        var userResult = sessionState.GetActorContext();
+        if (!sessionResult.IsSuccess || !userResult.IsSuccess)
+        {
+            context.Result = new ObjectResult(new
+            {
+                StatusCode = StatusCodes.Status401Unauthorized,
+                Message = "No se pudo autenticar la sesión."
+            }) { StatusCode = StatusCodes.Status401Unauthorized };
+            return;
+        }
 
-        if (!multiBranch && currentUser.BranchIds.Count > 1)
+        var session = sessionResult.Value;
+        var user = userResult.Value;
+
+        if (session.User.IsAdmin) return;
+
+        if (!multiBranch && user.BranchIds.Count > 1)
         {
             context.Result = new ObjectResult(new
             {
@@ -33,7 +45,7 @@ public class RequireFeatureFilter(
             return;
         }
 
-        if (!currentUser.BranchIds.Any())
+        if (!user.BranchIds.Any())
         {
             context.Result = new ObjectResult(new
             {
@@ -44,14 +56,11 @@ public class RequireFeatureFilter(
             return;
         }
 
-        var session = await sessionState.GetOrBuildAsync(
-            currentUser.UserId, tenantConnectionContext.TenantId!.Value, (UserType)currentUser.UserType);
-
         var requestedBranches = session.Branches
-            .Where(b => currentUser.BranchIds.Contains(b.BranchId))
+            .Where(b => user.BranchIds.Contains(b.BranchId))
             .ToList();
 
-        if (requestedBranches.Count != currentUser.BranchIds.Count)
+        if (requestedBranches.Count != user.BranchIds.Count)
         {
             context.Result = new ObjectResult(new
             {
@@ -70,7 +79,7 @@ public class RequireFeatureFilter(
         {
             logger.LogWarning(
                 "Usuario {UserId} fue rechazado. Falta el permiso '{Permission}' en la Feature '{Feature}' para las Branches: {Branches}",
-                currentUser.UserId, permission, feature, string.Join(", ", currentUser.BranchIds));
+                user.UserId, permission, feature, string.Join(", ", user.BranchIds));
 
             context.Result = new ObjectResult(new
             {

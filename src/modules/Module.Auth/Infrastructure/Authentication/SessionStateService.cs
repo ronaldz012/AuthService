@@ -1,8 +1,9 @@
-using System.Collections.Concurrent;
+using Common.Contracts.authentication;
 using Common.Contracts.authentication.dtos;
+using Common.Utilities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Primitives;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
 
@@ -10,74 +11,130 @@ namespace Module.Auth.Infrastructure.Authentication;
 
 public class SessionStateService(
     IMemoryCache cache,
-    IAuthDbContext context) : ISessionStateService
+    IAuthDbContext context,
+    IHttpContextAccessor httpContextAccessor) : ISessionStateService
 {
-    private static readonly ConcurrentDictionary<Guid, CancellationTokenSource> TenantCts = new();
+    private AuthenticatedSessionDto? _session;
 
     private static readonly MemoryCacheEntryOptions CacheOpts =
         new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
 
-    private static string Key(Guid userId) => $"session_state:{userId}";
+    private static string Key(string externalAuthId) => $"session_state:{externalAuthId}";
 
-    public async Task<SessionStateDto> GetOrBuildAsync(Guid userId, Guid tenantId, UserType userType)
+    public async Task<Result<AuthenticatedSessionDto>> AuthenticateByExternalIdAsync(string externalAuthId)
     {
-        if (cache.TryGetValue(Key(userId), out SessionStateDto? cached) && cached is not null)
+        // 1. Buscar en la caché (compartida entre requests). Si está, hidratar _session y devolver.
+        if (cache.TryGetValue(Key(externalAuthId), out AuthenticatedSessionDto? cached) && cached is not null)
+        {
+            _session = cached;
             return cached;
+        }
 
-        var session = await BuildAsync(userId, tenantId, userType);
+        // 2. No está cacheado: armar la sesión desde la DB.
+        var user = await context.Users
+            .IgnoreQueryFilters()
+            .Include(u => u.Tenant)
+                .ThenInclude(t => t.Plan)
+            .Include(u => u.Tenant)
+                .ThenInclude(t => t.TenantDataBase)
+            .Include(u => u.Tenant)
+                .ThenInclude(t => t.Branches)
+            .FirstOrDefaultAsync(u => u.ExternalAuthId == externalAuthId);
 
-        var cts = TenantCts.GetOrAdd(tenantId, _ => new CancellationTokenSource());
-        var opts = new MemoryCacheEntryOptions()
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(30))
-            .AddExpirationToken(new CancellationChangeToken(cts.Token));
+        if (user is null)
+            return new Error(ErrorCode.NotFound, "No user is linked to this external account");
 
-        cache.Set(Key(userId), session, opts);
-        return session;
+        if (!user.IsActive)
+            return new Error(ErrorCode.Unauthorized, "User account is inactive");
+
+        var session = await BuildAsync(user);
+
+        var authenticatedSession = new AuthenticatedSessionDto
+        {
+            Session = session,
+            Schema = user.Tenant.TenantDataBase.Schema,
+            DatabaseName = user.Tenant.TenantDataBase.Name,
+            ExternalAuthId = externalAuthId
+        };
+
+        cache.Set(Key(externalAuthId), authenticatedSession, CacheOpts);
+
+        _session = authenticatedSession;
+
+        return authenticatedSession;
     }
 
-    public void Invalidate(Guid userId) => cache.Remove(Key(userId));
+    public Result<SessionStateDto> GetSessionAsync()
+    {
+        if (_session is null)
+            return new Error(ErrorCode.Unauthorized, "Session is not hydrated");
+
+        return _session.Session;
+    }
+
+    public Result<ActorContext> GetActorContext()
+    {
+        if (_session is null)
+            return new Error(ErrorCode.Unauthorized, "Session is not hydrated");
+
+        var user = _session.Session.User;
+
+        var branchHeader = httpContextAccessor.HttpContext?.Request.Headers["X-Branch-Id"].ToString();
+
+        var branchIds = string.IsNullOrWhiteSpace(branchHeader)
+            ? Array.Empty<Guid>()
+            : branchHeader.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => Guid.TryParse(s.Trim(), out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
+                .ToArray();
+
+        var actor = new ActorContext(
+            user.TenantId,
+            user.Id,
+            $"{user.FirstName} {user.LastName}".Trim(),
+            branchIds.FirstOrDefault(),
+            branchIds);
+
+        return actor;
+    }
+
+    public void Invalidate(string externalAuthId)
+    {
+        cache.Remove(Key(externalAuthId));
+        _session = null;
+    }
 
     public void InvalidateTenant(Guid tenantId)
     {
-        if (TenantCts.TryGetValue(tenantId, out var oldCts))
-        {
-            oldCts.Cancel();
-            oldCts.Dispose();
-            TenantCts.TryUpdate(tenantId, new CancellationTokenSource(), oldCts);
-        }
+        _session = null;
     }
 
-    private async Task<SessionStateDto> BuildAsync(Guid userId, Guid tenantId, UserType userType)
+    private async Task<SessionStateDto> BuildAsync(User user)
     {
-        var user = await context.Users
-            .IgnoreQueryFilters()
-            .Where(u => u.Id == userId)
-            .Select(u => new UserDetailResponse
-            {
-                Id = u.Id,
-                Username = u.Username,
-                Email = u.Email,
-                IsAdmin = u.IsAdmin,
-                UserType = (int)u.Type,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-            })
-            .FirstAsync();
+        var userDetail = new UserDetailResponse
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            IsAdmin = user.IsAdmin,
+            UserType = (int)user.Type,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            TenantId = user.TenantId,
+            IsActive = user.IsActive,
+        };
 
-        var tenantInfo = await context.Tenants.IgnoreQueryFilters()
-            .Include(t => t.Plan)
-            .Include(t => t.Branches)
-            .FirstAsync(t => t.Id == tenantId);
+        var tenant = user.Tenant;
 
         List<PermissionsByBranchDto> branches;
 
-        if (userType is UserType.TenantAdmin or UserType.Owner)
+        if (user.Type is UserType.TenantAdmin or UserType.Owner)
         {
             var planFeatures = await context.Features
-                .Where(f => tenantInfo.Plan.AllowedFeatureKeys.Contains(f.Key))
+                .Where(f => tenant.Plan.AllowedFeatureKeys.Contains(f.Key))
                 .ToListAsync();
 
-            branches = tenantInfo.Branches
+            branches = tenant.Branches
                 .Where(b => b.IsActive)
                 .Select(branch => new PermissionsByBranchDto
                 {
@@ -104,7 +161,7 @@ public class SessionStateService(
         {
             var rawPermissions = await context.UserBranchRoles
                 .AsSplitQuery()
-                .Where(ubr => ubr.UserId == userId)
+                .Where(ubr => ubr.UserId == user.Id)
                 .Select(ubr => new
                 {
                     ubr.BranchId,
@@ -147,20 +204,20 @@ public class SessionStateService(
         }
 
         var activeUsers = await context.Users.IgnoreQueryFilters()
-            .CountAsync(u => u.TenantId == tenantId && u.IsActive);
+            .CountAsync(u => u.TenantId == tenant.Id && u.IsActive);
 
         var activeBranches = await context.Branches.IgnoreQueryFilters()
-            .CountAsync(b => b.TenantId == tenantId && b.IsActive);
+            .CountAsync(b => b.TenantId == tenant.Id && b.IsActive);
 
         var tenantPlan = new TenantPlanUsageDto(
-            tenantInfo.Plan.Name,
-            tenantInfo.Plan.AllowedFeatureKeys,
-            tenantInfo.Plan.MaxUsers,
+            tenant.Plan.Name,
+            tenant.Plan.AllowedFeatureKeys,
+            tenant.Plan.MaxUsers,
             activeUsers,
-            tenantInfo.Plan.MaxBranches,
+            tenant.Plan.MaxBranches,
             activeBranches
         );
 
-        return new SessionStateDto(user, branches, tenantPlan);
+        return new SessionStateDto(userDetail, branches, tenantPlan);
     }
 }

@@ -10,4 +10,6 @@ public class UserDetailResponse
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }
+    public Guid TenantId { get; set; }
+    public bool IsActive { get; set; }
 }

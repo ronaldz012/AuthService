@@ -37,7 +37,7 @@ public class TenantSeeder(
         tenantConnectionContext.DatabaseName = db.Name;
         tenantConnectionContext.Schema = db.Schema;
 
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword("1234");
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword("DriveCore@2026");
 
         var ownerUser = new User
         {

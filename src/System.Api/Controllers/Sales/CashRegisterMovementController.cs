@@ -3,6 +3,7 @@ using System.Api.Result;
 using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.Abstraction;
 using Module.Sales.Application.UseCases;
 using Module.Sales.Application.UseCases.Movements.Create;
 using Module.Sales.Application.UseCases.Movements.Update;
@@ -13,33 +14,41 @@ namespace System.Api.Controllers.Sales;
 [ApiController]
 [Tags("Sales | CashRegisterMovements")]
 [Authorize]
-public class CashRegisterMovementController(MovementUseCases movementUseCases, ICurrentUser currentUser) : ControllerBase
+public class CashRegisterMovementController(MovementUseCases movementUseCases, ISessionStateService currentUser) : ControllerBase
 {
     [HttpPost]
     [RequireFeature("pos", "create")]
     public async Task<IActionResult> Create([FromBody] CreateMovementDto dto)
     {
-        return await movementUseCases.CreateMovement.Execute(currentUser.ToActorContext(), dto).ToValueOrProblemDetails();
+        var actorResult = currentUser.GetActorContext();
+        if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+        return await movementUseCases.CreateMovement.Execute(actorResult.Value, dto).ToValueOrProblemDetails();
     }
 
     [HttpGet]
     [RequireFeature("pos", "read")]
     public async Task<IActionResult> List()
     {
-        return await movementUseCases.ListMovements.Execute(currentUser.ToActorContext()).ToValueOrProblemDetails();
+        var actorResult = currentUser.GetActorContext();
+        if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+        return await movementUseCases.ListMovements.Execute(actorResult.Value).ToValueOrProblemDetails();
     }
 
     [HttpPut("{id:guid}")]
     [RequireFeature("pos", "update")]
     public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateMovementDto dto)
     {
-        return await movementUseCases.UpdateMovement.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
+        var actorResult = currentUser.GetActorContext();
+        if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+        return await movementUseCases.UpdateMovement.Execute(actorResult.Value, id, dto).ToValueOrProblemDetails();
     }
 
     [HttpDelete("{id:guid}")]
     [RequireFeature("pos", "update")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        return await movementUseCases.DeleteMovement.Execute(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+        var actorResult = currentUser.GetActorContext();
+        if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+        return await movementUseCases.DeleteMovement.Execute(actorResult.Value, id).ToValueOrProblemDetails();
     }
 }

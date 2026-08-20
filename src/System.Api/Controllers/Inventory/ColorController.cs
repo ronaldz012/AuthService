@@ -4,6 +4,7 @@ using Common.Contracts.authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Module.Auth.Application.Abstraction;
 using Module.Inventory.Application.UseCases.Colors;
 using Module.Inventory.Application.UseCases.Colors.Create;
 using Module.Inventory.Application.UseCases.Colors.List;
@@ -14,7 +15,7 @@ namespace System.Api.Controllers.Inventory
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ColorController(ColoreUseCases useCases, ICurrentUser currentUser) : ControllerBase
+    public class ColorController(ColoreUseCases useCases, ISessionStateService currentUser) : ControllerBase
     {
         [HttpGet]
         [RequireFeature("products", "read")]
@@ -27,21 +28,27 @@ namespace System.Api.Controllers.Inventory
         [RequireFeature("products", "create")]
         public async Task<IActionResult> Create([FromBody] CreateColorDto colorNameDto)
         {
-            return await useCases.createColor.Execute(currentUser.ToActorContext(), colorNameDto.Name).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.createColor.Execute(actorResult.Value, colorNameDto.Name).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/status")]
         [RequireFeature("products", "update")]
         public async Task<IActionResult> ToggleColorStatus([FromRoute] Guid id)
         {
-            return await useCases.UpdateColor.ChangeStatus(currentUser.ToActorContext(), id).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.UpdateColor.ChangeStatus(actorResult.Value, id).ToValueOrProblemDetails();
         }
 
         [HttpPut("{id:guid}")]
         [RequireFeature("products", "update")]
         public async Task<IActionResult> UpdateColor([FromRoute] Guid id, [FromBody] UpdateColorDto dto)
         {
-            return await useCases.UpdateColor.Execute(currentUser.ToActorContext(), id, dto).ToValueOrProblemDetails();
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await useCases.UpdateColor.Execute(actorResult.Value, id, dto).ToValueOrProblemDetails();
         }
     }
 }

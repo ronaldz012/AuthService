@@ -11,6 +11,7 @@ public interface ICurrentUser
     
     string FullName { get; }
     string Username { get; }
+    string? ExternalAuthId { get; }
     int UserType { get; }
     bool IsAdmin { get; }
     bool IsAuthenticated { get; }

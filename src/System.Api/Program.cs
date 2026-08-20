@@ -4,6 +4,8 @@ using System.Text;
 using Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Common.Contracts.Seeder;
 using Module.Auth;
@@ -87,17 +89,33 @@ builder.Services.AddAuthentication(options =>
 )
 .AddJwtBearer(options =>
 {
+  var auth0Domain = builder.Configuration["Auth0:Domain"];
+  var auth0Audience = builder.Configuration["Auth0:Audience"];
+  var auth0SpaSecret = builder.Configuration["Auth0:SpaClientSecret"];
+
+  var configManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+      $"https://{auth0Domain}/.well-known/openid-configuration",
+      new OpenIdConnectConfigurationRetriever(),
+      new HttpDocumentRetriever { RequireHttps = true });
+
   options.TokenValidationParameters = new TokenValidationParameters
   {
     ValidateIssuer = true,
     ValidateAudience = true,
     ValidateLifetime = true,
     ValidateIssuerSigningKey = true,
-    ClockSkew = TimeSpan.Zero,
-    ValidIssuer = builder.Configuration["TokenSettings:Issuer"]!,
-    ValidAudience = builder.Configuration["TokenSettings:Audience"]!,
-    IssuerSigningKey = new SymmetricSecurityKey
-    (Encoding.UTF8.GetBytes(builder.Configuration["TokenSettings:SecretKey"]!))
+    ClockSkew = TimeSpan.FromMinutes(2),
+    ValidIssuer = $"https://{auth0Domain}/",
+    ValidAudience = auth0Audience,
+    RequireSignedTokens = false,
+    TokenDecryptionKey = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(auth0SpaSecret!)[..32]),
+    IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+    {
+      var config = configManager.GetConfigurationAsync(CancellationToken.None)
+          .ConfigureAwait(false).GetAwaiter().GetResult();
+      return config.SigningKeys;
+    },
   };
 });
 

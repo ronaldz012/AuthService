@@ -41,6 +41,8 @@ public class User : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
 
     public Guid TenantId { get; set; }
 
+    public Tenant Tenant { get; set; } = null!;
+
     public AuthProvider AuthProvider { get; set; }
     public string? ExternalAuthId { get; set; }
 
@@ -194,7 +196,8 @@ public enum AuthProvider
     Local = 0,
     Google = 1,
     Facebook = 2,
-    Microsoft = 3
+    Microsoft = 3,
+    Auth0 = 4
 }
 
 public enum UserType

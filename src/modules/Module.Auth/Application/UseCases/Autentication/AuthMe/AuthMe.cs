@@ -1,21 +1,17 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Module.Auth.Application.Abstraction;
-using Module.Auth.Domain;
 
 namespace Module.Auth.Application.UseCases.Autentication.AuthMe;
 
-public class AuthMe(
-    ICurrentUser currentUser,
-    ISessionStateService sessionState)
+public class AuthMe(ISessionStateService sessionState)
 {
     public async Task<Result<AuthMeResponse>> Execute()
     {
-        var session = await sessionState.GetOrBuildAsync(
-            currentUser.UserId,
-            currentUser.TenantId,
-            (UserType)currentUser.UserType);
+        var result =  sessionState.GetSessionAsync();
+        if (!result.IsSuccess)
+            return result.Error;
 
-        return new AuthMeResponse(session);
+        return new AuthMeResponse(result.Value);
     }
 }

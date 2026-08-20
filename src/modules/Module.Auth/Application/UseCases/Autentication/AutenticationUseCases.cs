@@ -1,6 +1,4 @@
 using Module.Auth.Application.UseCases.Autentication.AuthMe;
-using Module.Auth.Application.UseCases.Autentication.Login;
-using Module.Auth.Application.UseCases.Autentication.PublicLogin;
 using Module.Auth.Application.UseCases.Autentication.RefreshToken;
 using Module.Auth.Application.UseCases.Autentication.VerifiUser;
 using Module.Auth.Application.UseCases.Autentication.VerifyToken;
@@ -10,9 +8,7 @@ namespace Module.Auth.Application.UseCases.Autentication;
 
 public record AutenticationUseCases(RegisterDefaultUser RegisterDefaultUser,
                             RegisterUser RegisterUser,
-                            Module.Auth.Application.UseCases.Autentication.Login.Login Login,
                              VerifyUser VerifyUser,
-                              CompletePublicRegister CompletePublicRegister,
                              SetupUserPassword.SetupUserPassword SetupUserPassword,
                               VerifyToken.VerifyToken VerifyToken,
                               AuthMe.AuthMe AuthMe,
