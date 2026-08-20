@@ -1,17 +1,10 @@
 using Common.Contracts.authentication;
 using Common.Contracts.branches;
 using Common.Contracts.Seeder;
-using Common.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Module.Auth.Application.Abstraction;
-using Module.Auth.Application.UseCases.Autentication;
-using Module.Auth.Application.UseCases.Autentication.AuthMe;
-using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
-using Module.Auth.Application.UseCases.Autentication.RefreshToken;
-using Module.Auth.Application.UseCases.Autentication.VerifiUser;
-using Module.Auth.Application.UseCases.Autentication.VerifyToken;
 using Module.Auth.Application.UseCases.Branches;
 using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Application.UseCases.Branches.GetBranches;
@@ -34,15 +27,11 @@ using Module.Auth.Application.UseCases.Users.UpdateUserStatus;
 using Module.Auth.Application.UseCases.Users.UpdateUser;
 using Module.Auth.Application.UseCases.Users.GetUserDetails;
 using Module.Auth.Application.UseCases.Users.ToggleUserType;
-using Module.Auth.Application.UseCases.Users.Pending;
 using Module.Auth.Infrastructure.Authentication;
-using Module.Auth.Infrastructure.Authentication.EmailTemplates;
-using ImplementationRefreshTokenService = Module.Auth.Infrastructure.Authentication.RefreshTokenService;
 using Module.Auth.Infrastructure.Branches;
 using Module.Auth.Infrastructure.Databases;
 using Module.Auth.Infrastructure.Persistence;
 using Module.Auth.Infrastructure.Seeder;
-using SmtpSettings = Common.Services.SmtpSettings;
 using Module.Auth.Application.UseCases.Roles.GetById;
 using Module.Auth.Application.UseCases.Roles.Create;
 using Module.Auth.Application.UseCases.Roles.GetRoles;
@@ -74,14 +63,6 @@ public static class SharedDependencyInjection
              .AddScoped<GetRoles>();
          
         
-         services.AddScoped<AutenticationUseCases>()
-               .AddScoped<RegisterUser>()
-               .AddScoped<RegisterDefaultUser>()
-               .AddScoped<VerifyUser>()
-               .AddScoped<SetupUserPassword>()
-               .AddScoped<VerifyToken>()
-               .AddScoped<AuthMe>()
-               .AddScoped<RefreshTokenUseCase>();
          
          services.AddScoped<UserUserCases>()
                  .AddScoped<GetAllUsers>()
@@ -104,34 +85,29 @@ public static class SharedDependencyInjection
          IConfigurationSection authSettingsSection = configuration.GetSection(AuthenticationSettings.SectionName);
          services.Configure<AuthenticationSettings>(authSettingsSection);
 
-         IConfigurationSection auth0SettingsSection = configuration.GetSection(Auth0Settings.SectionName);
-         services.Configure<Auth0Settings>(auth0SettingsSection);
-
-         IConfigurationSection smtpSettingsSection = configuration.GetSection(SmtpSettings.SectionName);
-         services.Configure<SmtpSettings>(smtpSettingsSection);
+         services.AddOptions<Auth0Settings>()
+             .Bind(configuration.GetSection(Auth0Settings.SectionName))
+             .Validate(s => !string.IsNullOrWhiteSpace(s.Domain), "Auth0:Domain is required")
+             .Validate(s => !string.IsNullOrWhiteSpace(s.Audience), "Auth0:Audience is required")
+             .Validate(s => !string.IsNullOrWhiteSpace(s.SpaClientSecret), "Auth0:SpaClientSecret is required for JWE decryption")
+             .Validate(s => !string.IsNullOrWhiteSpace(s.Connection), "Auth0:Connection is required")
+             .Validate(s => !string.IsNullOrWhiteSpace(s.M2M.StaticAccessToken) || (!string.IsNullOrWhiteSpace(s.M2M.ClientId) && !string.IsNullOrWhiteSpace(s.M2M.ClientSecret)), "Auth0:M2M:ClientId and ClientSecret are required when StaticAccessToken is empty")
+             .ValidateOnStart();
 
          IConfigurationSection projectInfoSection = configuration.GetSection(ProjectInfo.SectionName);
          services.Configure<ProjectInfo>(projectInfoSection);
 
-         services.AddScoped<IRefreshTokenService, ImplementationRefreshTokenService>();
-         services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
-         services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
-         services.AddSingleton<IAuth0TokenValidator, Auth0TokenValidator>();
          services.AddHttpClient<IAuth0ProvisioningService, Auth0ProvisioningService>(client =>
          {
              client.Timeout = TimeSpan.FromSeconds(30);
          });
 
-         services.AddSingleton<EmailTemplateRenderer>();
-
          services.AddScoped<IAuthDbContext>(sp =>
              sp.GetRequiredService<AuthDbContext>());
          // Infrastructure service registrations
          services.AddScoped<IBranchService, BranchService>();
-         services.AddScoped<IEmailVerificationService, EmailVerificationService>();
          //INTEGRATION
-          services.AddScoped<ICurrentUser, CurrentUserService>()
-              .AddScoped<IUserIntegrationService, UserIntegrationService>();
+          services.AddScoped<IUserIntegrationService, UserIntegrationService>();
           services.AddScoped<ISessionStateService, SessionStateService>();
 
          services.AddScoped<IDbConnectionTester, DbConnectionTester>();

@@ -32,11 +32,9 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConne
     public DbSet<Plan> Plans { get; set; }
     public DbSet<Feature> Features { get; set; }
     public DbSet<User> Users { get; set; }
-    public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<Branch> Branches { get; set; }
     public DbSet<UserBranchRole> UserBranchRoles { get; set; }
-    public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<TenantDataBase> TenantDatabases { get; set; }
     public DbSet<RoleFeaturePermission> RoleFeaturePermissions { get; set; }
 
@@ -47,11 +45,6 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConne
         modelBuilder.Entity<User>(e =>
         {
             e.HasIndex(u => u.Email).IsUnique().HasFilter("\"Email\" IS NOT NULL");
-
-            e.HasMany(u => u.EmailVerificationCodes)
-                .WithOne(ev => ev.User)
-                .HasForeignKey(ev => ev.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             e.HasMany(u => u.UserBranchRoles)
                 .WithOne(ubr => ubr.User)
@@ -64,13 +57,6 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConne
                 .OnDelete(DeleteBehavior.Restrict);
 
             e.HasQueryFilter(u => u.DeletedAt == null && u.TenantId == tenantConnectionContext.TenantId);
-        });
-
-        modelBuilder.Entity<RefreshToken>(e =>
-        {
-            e.HasKey(rt => rt.Id);
-            e.HasIndex(rt => rt.TokenHash).IsUnique();
-            e.HasOne(rt => rt.User).WithMany().HasForeignKey(rt => rt.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Tenant>(e =>

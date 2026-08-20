@@ -75,53 +75,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.ToTable("Branches");
                 });
 
-            modelBuilder.Entity("Module.Auth.Domain.EmailVerificationCode", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Purpose")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("EmailVerificationCodes");
-                });
-
             modelBuilder.Entity("Module.Auth.Domain.Feature", b =>
                 {
                     b.Property<string>("Key")
@@ -217,41 +170,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Plans");
-                });
-
-            modelBuilder.Entity("Module.Auth.Domain.RefreshToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRevoked")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TokenHash")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.Role", b =>
@@ -479,9 +397,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("GoogleId")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -529,6 +444,8 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasFilter("\"Email\" IS NOT NULL");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Users");
                 });
@@ -584,17 +501,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Tenant");
-                });
-
-            modelBuilder.Entity("Module.Auth.Domain.EmailVerificationCode", b =>
-                {
-                    b.HasOne("Module.Auth.Domain.User", "User")
-                        .WithMany("EmailVerificationCodes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.Feature", b =>
@@ -800,17 +706,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("DefaultRolesTemplate");
                 });
 
-            modelBuilder.Entity("Module.Auth.Domain.RefreshToken", b =>
-                {
-                    b.HasOne("Module.Auth.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Module.Auth.Domain.RoleFeaturePermission", b =>
                 {
                     b.HasOne("Module.Auth.Domain.Feature", "Feature")
@@ -859,6 +754,17 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("Plan");
 
                     b.Navigation("TenantDataBase");
+                });
+
+            modelBuilder.Entity("Module.Auth.Domain.User", b =>
+                {
+                    b.HasOne("Module.Auth.Domain.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.UserBranchRole", b =>
@@ -917,8 +823,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Module.Auth.Domain.User", b =>
                 {
-                    b.Navigation("EmailVerificationCodes");
-
                     b.Navigation("UserBranchRoles");
                 });
 #pragma warning restore 612, 618

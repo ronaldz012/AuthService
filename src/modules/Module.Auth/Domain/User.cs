@@ -26,7 +26,6 @@ public class User : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
     public DateTime BirthDate { get; set; } = DateTime.MinValue;
     public UserStatus Status { get; set; }
     public bool IsActive { get; set; }
-    public string? GoogleId { get; set; }
     public DateTime LastActive { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -46,7 +45,6 @@ public class User : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
     public AuthProvider AuthProvider { get; set; }
     public string? ExternalAuthId { get; set; }
 
-    public ICollection<EmailVerificationCode> EmailVerificationCodes { get; set; } = [];
     public ICollection<UserBranchRole> UserBranchRoles { get; set; } = [];
 
     public static User CreateOwner(Guid id, string email, string username, Guid createdBy, string createdByName)
@@ -194,7 +192,6 @@ public enum UserStatus
 public enum AuthProvider
 {
     Local = 0,
-    Google = 1,
     Facebook = 2,
     Microsoft = 3,
     Auth0 = 4

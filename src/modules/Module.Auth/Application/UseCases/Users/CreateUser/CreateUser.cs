@@ -1,7 +1,6 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
 
@@ -9,9 +8,7 @@ namespace Module.Auth.Application.UseCases.Users.CreateUser;
 
 public class CreateUser(
     IAuthDbContext context,
-    ITenantConnectionContext tenantConnectionContext,
-    IEmailVerificationService emailVerificationService,
-    IOptions<ProjectInfo> projectInfo)
+    ITenantConnectionContext tenantConnectionContext)
 {
     public async Task<Result<CreateUserResponse>> Execute(ActorContext ctx, CreateUserRequest dto)
     {
@@ -53,34 +50,11 @@ public class CreateUser(
         var newUser = User.CreateStandard(dto.Email, globalUsername, dto.FirstName, dto.LastName, dto.Ci, dto.Nationality, dto.BirthDate, ctx.UserId, ctx.FullName);
         newUser.UserBranchRoles = dto.BranchRoles.Select(br => UserBranchRole.Create(newUser.Id, br.BranchId, br.RoleId, ctx.UserId, ctx.FullName)).ToList();
 
-        var verificationCode = EmailVerificationCode.CreateForAccountSetup(dto.Email ?? string.Empty);
-        newUser.EmailVerificationCodes.Add(verificationCode);
         context.Users.Add(newUser);
 
         await context.SaveChangesAsync();
 
-        var frontendDomain = projectInfo.Value.AppBranding.FrontendDomain;
-        var setupUrl = $"https://{frontendDomain}/auth/setup-password?code={verificationCode.Code}";
-
-        var emailSent = false;
-
-        if (!string.IsNullOrWhiteSpace(dto.Email))
-        {
-            try
-            {
-                await emailVerificationService.SendTenantSetupEmailAsync(
-                    dto.Email,
-                    dto.Username,
-                    setupUrl,
-                    verificationCode.ExpiresAt);
-                emailSent = true;
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        return new CreateUserResponse(newUser.Id, setupUrl, emailSent);
+        return new CreateUserResponse(newUser.Id, string.Empty, false);
     }
 
     private async Task<Result<bool>> ValidateRoles(List<Guid> roleIds)

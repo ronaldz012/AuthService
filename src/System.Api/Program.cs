@@ -79,14 +79,6 @@ builder.Services.AddAuthentication(options =>
   // The default scheme for challenging unauthenticated users (JWT)
   options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddGoogle(options =>
-{
-  options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
-  options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
-  options.CallbackPath = "/api/ExternalAuth/google-login-complete";
-}
-
-)
 .AddJwtBearer(options =>
 {
   var auth0Domain = builder.Configuration["Auth0:Domain"];

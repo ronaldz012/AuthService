@@ -1,4 +1,3 @@
-using Module.Auth.Application.UseCases.Autentication.SetupUserPassword;
 using Module.Auth.Application.UseCases.Tenant.Create;
 
 namespace Module.Auth.Application.UseCases.Tenant;

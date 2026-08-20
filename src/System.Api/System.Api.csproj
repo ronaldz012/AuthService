@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
@@ -28,13 +27,6 @@
         <ProjectReference Include="..\modules\Module.Sales\Module.Sales.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include="..\modules\Module.Auth\Infrastructure\Authentication\EmailTemplates\EmailVerification.html" Link="Email\EmailTemplates\EmailVerification.html">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\modules\Module.Auth\Infrastructure\Authentication\EmailTemplates\TenantSetupLink.html" Link="Email\EmailTemplates\TenantSetupLink.html">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
+
 
 </Project>

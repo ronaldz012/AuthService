@@ -1,73 +1,54 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Common.Utilities;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Module.Auth.Application.Abstraction;
 
 namespace Module.Auth.Infrastructure.Authentication;
 
-public interface IAuth0ProvisioningService
-{
-    Task<string> EnsureTestUserAsync(string email, string password);
-}
-
 public class Auth0ProvisioningService(
     HttpClient httpClient,
-    IConfiguration config,
-    ILogger<Auth0ProvisioningService> logger) : IAuth0ProvisioningService
+    IOptions<Auth0Settings> options,
+    IMemoryCache cache) : IAuth0ProvisioningService
 {
-    private readonly string _domain = config["Auth0:Domain"] ?? string.Empty;
-    private readonly string _clientId = config["Auth0:M2M:ClientId"] ?? string.Empty;
-    private readonly string _clientSecret = config["Auth0:M2M:ClientSecret"] ?? string.Empty;
+    private readonly Auth0Settings _settings = options.Value;
+    private static readonly SemaphoreSlim _tokenLock = new(1, 1);
+    private const string CacheKey = "auth0:m2m_token";
 
-    public async Task<string> EnsureTestUserAsync(string email, string password)
+    public async Task<Result<string>> EnsureTestUserAsync(string email, string password)
     {
-        if (string.IsNullOrWhiteSpace(_domain))
-            throw new InvalidOperationException(
-                "Auth0:Domain is not configured. Set Auth0:Domain in appsettings to enable Auth0 provisioning.");
+        var tokenResult = await GetManagementApiTokenAsync();
+        if (!tokenResult.IsSuccess)
+            return tokenResult.Error;
+        var token = tokenResult.Value;
 
-        logger.LogInformation("Auth0 provisioning started for {Email}. Domain={Domain}", email, _domain);
-        logger.LogInformation("M2M ClientId configured: {Configured}, ClientSecret configured: {SecretConfigured}",
-            !string.IsNullOrWhiteSpace(_clientId), !string.IsNullOrWhiteSpace(_clientSecret));
-
-        var token = await GetManagementApiTokenAsync();
-        logger.LogInformation("Auth0 management token obtained. Length={Length}", token.Length);
-
-        // 1. Verificar si ya existe
         using var searchRequest = new HttpRequestMessage(
             HttpMethod.Get,
-            $"https://{_domain}/api/v2/users-by-email?email={Uri.EscapeDataString(email)}");
+            $"https://{_settings.Domain}/api/v2/users-by-email?email={Uri.EscapeDataString(email)}");
         searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var searchResp = await httpClient.SendAsync(searchRequest);
         var searchBody = await searchResp.Content.ReadAsStringAsync();
-        logger.LogInformation("Auth0 search users-by-email status={Status} body={Body}",
-            (int)searchResp.StatusCode, Truncate(searchBody, 500));
 
         if (!searchResp.IsSuccessStatusCode)
-            throw new InvalidOperationException(
+            return new Error(ErrorCode.InternalError,
                 $"Auth0 search users-by-email failed: {(int)searchResp.StatusCode} {searchBody}");
 
         var existing = System.Text.Json.JsonSerializer.Deserialize<List<Auth0UserDto>>(searchBody);
         if (existing is { Count: > 0 })
-        {
-            logger.LogInformation("Auth0 user already exists for {Email}: {UserId}", email, existing[0].UserId);
             return existing[0].UserId;
-        }
 
-        logger.LogInformation("Auth0 user {Email} not found. Creating it...", email);
-
-        // 2. Crear si no existe
         var body = new
         {
             email,
             password,
-            connection = "Username-Password-Authentication",
+            connection = _settings.Connection,
             email_verified = true
         };
 
-        using var createRequest = new HttpRequestMessage(HttpMethod.Post, $"https://{_domain}/api/v2/users")
+        using var createRequest = new HttpRequestMessage(HttpMethod.Post, $"https://{_settings.Domain}/api/v2/users")
         {
             Content = JsonContent.Create(body)
         };
@@ -75,49 +56,63 @@ public class Auth0ProvisioningService(
 
         var createResp = await httpClient.SendAsync(createRequest);
         var createBody = await createResp.Content.ReadAsStringAsync();
-        logger.LogInformation("Auth0 create user status={Status} body={Body}",
-            (int)createResp.StatusCode, Truncate(createBody, 500));
 
         if (!createResp.IsSuccessStatusCode)
-            throw new InvalidOperationException(
+            return new Error(ErrorCode.InternalError,
                 $"Auth0 create user failed: {(int)createResp.StatusCode} {createBody}");
 
         var created = System.Text.Json.JsonSerializer.Deserialize<Auth0UserDto>(createBody);
-        logger.LogInformation("Auth0 user created for {Email}: {UserId}", email, created?.UserId);
-        return created!.UserId;
+        if (created is null || string.IsNullOrWhiteSpace(created.UserId))
+            return new Error(ErrorCode.InternalError, "Auth0 create user response was empty");
+
+        return created.UserId;
     }
 
-    private async Task<string> GetManagementApiTokenAsync()
+    private async Task<Result<string>> GetManagementApiTokenAsync()
     {
-        var body = new
+        if (!string.IsNullOrWhiteSpace(_settings.M2M.StaticAccessToken))
+            return _settings.M2M.StaticAccessToken!;
+
+        if (cache.TryGetValue(CacheKey, out string? cachedToken) && !string.IsNullOrWhiteSpace(cachedToken))
+            return cachedToken!;
+
+        await _tokenLock.WaitAsync();
+        try
         {
-            grant_type = "client_credentials",
-            client_id = _clientId,
-            client_secret = _clientSecret,
-            audience = $"https://{_domain}/api/v2/"
-        };
+            if (cache.TryGetValue(CacheKey, out string? cachedAfterLock) && !string.IsNullOrWhiteSpace(cachedAfterLock))
+                return cachedAfterLock!;
 
-        logger.LogInformation("Requesting Auth0 management token from https://{Domain}/oauth/token", _domain);
+            var body = new
+            {
+                grant_type = "client_credentials",
+                client_id = _settings.M2M.ClientId,
+                client_secret = _settings.M2M.ClientSecret,
+                audience = $"https://{_settings.Domain}/api/v2/"
+            };
 
-        var resp = await httpClient.PostAsJsonAsync($"https://{_domain}/oauth/token", body);
-        var respBody = await resp.Content.ReadAsStringAsync();
+            var resp = await httpClient.PostAsJsonAsync($"https://{_settings.Domain}/oauth/token", body);
+            var respBody = await resp.Content.ReadAsStringAsync();
 
-        if (!resp.IsSuccessStatusCode)
-        {
-            logger.LogError("Auth0 get management token failed status={Status} body={Body}",
-                (int)resp.StatusCode, Truncate(respBody, 500));
-            throw new InvalidOperationException(
-                $"Auth0 get management token failed: {(int)resp.StatusCode} {respBody}");
+            if (!resp.IsSuccessStatusCode)
+                return new Error(ErrorCode.InternalError,
+                    $"Auth0 get management token failed: {(int)resp.StatusCode} {respBody}");
+
+            var token = System.Text.Json.JsonSerializer.Deserialize<Auth0TokenResponse>(respBody);
+            if (token is null || string.IsNullOrWhiteSpace(token.AccessToken))
+                return new Error(ErrorCode.InternalError, "Auth0 token response was empty");
+
+            var expiresIn = token.ExpiresIn > 60 ? token.ExpiresIn - 60 : token.ExpiresIn;
+            if (expiresIn <= 0) expiresIn = 86400;
+
+            cache.Set(CacheKey, token.AccessToken, TimeSpan.FromSeconds(expiresIn));
+
+            return token.AccessToken;
         }
-
-        logger.LogInformation("Auth0 get management token response status={Status}", (int)resp.StatusCode);
-
-        var token = System.Text.Json.JsonSerializer.Deserialize<Auth0TokenResponse>(respBody);
-        return token!.AccessToken;
+        finally
+        {
+            _tokenLock.Release();
+        }
     }
-
-    private static string Truncate(string value, int maxLength)
-        => value.Length <= maxLength ? value : value[..maxLength] + "...";
 }
 
 public class Auth0UserDto
@@ -130,4 +125,7 @@ public class Auth0TokenResponse
 {
     [JsonPropertyName("access_token")]
     public string AccessToken { get; set; } = string.Empty;
+
+    [JsonPropertyName("expires_in")]
+    public int ExpiresIn { get; set; } = 86400;
 }

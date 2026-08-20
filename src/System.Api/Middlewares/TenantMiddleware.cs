@@ -54,16 +54,6 @@ public class TenantMiddleware(RequestDelegate next)
         tenantConnectionContext.Schema = data.Schema;
         tenantConnectionContext.DatabaseName = data.DatabaseName;
 
-        var userContext = new CurrentUserContext(
-            data.Session.User.TenantId,
-            data.Session.User.Id,
-            $"{data.Session.User.FirstName} {data.Session.User.LastName}".Trim(),
-            data.Session.User.Username,
-            data.Session.User.UserType,
-            externalAuthId);
-
-        context.Items[CurrentUserContextKeys.HttpContextKey] = userContext;
-
         await next(context);
     }
 

@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Module.Auth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260803204851_Initial")]
+    [Migration("20260820165304_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -76,53 +76,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("Branches");
-                });
-
-            modelBuilder.Entity("Module.Auth.Domain.EmailVerificationCode", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Attempts")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Purpose")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("EmailVerificationCodes");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.Feature", b =>
@@ -220,41 +173,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Plans");
-                });
-
-            modelBuilder.Entity("Module.Auth.Domain.RefreshToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRevoked")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("RevokedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TokenHash")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.Role", b =>
@@ -482,9 +400,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("GoogleId")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -532,6 +447,8 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasFilter("\"Email\" IS NOT NULL");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Users");
                 });
@@ -589,17 +506,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("Module.Auth.Domain.EmailVerificationCode", b =>
-                {
-                    b.HasOne("Module.Auth.Domain.User", "User")
-                        .WithMany("EmailVerificationCodes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Module.Auth.Domain.Feature", b =>
                 {
                     b.OwnsMany("Module.Auth.Domain.FeatureAction", "AvailableActions", b1 =>
@@ -638,6 +544,109 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Module.Auth.Domain.Plan", b =>
                 {
+                    b.OwnsOne("Common.Contracts.inventory.DefaultCatalogTemplate", "DefaultCatalogTemplate", b1 =>
+                        {
+                            b1.Property<Guid>("PlanId")
+                                .HasColumnType("uuid");
+
+                            b1.PrimitiveCollection<List<string>>("Colors")
+                                .IsRequired()
+                                .HasColumnType("text[]");
+
+                            b1.HasKey("PlanId");
+
+                            b1.ToTable("Plans");
+
+                            b1.ToJson("DefaultCatalogTemplate");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PlanId");
+
+                            b1.OwnsMany("Common.Contracts.inventory.DefaultBrandTemplate", "Brands", b2 =>
+                                {
+                                    b2.Property<Guid>("DefaultCatalogTemplatePlanId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<int>("__synthesizedOrdinal")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("integer");
+
+                                    b2.Property<string>("Description")
+                                        .IsRequired()
+                                        .HasColumnType("text");
+
+                                    b2.Property<string>("Name")
+                                        .IsRequired()
+                                        .HasColumnType("text");
+
+                                    b2.Property<string>("Prefix")
+                                        .IsRequired()
+                                        .HasColumnType("text");
+
+                                    b2.HasKey("DefaultCatalogTemplatePlanId", "__synthesizedOrdinal");
+
+                                    b2.ToTable("Plans");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("DefaultCatalogTemplatePlanId");
+                                });
+
+                            b1.OwnsMany("Common.Contracts.inventory.DefaultCategoryTemplate", "Categories", b2 =>
+                                {
+                                    b2.Property<Guid>("DefaultCatalogTemplatePlanId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<int>("__synthesizedOrdinal")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("integer");
+
+                                    b2.Property<string>("Description")
+                                        .IsRequired()
+                                        .HasColumnType("text");
+
+                                    b2.Property<string>("Name")
+                                        .IsRequired()
+                                        .HasColumnType("text");
+
+                                    b2.HasKey("DefaultCatalogTemplatePlanId", "__synthesizedOrdinal");
+
+                                    b2.ToTable("Plans");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("DefaultCatalogTemplatePlanId");
+                                });
+
+                            b1.OwnsMany("Common.Contracts.inventory.DefaultSizeTemplate", "Sizes", b2 =>
+                                {
+                                    b2.Property<Guid>("DefaultCatalogTemplatePlanId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<int>("__synthesizedOrdinal")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("integer");
+
+                                    b2.Property<string>("Name")
+                                        .IsRequired()
+                                        .HasColumnType("text");
+
+                                    b2.Property<int>("SortOrder")
+                                        .HasColumnType("integer");
+
+                                    b2.HasKey("DefaultCatalogTemplatePlanId", "__synthesizedOrdinal");
+
+                                    b2.ToTable("Plans");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("DefaultCatalogTemplatePlanId");
+                                });
+
+                            b1.Navigation("Brands");
+
+                            b1.Navigation("Categories");
+
+                            b1.Navigation("Sizes");
+                        });
+
                     b.OwnsMany("Module.Auth.Domain.DefaultRoleTemplate", "DefaultRolesTemplate", b1 =>
                         {
                             b1.Property<Guid>("PlanId")
@@ -695,18 +704,9 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                             b1.Navigation("Permissions");
                         });
 
+                    b.Navigation("DefaultCatalogTemplate");
+
                     b.Navigation("DefaultRolesTemplate");
-                });
-
-            modelBuilder.Entity("Module.Auth.Domain.RefreshToken", b =>
-                {
-                    b.HasOne("Module.Auth.Domain.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.RoleFeaturePermission", b =>
@@ -757,6 +757,17 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("Plan");
 
                     b.Navigation("TenantDataBase");
+                });
+
+            modelBuilder.Entity("Module.Auth.Domain.User", b =>
+                {
+                    b.HasOne("Module.Auth.Domain.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.UserBranchRole", b =>
@@ -815,8 +826,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Module.Auth.Domain.User", b =>
                 {
-                    b.Navigation("EmailVerificationCodes");
-
                     b.Navigation("UserBranchRoles");
                 });
 #pragma warning restore 612, 618

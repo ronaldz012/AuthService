@@ -2,7 +2,6 @@ using Common.Contracts.authentication;
 using Common.Contracts.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Module.Auth.Application.UseCases.Tenant.Create;
 
@@ -12,9 +11,7 @@ using Module.Auth.Domain;
 public class CreateTenant(
     IAuthDbContext context,
     ITenantConnectionContext tenantConnectionContext,
-    IEmailVerificationService emailVerificationService,
     IDefaultCatalogProvisioner catalogProvisioner,
-    IOptions<ProjectInfo> projectInfo,
     ILogger<CreateTenant> logger)
 {
     public async Task<Result<CreateTenantResponse>> ExecuteAsync(CreateTenantRequest request)
@@ -51,9 +48,6 @@ public class CreateTenant(
                 context.Roles.Add(role);
             }
 
-            var verificationCode = EmailVerificationCode.CreateForAccountSetup(request.OwnerEmail);
-            ownerUser.EmailVerificationCodes.Add(verificationCode);
-
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -70,25 +64,7 @@ public class CreateTenant(
                 logger.LogError(ex, "Error seeding default catalog for tenant {TenantId}", tenantId);
             }
 
-            var frontendDomain = projectInfo.Value.AppBranding.FrontendDomain;
-            var setupUrl = $"https://{request.DisplayName}.{frontendDomain}/auth/setup-password?code={verificationCode.Code}";
-            var response = new CreateTenantResponse(verificationCode.Code, setupUrl, request.DisplayName);
-
-            if (request.SendEmail)
-            {
-                try
-                {
-                    await emailVerificationService.SendTenantSetupEmailAsync(
-                        request.OwnerEmail,
-                        request.OwnerUserName,
-                        setupUrl,
-                        verificationCode.ExpiresAt);
-                }
-                catch (Exception)
-                {
-                }
-
-            }
+            var response = new CreateTenantResponse(string.Empty, string.Empty, request.DisplayName);
             
             return response;
 

@@ -12,8 +12,6 @@ public interface IAuthDbContext
     DbSet<Plan> Plans { get; }
     DbSet<Tenant> Tenants { get; }
     DbSet<User> Users { get; }
-    DbSet<EmailVerificationCode> EmailVerificationCodes { get; }
-    DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<Role> Roles { get; }
     DbSet<Branch> Branches { get; }
     DbSet<UserBranchRole> UserBranchRoles { get; }

@@ -7,15 +7,3 @@ public record ActorContext(
     Guid BranchId,
     IReadOnlyList<Guid> BranchIds);
 
-public static class ActorContextExtensions
-{
-    public const string HttpContextKey = "CurrentActor";
-
-    public static ActorContext ToActorContext(this ICurrentUser currentUser)
-        => new(
-            currentUser.TenantId,
-            currentUser.UserId,
-            currentUser.FullName,
-            currentUser.BranchId,
-            currentUser.BranchIds);
-}

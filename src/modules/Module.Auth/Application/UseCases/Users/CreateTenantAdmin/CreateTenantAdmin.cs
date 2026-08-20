@@ -1,7 +1,6 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
 
@@ -9,9 +8,7 @@ namespace Module.Auth.Application.UseCases.Users.CreateTenantAdmin;
 
 public class CreateTenantAdmin(
     IAuthDbContext context,
-    ITenantConnectionContext tenantConnectionContext,
-    IEmailVerificationService emailVerificationService,
-    IOptions<ProjectInfo> projectInfo)
+    ITenantConnectionContext tenantConnectionContext)
 {
     public async Task<Result<CreateTenantAdminResponse>> Execute(ActorContext ctx, CreateTenantAdminRequest dto)
     {
@@ -39,33 +36,10 @@ public class CreateTenantAdmin(
             dto.Email, globalUsername, dto.FirstName, dto.LastName,
             dto.Ci, dto.Nationality, dto.BirthDate, ctx.UserId, ctx.FullName);
 
-        var verificationCode = EmailVerificationCode.CreateForAccountSetup(dto.Email ?? string.Empty);
-        newUser.EmailVerificationCodes.Add(verificationCode);
         context.Users.Add(newUser);
 
         await context.SaveChangesAsync();
 
-        var frontendDomain = projectInfo.Value.AppBranding.FrontendDomain;
-        var setupUrl = $"https://{frontendDomain}/auth/setup-password?code={verificationCode.Code}";
-
-        var emailSent = false;
-
-        if (!string.IsNullOrWhiteSpace(dto.Email))
-        {
-            try
-            {
-                await emailVerificationService.SendTenantSetupEmailAsync(
-                    dto.Email,
-                    dto.Username,
-                    setupUrl,
-                    verificationCode.ExpiresAt);
-                emailSent = true;
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        return new CreateTenantAdminResponse(newUser.Id, setupUrl, emailSent);
+        return new CreateTenantAdminResponse(newUser.Id, string.Empty, false);
     }
 }
