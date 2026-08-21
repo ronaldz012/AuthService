@@ -33,12 +33,6 @@ public class SessionStateService(
         // 2. No está cacheado: armar la sesión desde la DB.
         var user = await context.Users
             .IgnoreQueryFilters()
-            .Include(u => u.Tenant)
-                .ThenInclude(t => t.Plan)
-            .Include(u => u.Tenant)
-                .ThenInclude(t => t.TenantDataBase)
-            .Include(u => u.Tenant)
-                .ThenInclude(t => t.Branches)
             .FirstOrDefaultAsync(u => u.ExternalAuthId == externalAuthId);
 
         if (user is null)
@@ -47,13 +41,20 @@ public class SessionStateService(
         if (!user.IsActive)
             return new Error(ErrorCode.Unauthorized, "User account is inactive");
 
-        var session = await BuildAsync(user);
+        var tenant = await context.Tenants
+            .IgnoreQueryFilters()
+            .Include(t => t.Plan)
+            .Include(t => t.TenantDataBase)
+            .Include(t => t.Branches)
+            .FirstAsync(t => t.Id == user.TenantId);
+
+        var session = await BuildAsync(user, tenant);
 
         var authenticatedSession = new AuthenticatedSessionDto
         {
             Session = session,
-            Schema = user.Tenant.TenantDataBase.Schema,
-            DatabaseName = user.Tenant.TenantDataBase.Name,
+            Schema = tenant.TenantDataBase.Schema,
+            DatabaseName = tenant.TenantDataBase.Name,
             ExternalAuthId = externalAuthId
         };
 
@@ -109,7 +110,7 @@ public class SessionStateService(
         _session = null;
     }
 
-    private async Task<SessionStateDto> BuildAsync(User user)
+    private async Task<SessionStateDto> BuildAsync(User user, Tenant tenant)
     {
         var userDetail = new UserDetailResponse
         {
@@ -123,8 +124,6 @@ public class SessionStateService(
             TenantId = user.TenantId,
             IsActive = user.IsActive,
         };
-
-        var tenant = user.Tenant;
 
         List<PermissionsByBranchDto> branches;
 

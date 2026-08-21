@@ -41,8 +41,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantConnect
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        SalesEntityConfiguration.Apply(modelBuilder, tenantConnectionContext.TenantId);
-        InventoryEntityConfiguration.Apply(modelBuilder, tenantConnectionContext.TenantId);
+        SalesEntityConfiguration.Apply(modelBuilder);
+        InventoryEntityConfiguration.Apply(modelBuilder);
+
+        // Filtros por tenant (capturan this.tenantConnectionContext -> evaluado por DbContext actual)
+        modelBuilder.Entity<Product>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId && x.DeletedAt == null);
+        modelBuilder.Entity<ProductVariant>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId && x.DeletedAt == null);
+        modelBuilder.Entity<BranchInventory>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<Category>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<Provider>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<Brand>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<Color>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<Size>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<StockReception>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<StockReceptionItem>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<StockMovement>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<StockTransfer>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<StockTransferItem>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<Sale>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<SaleItem>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<CashRegisterClosure>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<CashRegisterMovement>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId && x.DeletedAt == null);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Module.Auth.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260820165304_Initial")]
+    [Migration("20260820200217_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -415,6 +415,12 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("PasswordChangeTicket")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("PasswordChangeTicketExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -447,8 +453,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasFilter("\"Email\" IS NOT NULL");
-
-                    b.HasIndex("TenantId");
 
                     b.ToTable("Users");
                 });
@@ -757,17 +761,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.Navigation("Plan");
 
                     b.Navigation("TenantDataBase");
-                });
-
-            modelBuilder.Entity("Module.Auth.Domain.User", b =>
-                {
-                    b.HasOne("Module.Auth.Domain.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("Module.Auth.Domain.UserBranchRole", b =>

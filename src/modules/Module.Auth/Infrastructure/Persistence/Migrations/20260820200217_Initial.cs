@@ -98,6 +98,43 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Ci = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
+                    Nationality = table.Column<string>(type: "text", nullable: false),
+                    BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    LastActive = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AuthProvider = table.Column<int>(type: "integer", nullable: false),
+                    ExternalAuthId = table.Column<string>(type: "text", nullable: true),
+                    PasswordChangeTicket = table.Column<string>(type: "text", nullable: true),
+                    PasswordChangeTicketExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RoleFeaturePermissions",
                 columns: table => new
                 {
@@ -137,28 +174,6 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Branches",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Place = table.Column<string>(type: "text", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    BranchCode = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    AllowedFeatureKeys = table.Column<List<string>>(type: "text[]", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedByName = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Branches", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Tenants",
                 columns: table => new
                 {
@@ -187,47 +202,40 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         principalTable: "TenantDatabases",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Tenants_Users_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "Branches",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    PasswordHash = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Ci = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
-                    Nationality = table.Column<string>(type: "text", nullable: false),
-                    BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Place = table.Column<string>(type: "text", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    LastActive = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BranchCode = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    AllowedFeatureKeys = table.Column<List<string>>(type: "text[]", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedByName = table.Column<string>(type: "text", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedByName = table.Column<string>(type: "text", nullable: true),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AuthProvider = table.Column<int>(type: "integer", nullable: false),
-                    ExternalAuthId = table.Column<string>(type: "text", nullable: true)
+                    CreatedByName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_Branches", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Tenants_TenantId",
+                        name: "FK_Branches_Tenants_TenantId",
                         column: x => x.TenantId,
                         principalTable: "Tenants",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -326,36 +334,11 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                 column: "Email",
                 unique: true,
                 filter: "\"Email\" IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_TenantId",
-                table: "Users",
-                column: "TenantId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Branches_Tenants_TenantId",
-                table: "Branches",
-                column: "TenantId",
-                principalTable: "Tenants",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Tenants_Users_OwnerId",
-                table: "Tenants",
-                column: "OwnerId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Users_Tenants_TenantId",
-                table: "Users");
-
             migrationBuilder.DropTable(
                 name: "RoleFeaturePermissions");
 

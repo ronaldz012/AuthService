@@ -5,22 +5,19 @@ namespace Module.Sales.Infrastructure.Persistence;
 
 public static class SalesEntityConfiguration
 {
-    public static void Apply(ModelBuilder builder, Guid? tenantId)
+    public static void Apply(ModelBuilder builder)
     {
         builder.Entity<Sale>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasMany(s => s.SaleItems)
                 .WithOne(i => i.Sale)
                 .HasForeignKey(i => i.SaleId);
         });
         builder.Entity<SaleItem>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
         });
         builder.Entity<CashRegisterClosure>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasIndex(e => new { e.TenantId, e.BranchId })
                 .IsUnique()
                 .HasFilter("\"IsOpen\" = true")
@@ -34,7 +31,6 @@ public static class SalesEntityConfiguration
         });
         builder.Entity<CashRegisterMovement>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId && x.DeletedAt == null);
         });
     }
 }

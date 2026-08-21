@@ -9,12 +9,10 @@ namespace Module.Inventory.Infrastructure.Persistence;
 
 public static class InventoryEntityConfiguration
 {
-    public static void Apply(ModelBuilder builder, Guid? tenantId)
+    public static void Apply(ModelBuilder builder)
     {
         builder.Entity<Product>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
-            entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasMany(product => product.ProductVariants)
                 .WithOne(variant => variant.Product)
                 .HasForeignKey(variant => variant.ProductId);
@@ -32,8 +30,6 @@ public static class InventoryEntityConfiguration
         });
         builder.Entity<ProductVariant>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
-            entity.HasQueryFilter(x => x.DeletedAt == null);
             entity.HasIndex(x => new { x.TenantId, x.Sku }).IsUnique();
             entity.HasIndex(x => new { x.TenantId, x.ProductId, x.ColorId, x.SizeId })
                 .IsUnique()
@@ -53,17 +49,14 @@ public static class InventoryEntityConfiguration
         });
         builder.Entity<BranchInventory>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasIndex(x => new { x.TenantId, x.BranchId, x.ProductVariantId }).IsUnique();
         });
         builder.Entity<Category>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
         });
         builder.Entity<Provider>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
             entity.HasMany(p => p.StockReceptions)
                 .WithOne(r => r.Provider)
@@ -72,18 +65,15 @@ public static class InventoryEntityConfiguration
         });
         builder.Entity<Brand>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
             entity.HasIndex(x => new { x.TenantId, x.Prefix }).IsUnique();
         });
         builder.Entity<Color>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
         });
         builder.Entity<Size>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
             entity.HasMany(s => s.ProductVariants)
                 .WithOne(pv => pv.Size)
@@ -91,29 +81,24 @@ public static class InventoryEntityConfiguration
         });
         builder.Entity<StockReception>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasMany(r => r.Items)
                 .WithOne(i => i.StockReception)
                 .HasForeignKey(i => i.StockReceptionId);
         });
         builder.Entity<StockReceptionItem>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
             entity.HasOne(ri => ri.ProductVariant)
                 .WithMany(pv => pv.StockReceptionItems)
                 .HasForeignKey(pv => pv.ProductVariantId);
         });
         builder.Entity<StockMovement>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
         });
         builder.Entity<StockTransfer>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
         });
         builder.Entity<StockTransferItem>(entity =>
         {
-            entity.HasQueryFilter(x => x.TenantId == tenantId);
         });
     }
 }

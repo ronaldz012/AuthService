@@ -2,6 +2,7 @@ using Common.Contracts.authentication;
 using Common.Contracts.inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Module.Auth.Application.UseCases.Tenant.Create;
 
@@ -11,7 +12,9 @@ using Module.Auth.Domain;
 public class CreateTenant(
     IAuthDbContext context,
     ITenantConnectionContext tenantConnectionContext,
+    IAuth0ProvisioningService auth0Provisioning,
     IDefaultCatalogProvisioner catalogProvisioner,
+    IOptions<ProjectInfo> projectInfo,
     ILogger<CreateTenant> logger)
 {
     public async Task<Result<CreateTenantResponse>> ExecuteAsync(CreateTenantRequest request)
@@ -26,6 +29,18 @@ public class CreateTenant(
         if (plan == null)
             return CreateTenantErrors.PlanNotFound;
 
+        var invitationResult = await auth0Provisioning.CreateInvitationUserAsync(request.OwnerEmail);
+        if (!invitationResult.IsSuccess)
+            return invitationResult.Error;
+        var auth0Id = invitationResult.Value;
+
+        var resultUrl = $"https://{projectInfo.Value.AppBranding.FrontendDomain}/login";
+        var ticketResult = await auth0Provisioning.CreatePasswordChangeTicketAsync(auth0Id, resultUrl);
+        if (!ticketResult.IsSuccess)
+            return ticketResult.Error;
+        var ticket = ticketResult.Value;
+        var ticketExpiresAt = DateTime.UtcNow.AddSeconds(432000);
+
         using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
@@ -36,10 +51,20 @@ public class CreateTenant(
             tenantConnectionContext.TenantId = tenantId;
 
             var ownerUser = User.CreateOwner(ownerUserId, request.OwnerEmail, request.OwnerUserName, ownerUserId, request.OwnerEmail);
+            ownerUser.ExternalAuthId = auth0Id;
+            ownerUser.AuthProvider = AuthProvider.Auth0;
+            ownerUser.PasswordChangeTicket = ticket;
+            ownerUser.PasswordChangeTicketExpiresAt = ticketExpiresAt;
             var tenant = Tenant.Create(tenantId, request.DisplayName, db.Id, plan.Id, ownerUser, ownerUserId, request.OwnerEmail);
             context.Tenants.Add(tenant);
 
-            var mainBranch = Branch.Create(mainBranchId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber, BranchType.Warehouse, ownerUserId, request.OwnerEmail);
+            var features = await context.Features
+                .Select(f => new FeatureModuleInfo(f.Key, f.Module))
+                .ToListAsync();
+            var branchFeatureKeys = BranchFeatureKeysResolver.Resolve(plan.AllowedFeatureKeys, BranchType.PointOfSale, features);
+
+            var mainBranch = Branch.Create(mainBranchId, request.BranchName, request.BranchPlace, request.BranchPhoneNumber, BranchType.PointOfSale, ownerUserId, request.OwnerEmail);
+            mainBranch.AllowedFeatureKeys = branchFeatureKeys;
             context.Branches.Add(mainBranch);
 
             foreach (var roleTemplate in plan.DefaultRolesTemplate)
@@ -64,7 +89,7 @@ public class CreateTenant(
                 logger.LogError(ex, "Error seeding default catalog for tenant {TenantId}", tenantId);
             }
 
-            var response = new CreateTenantResponse(string.Empty, string.Empty, request.DisplayName);
+            var response = new CreateTenantResponse(ticket, ticket, request.DisplayName);
             
             return response;
 

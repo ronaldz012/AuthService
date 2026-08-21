@@ -44,6 +44,8 @@ public class User : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
 
     public AuthProvider AuthProvider { get; set; }
     public string? ExternalAuthId { get; set; }
+    public string? PasswordChangeTicket { get; set; }
+    public DateTime? PasswordChangeTicketExpiresAt { get; set; }
 
     public ICollection<UserBranchRole> UserBranchRoles { get; set; } = [];
 

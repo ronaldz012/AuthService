@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using Common.Utilities;
 using Microsoft.Extensions.Caching.Memory;
@@ -68,6 +69,114 @@ public class Auth0ProvisioningService(
         return created.UserId;
     }
 
+    public async Task<Result<string>> CreateInvitationUserAsync(string email)
+    {
+        var tokenResult = await GetManagementApiTokenAsync();
+        if (!tokenResult.IsSuccess)
+            return tokenResult.Error;
+        var token = tokenResult.Value;
+
+        using var searchRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            $"https://{_settings.Domain}/api/v2/users-by-email?email={Uri.EscapeDataString(email)}");
+        searchRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var searchResp = await httpClient.SendAsync(searchRequest);
+        var searchBody = await searchResp.Content.ReadAsStringAsync();
+
+        if (!searchResp.IsSuccessStatusCode)
+            return new Error(ErrorCode.InternalError,
+                $"Auth0 search users-by-email failed: {(int)searchResp.StatusCode} {searchBody}");
+
+        var existing = System.Text.Json.JsonSerializer.Deserialize<List<Auth0UserDto>>(searchBody);
+        if (existing is { Count: > 0 })
+            return existing[0].UserId;
+
+        var tempPassword = GenerateTempPassword();
+        var body = new
+        {
+            email,
+            password = tempPassword,
+            connection = _settings.Connection,
+            email_verified = false,
+            app_metadata = new { needsInvitation = true }
+        };
+
+        using var createRequest = new HttpRequestMessage(HttpMethod.Post, $"https://{_settings.Domain}/api/v2/users")
+        {
+            Content = JsonContent.Create(body)
+        };
+        createRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var createResp = await httpClient.SendAsync(createRequest);
+        var createBody = await createResp.Content.ReadAsStringAsync();
+
+        if (!createResp.IsSuccessStatusCode)
+            return new Error(ErrorCode.InternalError,
+                $"Auth0 create invitation user failed: {(int)createResp.StatusCode} {createBody}");
+
+        var created = System.Text.Json.JsonSerializer.Deserialize<Auth0UserDto>(createBody);
+        if (created is null || string.IsNullOrWhiteSpace(created.UserId))
+            return new Error(ErrorCode.InternalError, "Auth0 create invitation user response was empty");
+
+        return created.UserId;
+    }
+
+    public async Task<Result<bool>> SendInvitationAsync(string email)
+    {
+        var body = new
+        {
+            client_id = _settings.SpaClientId,
+            email,
+            connection = _settings.Connection
+        };
+
+        var resp = await httpClient.PostAsJsonAsync($"https://{_settings.Domain}/dbconnections/change_password", body);
+        var respBody = await resp.Content.ReadAsStringAsync();
+
+        if (!resp.IsSuccessStatusCode)
+            return new Error(ErrorCode.InternalError,
+                $"Auth0 send invitation failed: {(int)resp.StatusCode} {respBody}");
+
+        return true;
+    }
+
+    public async Task<Result<string>> CreatePasswordChangeTicketAsync(string auth0UserId, string? resultUrl = null, int ttlSec = 432000)
+    {
+        var tokenResult = await GetManagementApiTokenAsync();
+        if (!tokenResult.IsSuccess)
+            return tokenResult.Error;
+        var token = tokenResult.Value;
+
+        var body = new
+        {
+            user_id = auth0UserId,
+            result_url = resultUrl ?? $"https://{_settings.Domain}/login",
+            ttl_sec = ttlSec,
+            mark_email_as_verified = true,
+            includeEmailInRedirect = false
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"https://{_settings.Domain}/api/v2/tickets/password-change")
+        {
+            Content = JsonContent.Create(body)
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var resp = await httpClient.SendAsync(request);
+        var respBody = await resp.Content.ReadAsStringAsync();
+
+        if (!resp.IsSuccessStatusCode)
+            return new Error(ErrorCode.InternalError,
+                $"Auth0 create password-change ticket failed: {(int)resp.StatusCode} {respBody}");
+
+        var ticket = System.Text.Json.JsonSerializer.Deserialize<PasswordChangeTicketResponse>(respBody);
+        if (ticket is null || string.IsNullOrWhiteSpace(ticket.Ticket))
+            return new Error(ErrorCode.InternalError, "Auth0 ticket response was empty");
+
+        return ticket.Ticket;
+    }
+
     private async Task<Result<string>> GetManagementApiTokenAsync()
     {
         if (!string.IsNullOrWhiteSpace(_settings.M2M.StaticAccessToken))
@@ -113,6 +222,12 @@ public class Auth0ProvisioningService(
             _tokenLock.Release();
         }
     }
+
+    private static string GenerateTempPassword()
+    {
+        // 20 chars: Guid (32 hex) truncated + complexity suffix to satisfy Auth0 policy
+        return $"Tmp_{Guid.NewGuid():N}{Guid.NewGuid():N}"[..16] + "Aa1!";
+    }
 }
 
 public class Auth0UserDto
@@ -128,4 +243,10 @@ public class Auth0TokenResponse
 
     [JsonPropertyName("expires_in")]
     public int ExpiresIn { get; set; } = 86400;
+}
+
+public class PasswordChangeTicketResponse
+{
+    [JsonPropertyName("ticket")]
+    public string Ticket { get; set; } = string.Empty;
 }
