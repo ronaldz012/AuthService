@@ -1,12 +1,9 @@
 using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Moq;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Users.CreateUser;
 using Module.Auth.Domain;
-using Module.Auth.Infrastructure.Authentication;
 
 namespace Test.Auth.Users;
 
@@ -19,13 +16,7 @@ public class CreateUserTests
     {
         return new CreateUser(
             dbContext,
-            tenantConnectionContext,
-            Mock.Of<IEmailVerificationService>(),
-            Options.Create(new ProjectInfo
-            {
-                AppBranding = new AppBranding { FrontendDomain = "test.com" },
-                EmailTemplateDefaults = new EmailTemplateDefaults()
-            }));
+            tenantConnectionContext);
     }
 
     private static void SeedTenant(IAuthDbContext dbContext, Guid tenantId, string displayName = "TestTenant")
@@ -58,7 +49,7 @@ public class CreateUserTests
     }
 
     [Fact]
-    public async Task Execute_ShouldCreateUser_WithVerificationCode()
+    public async Task Execute_ShouldCreateUser()
     {
         var tenantId = Guid.NewGuid();
         var branchId = Guid.NewGuid();
@@ -88,8 +79,6 @@ public class CreateUserTests
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
         Assert.NotEqual(Guid.Empty, result.Value.UserId);
-        Assert.NotEmpty(result.Value.SetupUrl);
-        Assert.Contains("/auth/setup-password?code=", result.Value.SetupUrl);
 
         var savedUser = await dbContext.Users
             .IgnoreQueryFilters()
@@ -105,13 +94,6 @@ public class CreateUserTests
         Assert.Equal("John", savedUser.FirstName);
         Assert.Equal("Doe", savedUser.LastName);
         Assert.Equal("TestTenant-employee", savedUser.Username);
-
-        var savedCode = await dbContext.EmailVerificationCodes
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(c => c.UserId == savedUser.Id);
-
-        Assert.NotNull(savedCode);
-        Assert.Equal(savedUser.Id, savedCode.UserId);
     }
 
     [Fact]

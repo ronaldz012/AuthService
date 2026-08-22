@@ -18,7 +18,7 @@ public class ProductCodeService(IInvDbContext context, ITenantConnectionContext 
         var result = await context.Database
             .SqlQueryRaw<int>(sql, new NpgsqlParameter("id", brandId))
             .ToListAsync();
-        return $"{prefix}-{result[0]}";
+        return $"{prefix}{result[0]}";
     }
 
     public async Task<string> ReserveVariantCounter(Guid productId, string productCode)

@@ -13,7 +13,8 @@ public class ProductDto
     public decimal BasePrice { get; set; }
     public Gender Gender { get; set; }
     public bool IsActive { get; set; } = true;
-    
+    public DateTime CreatedAt {get;set;}
+    public int VariantsCount {get;set;}
 
     public List<ProductVariantDto> ProductVariants { get; set; } = new List<ProductVariantDto>();
 }

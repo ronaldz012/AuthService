@@ -15,8 +15,6 @@ public class SearchProduct(IInvDbContext context)
 
 
         var dbQuery = context.Products
-            .Include(x => x.Brand)
-            .Include(x => x.Category)
             .AsNoTracking();
 
         if (includeInactive != true)
@@ -46,6 +44,8 @@ public class SearchProduct(IInvDbContext context)
                 BasePrice = x.BasePrice,
                 Gender = x.Gender,
                 IsActive = x.IsActive,
+                VariantsCount = x.ProductVariants.Count(),
+                CreatedAt = x.CreatedAt,
                 ProductVariants = x.ProductVariants.Select(y => new ProductVariantDto
                 {
                     Id = y.Id,

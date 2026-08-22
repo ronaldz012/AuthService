@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Tenant.Create;
 using Module.Auth.Domain;
-using Module.Auth.Infrastructure.Authentication;
 using Moq;
 
 namespace Test.Auth.Tenants;
@@ -131,8 +130,6 @@ public class CreateTenantTests
 
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Value);
-        Assert.NotEmpty(result.Value.Code);
-        Assert.NotEmpty(result.Value.SetupUrl);
         Assert.Equal("New Tenant", result.Value.DisplayName);
 
         var savedTenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.DisplayName == "New Tenant");
@@ -150,13 +147,6 @@ public class CreateTenantTests
             .ToListAsync();
         Assert.Single(savedRoles);
         Assert.Equal("Admin", savedRoles[0].Name);
-
-        var savedCode = await dbContext.EmailVerificationCodes
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(ev => ev.TenantId == savedTenant.Id);
-        Assert.NotNull(savedCode);
-        Assert.Equal(savedTenant.OwnerId, savedCode.UserId);
-        Assert.Equal(result.Value.Code, savedCode.Code);
     }
 
     private static CreateTenant CreateSut(IAuthDbContext dbContext, ITenantConnectionContext tenantConnectionContext)
@@ -167,10 +157,16 @@ public class CreateTenantTests
             EmailTemplateDefaults = new EmailTemplateDefaults()
         });
 
+        var auth0Mock = new Mock<IAuth0ProvisioningService>();
+        auth0Mock.Setup(x => x.CreateInvitationUserAsync(It.IsAny<string>()))
+            .ReturnsAsync("auth0|test123");
+        auth0Mock.Setup(x => x.CreatePasswordChangeTicketAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+            .ReturnsAsync("https://test.com/ticket");
+
         return new CreateTenant(
             dbContext,
             tenantConnectionContext,
-            Mock.Of<IEmailVerificationService>(),
+            auth0Mock.Object,
             Mock.Of<IDefaultCatalogProvisioner>(),
             projectInfoOptions,
             Mock.Of<ILogger<CreateTenant>>());
