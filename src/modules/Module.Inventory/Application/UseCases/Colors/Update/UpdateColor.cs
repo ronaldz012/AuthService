@@ -13,11 +13,12 @@ public class UpdateColor(IInvDbContext context)
         if (color is null)
             return UpdateColorErrors.ColorNotFound;
 
-        var newName = dto.Name ?? color.Name;
-        if (newName.ToLower() != color.Name.ToLower())
+        var newName = dto.Name != null ? dto.Name.Trim() : color.Name;
+        var normalizedName = newName.Trim().ToLowerInvariant();
+        if (normalizedName != color.Name.Trim().ToLowerInvariant())
         {
             var duplicate = await context.Colors.AnyAsync(c =>
-                c.Id != id && c.Name.ToLower() == newName.ToLower());
+                c.Id != id && c.Name.ToLower() == normalizedName);
 
             if (duplicate)
                 return UpdateColorErrors.ColorNameAlreadyExists;

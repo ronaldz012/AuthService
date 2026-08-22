@@ -13,11 +13,12 @@ public class UpdateBrand(IInvDbContext context)
         if (brand is null)
             return UpdateBrandErrors.BrandNotFound;
 
-        var newName = dto.Name ?? brand.Name;
-        if (newName.ToLower() != brand.Name.ToLower())
+        var newName = dto.Name != null ? dto.Name.Trim() : brand.Name;
+        var normalizedName = newName.Trim().ToLowerInvariant();
+        if (normalizedName != brand.Name.Trim().ToLowerInvariant())
         {
             var duplicate = await context.Brands.AnyAsync(b =>
-                b.Id != id && b.Name.ToLower() == newName.ToLower());
+                b.Id != id && b.Name.ToLower() == normalizedName);
 
             if (duplicate)
                 return UpdateBrandErrors.BrandNameAlreadyExists;

@@ -13,11 +13,12 @@ public class UpdateProvider(IInvDbContext context)
         if (provider is null)
             return UpdateProviderErrors.ProviderNotFound;
 
-        var newName = request.Name ?? provider.Name;
-        if (newName.ToLower() != provider.Name.ToLower())
+        var newName = request.Name != null ? request.Name.Trim() : provider.Name;
+        var normalizedName = newName.Trim().ToLowerInvariant();
+        if (normalizedName != provider.Name.Trim().ToLowerInvariant())
         {
             var duplicate = await context.Providers
-                .AnyAsync(p => p.Id != id && p.Name.ToLower() == newName.ToLower());
+                .AnyAsync(p => p.Id != id && p.Name.ToLower() == normalizedName);
 
             if (duplicate)
                 return UpdateProviderErrors.ProviderNameAlreadyExists;

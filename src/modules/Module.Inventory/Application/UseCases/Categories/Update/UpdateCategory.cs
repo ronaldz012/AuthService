@@ -13,11 +13,12 @@ public class UpdateCategory(IInvDbContext context)
         if (category is null)
             return UpdateCategoryErrors.CategoryNotFound;
 
-        var newName = dto.Name ?? category.Name;
-        if (newName.ToLower() != category.Name.ToLower())
+        var newName = dto.Name != null ? dto.Name.Trim() : category.Name;
+        var normalizedName = newName.Trim().ToLowerInvariant();
+        if (normalizedName != category.Name.Trim().ToLowerInvariant())
         {
             var duplicate = await context.Categories.AnyAsync(c =>
-                c.Id != id && c.Name.ToLower() == newName.ToLower());
+                c.Id != id && c.Name.ToLower() == normalizedName);
 
             if (duplicate)
                 return UpdateCategoryErrors.CategoryNameAlreadyExists;

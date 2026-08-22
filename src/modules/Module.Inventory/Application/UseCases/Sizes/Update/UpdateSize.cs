@@ -13,11 +13,12 @@ public class UpdateSize(IInvDbContext context)
         if (size is null)
             return UpdateSizeErrors.SizeNotFound;
 
-        var newName = dto.Name ?? size.Name;
-        if (newName.ToLower() != size.Name.ToLower())
+        var newName = dto.Name != null ? dto.Name.Trim() : size.Name;
+        var normalizedName = newName.Trim().ToLowerInvariant();
+        if (normalizedName != size.Name.Trim().ToLowerInvariant())
         {
             var duplicate = await context.Sizes.AnyAsync(s =>
-                s.Id != id && s.Name.ToLower() == newName.ToLower());
+                s.Id != id && s.Name.ToLower() == normalizedName);
 
             if (duplicate)
                 return UpdateSizeErrors.SizeNameAlreadyExists;

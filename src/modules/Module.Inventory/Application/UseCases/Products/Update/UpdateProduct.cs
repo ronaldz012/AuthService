@@ -15,18 +15,20 @@ public class UpdateProduct(IInvDbContext context)
 
         if (dto.Name is not null)
         {
+            var effectiveCategoryId = dto.CategoryId ?? product.CategoryId;
+            var normalizedName = dto.Name.Trim().ToLowerInvariant();
             var duplicateName = await context.Products.AnyAsync(p =>
                 p.Id != id &&
-                p.CategoryId == (dto.CategoryId ?? product.CategoryId) &&
+                p.CategoryId == effectiveCategoryId &&
                 p.BrandId == product.BrandId &&
-                p.Name.ToLower() == dto.Name.ToLower());
+                p.Name.ToLower() == normalizedName);
 
             if (duplicateName)
                 return UpdateProductErrors.ProductNameAlreadyExists;
         }
 
-        product.Name = dto.Name ?? product.Name;
-        product.Description = dto.Description ?? product.Description;
+        product.Name = dto.Name != null ? dto.Name.Trim() : product.Name;
+        product.Description = dto.Description != null ? dto.Description.Trim() : product.Description;
         product.Gender = dto.Gender ?? product.Gender;
         product.CategoryId = dto.CategoryId ?? product.CategoryId;
         product.UpdatedBy = ctx.UserId;
