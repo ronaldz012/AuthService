@@ -35,6 +35,7 @@ public class ProductDetails(IInvDbContext context, IBranchService branchService)
                 Color = pv.Color.Name,
                 ColorId = pv.ColorId,
                 Price = pv.Price,
+                AverageCost = pv.AverageCost,
                 BranchStocks = pv.BranchInventories
                     .Where(bi => userBranches.Contains(bi.BranchId))
                     .Select(bi => new BranchStockDto

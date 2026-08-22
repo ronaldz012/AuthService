@@ -27,6 +27,7 @@ public class ProductVarianListDto
     public string Sku { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Size { get; set; } = string.Empty;
+    public decimal AverageCost {get;set;}
     public Guid SizeId { get; set; }
     public string Color { get; set; } = string.Empty;
     public Guid ColorId {get;set;}

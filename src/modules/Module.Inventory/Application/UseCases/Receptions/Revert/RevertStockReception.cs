@@ -22,7 +22,8 @@ public class RevertStockReception(
             return loadResult.Error;
 
         var (reception, variants) = loadResult.Value;
-        var blockReason = GetBlockReason(reception, variants);
+        var contaminated = await HasContaminatingMovementsAsync(reception);
+        var blockReason = GetBlockReason(reception, variants, contaminated);
 
         return new StockReceptionRevertCheckDto
         {
@@ -39,7 +40,8 @@ public class RevertStockReception(
             return loadResult.Error;
 
         var (reception, variants) = loadResult.Value;
-        var blockReason = GetBlockReason(reception, variants);
+        var contaminated = await HasContaminatingMovementsAsync(reception);
+        var blockReason = GetBlockReason(reception, variants, contaminated);
         if (blockReason != RevertBlockReason.None)
             return ReasonError(blockReason);
 
@@ -54,10 +56,11 @@ public class RevertStockReception(
             foreach (var item in reception.Items)
             {
                 var variant = variants.First(v => v.Id == item.ProductVariantId);
+                variant.RevertPurchase(item.QuantityReceived, item.UnitCost);
                 variant.RemoveQuantity(item.QuantityReceived, branchId);
 
                 context.StockMovements.Add(StockMovement.CreateReceptionRevert(
-                    branchId, variant.Id, userId, userName, item.QuantityReceived, reception.Id));
+                    branchId, variant.Id, userId, userName, item.QuantityReceived, reception.Id, item.UnitCost));
             }
 
             reception.Status = ReceptionStatus.Reverted;
@@ -98,13 +101,16 @@ public class RevertStockReception(
         return (reception, variants);
     }
 
-    private static RevertBlockReason GetBlockReason(StockReception reception, List<ProductVariant> variants)
+    private static RevertBlockReason GetBlockReason(StockReception reception, List<ProductVariant> variants, bool contaminated)
     {
         if (reception.Status == ReceptionStatus.Reverted)
             return RevertBlockReason.AlreadyReverted;
 
         if (reception.ReceivedAt < DateTime.UtcNow.AddDays(-MaxReceptionAgeDays))
             return RevertBlockReason.Outdated;
+
+        if (contaminated)
+            return RevertBlockReason.ContaminatedBySalesOrAdjustments;
 
         var variantMap = variants.ToDictionary(v => v.Id);
         foreach (var item in reception.Items)
@@ -117,11 +123,27 @@ public class RevertStockReception(
         return RevertBlockReason.None;
     }
 
+    private async Task<bool> HasContaminatingMovementsAsync(StockReception reception)
+    {
+        var variantIds = reception.Items.Select(i => i.ProductVariantId).Distinct().ToList();
+        if (variantIds.Count == 0)
+            return false;
+
+        var after = reception.ReceivedAt;
+        var isContaminated = await context.StockMovements
+            .AnyAsync(sm => variantIds.Contains(sm.ProductVariantId)
+                         && sm.CreatedAt > after
+                         && (sm.MovementType == MovementType.Sale || sm.MovementType == MovementType.Adjustment));
+
+        return isContaminated;
+    }
+
     private static string ReasonString(RevertBlockReason reason) => reason switch
     {
         RevertBlockReason.AlreadyReverted => "ALREADY_REVERTED",
         RevertBlockReason.Outdated => "OUTDATED",
         RevertBlockReason.NotEnoughStock => "NOT_ENOUGH_STOCK",
+        RevertBlockReason.ContaminatedBySalesOrAdjustments => "CONTAMINATED_BY_SALES_OR_ADJUSTMENTS",
         _ => string.Empty
     };
 
@@ -130,6 +152,7 @@ public class RevertStockReception(
         RevertBlockReason.AlreadyReverted => RevertStockReceptionErrors.AlreadyReverted,
         RevertBlockReason.Outdated => RevertStockReceptionErrors.Outdated,
         RevertBlockReason.NotEnoughStock => RevertStockReceptionErrors.NotEnoughStock,
+        RevertBlockReason.ContaminatedBySalesOrAdjustments => RevertStockReceptionErrors.ContaminatedBySalesOrAdjustments,
         _ => RevertStockReceptionErrors.RevertFailed
     };
 
@@ -138,6 +161,7 @@ public class RevertStockReception(
         None,
         AlreadyReverted,
         Outdated,
-        NotEnoughStock
+        NotEnoughStock,
+        ContaminatedBySalesOrAdjustments
     }
 }

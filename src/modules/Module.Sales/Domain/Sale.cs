@@ -41,7 +41,7 @@ public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
         PaymentMethod paymentMethod,
         string? transactionCode,
         string? notes,
-        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
+        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount, decimal UnitCost)> items)
     {
         return CreateBase(branchId, soldById, soldByName, createdBy, createdByName, cashRegisterClosureId, paymentMethod, 
             DocumentType.Ticket, transactionCode, notes, null, items);
@@ -59,7 +59,7 @@ public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
         int? invoiceNumber,
         string? transactionCode,
         string? notes,
-        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
+        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount, decimal UnitCost)> items)
     {
         if (documentType == DocumentType.Ticket)
             throw new InvalidOperationException("Cannot create an invoice with document type 'Ticket'.");
@@ -84,7 +84,7 @@ public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
         string? transactionCode,
         string? notes,
         int? invoiceNumber,
-        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount)> items)
+        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount, decimal UnitCost)> items)
     {
         if (items == null || !items.Any())
             throw new InvalidOperationException("Cannot create a sale without products.");
@@ -119,6 +119,7 @@ public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
                 ProductDisplayName = item.ProductDisplayName,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
+                UnitCost = item.UnitCost,
                 DiscountAmount = item.DiscountAmount,
                 FinalPrice = subtotal,
                 CreatedAt = now,

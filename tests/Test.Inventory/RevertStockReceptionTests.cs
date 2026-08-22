@@ -181,6 +181,91 @@ public class RevertStockReceptionTests
     }
 
     [Fact]
+    public async Task Execute_ShouldRevertAverageCost_UsingOriginalUnitCost()
+    {
+        using var ctx = CreateDbContext();
+        var variant = SeedVariant(ctx, 20);
+        variant.AverageCost = 20m;
+        await ctx.SaveChangesAsync();
+
+        // Recepción de 10u @10 (original), con stock total 20 @ promedio 20
+        var reception = StockReception.Create(BranchId, UserId, "Test User", null, ProviderId);
+        reception.AddExistingVariant(variant.Id, UserId, "Test User", 10, 10m);
+        ctx.StockReceptions.Add(reception);
+        await ctx.SaveChangesAsync();
+
+        var sut = CreateSut(ctx);
+        var result = await sut.Execute(CreateActorContext(), reception.Id);
+
+        Assert.True(result.IsSuccess);
+
+        var updated = await ctx.ProductVariants.SingleAsync(pv => pv.Id == variant.Id);
+        // nuevo_stock = 20 - 10 = 10
+        // nuevo_promedio = (20*20 - 10*10) / 10 = 30
+        Assert.Equal(10, (await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == variant.Id)).Stock);
+        Assert.Equal(30m, updated.AverageCost);
+    }
+
+    [Fact]
+    public async Task Check_ShouldBlock_WhenVariantHasSaleAfterReception()
+    {
+        using var ctx = CreateDbContext();
+        var variant = SeedVariant(ctx, 100);
+        var reception = SeedReception(ctx, variant, 10);
+        var sut = CreateSut(ctx);
+
+        ctx.StockMovements.Add(StockMovement.CreateSale(
+            BranchId, variant.Id, UserId, "Test User", 1, Guid.NewGuid(), 50m, null));
+        await ctx.SaveChangesAsync();
+
+        var result = await sut.Check(CreateActorContext(), reception.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value.CanRevert);
+        Assert.Equal("CONTAMINATED_BY_SALES_OR_ADJUSTMENTS", result.Value.Reason);
+    }
+
+    [Fact]
+    public async Task Check_ShouldBlock_WhenVariantHasAdjustmentAfterReception()
+    {
+        using var ctx = CreateDbContext();
+        var variant = SeedVariant(ctx, 100);
+        var reception = SeedReception(ctx, variant, 10);
+        var sut = CreateSut(ctx);
+
+        ctx.StockMovements.Add(StockMovement.CreateAdjustment(
+            BranchId, variant.Id, UserId, "Test User", -1, "Faltante", 50m));
+        await ctx.SaveChangesAsync();
+
+        var result = await sut.Check(CreateActorContext(), reception.Id);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value.CanRevert);
+        Assert.Equal("CONTAMINATED_BY_SALES_OR_ADJUSTMENTS", result.Value.Reason);
+    }
+
+    [Fact]
+    public async Task Execute_ShouldReturnContaminationError_WithoutPersistingChanges()
+    {
+        using var ctx = CreateDbContext();
+        var variant = SeedVariant(ctx, 100);
+        var reception = SeedReception(ctx, variant, 10);
+        var sut = CreateSut(ctx);
+
+        ctx.StockMovements.Add(StockMovement.CreateAdjustment(
+            BranchId, variant.Id, UserId, "Test User", -1, "Faltante", 50m));
+        await ctx.SaveChangesAsync();
+
+        var result = await sut.Execute(CreateActorContext(), reception.Id);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(RevertStockReceptionErrors.ContaminatedBySalesOrAdjustments, result.Error);
+
+        var updated = await ctx.StockReceptions.FindAsync(reception.Id);
+        Assert.Equal(ReceptionStatus.Confirmed, updated!.Status);
+    }
+
+    [Fact]
     public async Task Execute_ShouldReturnNotEnoughStock_WithoutPersistingChanges()
     {
         using var ctx = CreateDbContext();

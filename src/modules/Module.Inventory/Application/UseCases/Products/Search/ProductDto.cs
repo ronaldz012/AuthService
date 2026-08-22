@@ -30,4 +30,5 @@ public class ProductVariantDto
     public Guid ColorId { get; set; }
     public string ColorName { get; set; } = string.Empty;
     public decimal Price { get; set; }
+    public decimal AverageCost { get; set; }
 }

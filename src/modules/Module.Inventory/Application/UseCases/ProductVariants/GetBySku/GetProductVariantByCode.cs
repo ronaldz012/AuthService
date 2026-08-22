@@ -21,6 +21,7 @@ public class GetProductVariantByCode(IInvDbContext context)
                 ColorId = pv.ColorId,
                 ColorName = pv.Color.Name,
                 Price = pv.Price,
+                AverageCost = pv.AverageCost,
                 BranchId = branch,
                 AvailableStockInBranch = pv.BranchInventories.Where(bi => bi.BranchId == branch).Select(bi => bi.Stock).FirstOrDefault(),
                 ProductId= pv.ProductId,

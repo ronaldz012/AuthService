@@ -24,6 +24,7 @@ public async Task<Result<ProductVariantDetailsDto>> Execute(ActorContext ctx, Gu
             Size = pv.Size.Name,
             Color = pv.Color.Name,
             Price = pv.Price,
+            AverageCost = pv.AverageCost,
             CurrentStock = pv.BranchInventories
                             .Where(bi => bi.BranchId == currentBranchId)
                             .Select(bi => bi.Stock)

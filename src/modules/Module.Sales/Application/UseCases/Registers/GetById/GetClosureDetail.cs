@@ -78,6 +78,7 @@ public class GetClosureDetail(
                             ProductDisplayName = si.ProductDisplayName,
                             Quantity = si.Quantity,
                             UnitPrice = si.UnitPrice,
+                            UnitCost = si.UnitCost,
                             DiscountAmount = si.DiscountAmount,
                             FinalPrice = si.FinalPrice
                         }).ToList()

@@ -20,5 +20,7 @@ public class ProductVariantDetailsDto
 
     public decimal Price { get; set; }
 
+    public decimal AverageCost { get; set; }
+
     public decimal CurrentStock { get; set; }
 }

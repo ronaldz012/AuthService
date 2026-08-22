@@ -54,7 +54,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true, 30m)
             });
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
@@ -81,7 +81,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true, 30m)
             });
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
@@ -108,7 +108,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true, 30m)
             });
         var deductError = new Error(ErrorCode.InvalidState, "Insufficient stock for product SKU-001.");
         inventoryMock
@@ -139,7 +139,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, false)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, false, 30m)
             });
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
@@ -166,7 +166,7 @@ public class CreateSaleTests
             .Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), BranchId))
             .ReturnsAsync(new List<ProductVariantStockDto>
             {
-                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true)
+                new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true, 30m)
             });
         inventoryMock
             .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<string>(), It.IsAny<Guid>()))

@@ -44,7 +44,7 @@ public class CreateSale(
             var factoryItems = dto.Items.Select(itemDto =>
             {
                 var variant = variants.First(v => v.Id == itemDto.ProductVariantId);
-                return (itemDto.ProductVariantId, variant.Sku, variant.DisplayName, variant.Price, itemDto.Quantity, itemDto.DiscountAmount);
+                return (itemDto.ProductVariantId, variant.Sku, variant.DisplayName, variant.Price, itemDto.Quantity, itemDto.DiscountAmount, variant.AverageCost);
             }).ToList();
 
             Sale sale;

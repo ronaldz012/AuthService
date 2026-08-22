@@ -80,18 +80,18 @@ public class CorrectProductVariantStockTests
         await SeedVariant(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 15, Notes = "Ajuste" }, VariantId);
+        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 7, Notes = "Ajuste" }, VariantId);
 
         Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Code} - {result.Error?.Message}");
 
         var inventory = await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == VariantId);
-        Assert.Equal(15, inventory.Stock);
+        Assert.Equal(7, inventory.Stock);
 
         var movement = await ctx.StockMovements.SingleAsync();
         Assert.Equal(MovementType.Adjustment, movement.MovementType);
-        Assert.Equal(5m, movement.Quantity);
-        Assert.Equal(5m, await MovementSum(ctx));
-        Assert.Equal(15m, 10m + await MovementSum(ctx));
+        Assert.Equal(-3m, movement.Quantity);
+        Assert.Equal(-3m, await MovementSum(ctx));
+        Assert.Equal(7m, 10m + await MovementSum(ctx));
     }
 
     [Fact]
@@ -141,10 +141,25 @@ public class CorrectProductVariantStockTests
         await SeedVariant(ctx, 10);
         var sut = CreateSut(ctx);
 
-        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 15, Notes = "" }, VariantId);
+        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 7, Notes = "" }, VariantId);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(CorrectProductVariantStockErrors.StockCorrectionFailed, result.Error);
+        Assert.Equal(10, (await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == VariantId)).Stock);
+        Assert.Empty(await ctx.StockMovements.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Execute_ShouldReturnError_WhenStockIncreased()
+    {
+        using var ctx = CreateDbContext();
+        await SeedVariant(ctx, 10);
+        var sut = CreateSut(ctx);
+
+        var result = await sut.Execute(CreateActorContext(), new UpdateProductVariantStockDto { Stock = 15, Notes = "Excedente" }, VariantId);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(CorrectProductVariantStockErrors.SurplusNotAllowed, result.Error);
         Assert.Equal(10, (await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == VariantId)).Stock);
         Assert.Empty(await ctx.StockMovements.ToListAsync());
     }

@@ -55,7 +55,8 @@ public class SearchProduct(IInvDbContext context)
                     SizeId = y.SizeId,
                     ColorId =  y.ColorId,
                     ColorName = y.Color.Name,
-                    Price = y.Price
+                    Price = y.Price,
+                    AverageCost = y.AverageCost
                 }).ToList()
             })
             .Take(10)

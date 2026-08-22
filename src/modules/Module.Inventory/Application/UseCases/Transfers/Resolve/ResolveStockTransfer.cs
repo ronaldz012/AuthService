@@ -71,7 +71,8 @@ public class ResolveStockTransfer(IInvDbContext context)
                     userId,
                     userName,
                     item.QuantityRequested,
-                    transfer.Id
+                    transfer.Id,
+                    productVariant.AverageCost
 
                 );
                 transfer.StockMovements.Add(movIn);

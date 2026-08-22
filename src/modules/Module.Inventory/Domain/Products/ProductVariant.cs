@@ -16,6 +16,7 @@ public class ProductVariant: Params, IMustHaveTenant
     public Guid TenantId { get; set; }
     public Guid ColorId { get; set; }
     public Guid SizeId { get; set; }
+    public decimal AverageCost { get; set; }
 
     public Color Color { get; set; } = null;
     public Size Size { get; set; } = null!;
@@ -63,7 +64,32 @@ public class ProductVariant: Params, IMustHaveTenant
             throw new InvalidOperationException($"Stock insuficiente para {Sku}");
 
         branchInventory.Stock -= quantity;
-        StockMovements.Add(StockMovement.CreateSale(branchId, Id, userId, userName, quantity, referenceId, notes));
+        StockMovements.Add(StockMovement.CreateSale(branchId, Id, userId, userName, quantity, referenceId, AverageCost, notes));
+    }
+
+    public void RegisterPurchase(int quantity, decimal unitCost)
+    {
+        var totalStock = BranchInventories.Sum(bi => bi.Stock);
+        var totalValue = AverageCost * totalStock + unitCost * quantity;
+        var newTotal = totalStock + quantity;
+        AverageCost = newTotal == 0 ? 0 : totalValue / newTotal;
+    }
+
+    public void RevertPurchase(int quantity, decimal originalUnitCost)
+    {
+        var currentStock = BranchInventories.Sum(bi => bi.Stock);
+        var newStock = currentStock - quantity;
+        if (newStock <= 0)
+        {
+            AverageCost = 0;
+            return;
+        }
+
+        var currentValue = AverageCost * currentStock;
+        var revertedValue = originalUnitCost * quantity;
+        var newValue = currentValue - revertedValue;
+        if (newValue < 0) newValue = 0;
+        AverageCost = newValue / newStock;
     }
 
 

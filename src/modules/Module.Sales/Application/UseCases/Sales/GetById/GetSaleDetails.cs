@@ -39,6 +39,7 @@ public class GetSaleDetail(ISalesDbContext context)
                     ProductDisplayName = si.ProductDisplayName,
                     ProductSku = si.ProductSku,
                     UnitPrice = si.UnitPrice,
+                    UnitCost = si.UnitCost,
                     Quantity = si.Quantity,
                     DiscountAmount = si.DiscountAmount,
                     FinalPrice = si.FinalPrice

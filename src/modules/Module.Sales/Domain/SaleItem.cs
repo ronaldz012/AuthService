@@ -12,6 +12,7 @@ public class SaleItem : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUp
     public string ProductDisplayName { get; set; } = string.Empty;
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
+    public decimal UnitCost { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal FinalPrice { get; set; }
     public DateTime CreatedAt { get; set; }

@@ -19,6 +19,7 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
                 pv.Id,
                 pv.Sku,
                 pv.Price,
+                pv.AverageCost,
                 IsActive = pv.Product.IsActive,
                 SizeName = pv.Size.Name,
                 ColorName = pv.Color.Name,
@@ -39,7 +40,8 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
                 ProductVariant.BuildDisplayName(x.BrandName, x.CategoryName, x.ProductName, x.ColorName, x.SizeName),
                 x.Price,
                 x.Stock,
-                x.IsActive))
+                x.IsActive,
+                x.AverageCost))
             .ToList();
 
         return dtos;

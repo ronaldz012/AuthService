@@ -19,7 +19,8 @@ public record ProductVariantStockDto(
     string DisplayName,
     decimal Price,
     int Stock,
-    bool IsActive);
+    bool IsActive,
+    decimal AverageCost);
 
 public record StockDeductionDto(
     Guid ProductVariantId,

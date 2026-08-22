@@ -26,7 +26,10 @@ public class CorrectProductVariantStock(IInvDbContext context)
             var previousStock = existingInventory?.Stock ?? 0;
             var delta = request.Stock - previousStock;
 
-            // Se valida el movimi ento primero (CreateAdjustment exige Notes); si falla, no se muta stock
+            if (delta > 0)
+                return CorrectProductVariantStockErrors.SurplusNotAllowed;
+
+            // Se valida el movimiento primero (CreateAdjustment exige Notes); si falla, no se muta stock
             var movement = delta != 0
                 ? StockMovement.CreateAdjustment(
                     currentBranch,
@@ -34,7 +37,8 @@ public class CorrectProductVariantStock(IInvDbContext context)
                     ctx.UserId,
                     ctx.FullName,
                     delta,
-                    request.Notes)
+                    request.Notes,
+                    pv.AverageCost)
                 : null;
 
             pv.CorrectQuantity(request.Stock, currentBranch, ctx.UserId, ctx.FullName);

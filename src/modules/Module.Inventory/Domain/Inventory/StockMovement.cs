@@ -12,6 +12,7 @@ public class StockMovement : Params, IMustHaveTenant
     public Guid ProductVariantId { get; set; }
     public Guid UserId { get; set; }
     public decimal Quantity { get; set; }
+    public decimal UnitCost { get; set; }
     public string Notes { get; set; } = string.Empty;
     public MovementType MovementType { get; set; }
     public Guid? TransferToBranchId { get; set; }
@@ -19,7 +20,7 @@ public class StockMovement : Params, IMustHaveTenant
     public ProductVariant ProductVariant { get; set; } = null!;
 
     // Ingreso por recepción
-    public static StockMovement CreateReception(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, string? notes = null)
+    public static StockMovement CreateReception(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, decimal unitCost, string? notes = null)
     {
         return new StockMovement
         {
@@ -27,6 +28,7 @@ public class StockMovement : Params, IMustHaveTenant
             ProductVariantId = productVariantId,
             UserId = userId,
             Quantity = quantity,
+            UnitCost = unitCost,
             MovementType = MovementType.Reception,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
@@ -34,7 +36,7 @@ public class StockMovement : Params, IMustHaveTenant
             CreatedByName = userName
         };
     }
-    public static StockMovement CreateReceptionForNewVariant(Guid branchId, ProductVariant productVariant, Guid userId, string userName, decimal quantity,Guid referenceId,  string? notes = null)
+    public static StockMovement CreateReceptionForNewVariant(Guid branchId, ProductVariant productVariant, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, string? notes = null)
     {
         return new StockMovement
         {
@@ -42,6 +44,7 @@ public class StockMovement : Params, IMustHaveTenant
             ProductVariant = productVariant, // EF resuelve el Id
             UserId = userId,
             Quantity = quantity,
+            UnitCost = unitCost,
             MovementType = MovementType.Reception,
             Notes = notes ?? string.Empty,
             ReferenceId =  referenceId,
@@ -52,7 +55,7 @@ public class StockMovement : Params, IMustHaveTenant
     }
 
     // Egreso por venta
-    public static StockMovement CreateSale(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId,  string? notes = null)
+    public static StockMovement CreateSale(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, string? notes = null)
     {
         if (quantity <= 0)
             throw new InvalidOperationException("Quantity must be greater than zero");
@@ -63,6 +66,7 @@ public class StockMovement : Params, IMustHaveTenant
             ProductVariantId = productVariantId,
             UserId = userId,
             Quantity = -quantity, // negativo representa egreso
+            UnitCost = unitCost,
             MovementType = MovementType.Sale,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
@@ -73,7 +77,7 @@ public class StockMovement : Params, IMustHaveTenant
     }
 
     // Ajuste manual (puede ser positivo o negativo)
-    public static StockMovement CreateAdjustment(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity,  string notes)
+    public static StockMovement CreateAdjustment(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity,  string notes, decimal unitCost = 0)
     {
         if (string.IsNullOrEmpty(notes))
             throw new InvalidOperationException("Adjustment requires a note explaining the reason");
@@ -84,6 +88,7 @@ public class StockMovement : Params, IMustHaveTenant
             ProductVariantId = productVariantId,
             UserId = userId,
             Quantity = quantity,
+            UnitCost = unitCost,
             MovementType = MovementType.Adjustment,
             Notes = notes,
             CreatedBy = userId,
@@ -93,7 +98,7 @@ public class StockMovement : Params, IMustHaveTenant
     }
 
     // Egreso por reversión de recepción
-    public static StockMovement CreateReceptionRevert(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, string? notes = null)
+    public static StockMovement CreateReceptionRevert(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, decimal unitCost, string? notes = null)
     {
         if (quantity <= 0)
             throw new InvalidOperationException("Quantity must be greater than zero");
@@ -104,6 +109,7 @@ public class StockMovement : Params, IMustHaveTenant
             ProductVariantId = productVariantId,
             UserId = userId,
             Quantity = -quantity,
+            UnitCost = unitCost,
             MovementType = MovementType.ReceptionRevert,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
@@ -114,7 +120,7 @@ public class StockMovement : Params, IMustHaveTenant
 
     // Traspaso — devuelve los dos movimientos linkeados
     public static (StockMovement Out, StockMovement In) CreateTransfer(
-        Guid fromBranchId, Guid toBranchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId,  string? notes = null)
+        Guid fromBranchId, Guid toBranchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, string? notes = null)
     {
         if (quantity <= 0)
             throw new InvalidOperationException("Quantity must be greater than zero");
@@ -125,6 +131,7 @@ public class StockMovement : Params, IMustHaveTenant
             ProductVariantId = productVariantId,
             UserId = userId,
             Quantity = -quantity,
+            UnitCost = unitCost,
             MovementType = MovementType.TransferOut,
             TransferToBranchId = toBranchId,
             Notes = notes ?? string.Empty,
@@ -139,6 +146,7 @@ public class StockMovement : Params, IMustHaveTenant
             ProductVariantId = productVariantId,
             UserId = userId,
             Quantity = quantity,
+            UnitCost = unitCost,
             MovementType = MovementType.TransferIn,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
