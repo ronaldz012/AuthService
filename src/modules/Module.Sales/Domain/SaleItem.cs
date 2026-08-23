@@ -28,4 +28,6 @@ public class SaleItem : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUp
     public Guid? OriginalSaleItemId { get; set; }
 
     public Sale Sale { get; set; } = null!;
+    public SaleItem? OriginalSaleItem { get; set; }
+    public ICollection<SaleItem> ChildReturns { get; set; } = new List<SaleItem>();
 }

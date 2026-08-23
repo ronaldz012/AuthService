@@ -12,9 +12,18 @@ public static class SalesEntityConfiguration
             entity.HasMany(s => s.SaleItems)
                 .WithOne(i => i.Sale)
                 .HasForeignKey(i => i.SaleId);
+
+            entity.HasOne(s => s.OriginalSale)
+                .WithMany(s => s.Returns)
+                .HasForeignKey(s => s.OriginalSaleId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
         builder.Entity<SaleItem>(entity =>
         {
+            entity.HasOne(i => i.OriginalSaleItem)
+                .WithMany(i => i.ChildReturns)
+                .HasForeignKey(i => i.OriginalSaleItemId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
         builder.Entity<CashRegisterClosure>(entity =>
         {

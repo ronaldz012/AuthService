@@ -32,6 +32,9 @@ public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
     public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
     public CashRegisterClosure CashRegisterClosure { get; set; } = null!;
 
+    public Sale? OriginalSale { get; set; }
+    public ICollection<Sale> Returns { get; set; } = new List<Sale>();
+
     public static Sale CreateSaleWithTicket(
         Guid branchId,
         Guid soldById,
