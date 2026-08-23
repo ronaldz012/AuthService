@@ -2,18 +2,19 @@ using Common.Contracts.authentication;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Module.Sales.Application.Abstraction;
+using Module.Sales.Domain;
 
-namespace Module.Sales.Application.UseCases.Sales.Get;
+namespace Module.Sales.Application.UseCases.Sales.Return.List;
 
-public class GetListSales(ISalesDbContext context)
+public class ListReturns(ISalesDbContext context)
 {
-    public async Task<Result<PagedResultDto<SaleListDto>>> Execute(ActorContext ctx, SalesQueryDto queryDto)
+    public async Task<Result<PagedResultDto<ReturnListDto>>> Execute(ActorContext ctx, ReturnsQueryDto queryDto)
     {
         var currentBranch = ctx.BranchIds[0];
 
         var query = context.Sales
             .AsNoTracking()
-            .Where(s => s.BranchId == currentBranch && s.Type == Domain.SaleType.Sale);
+            .Where(s => s.BranchId == currentBranch && s.Type == SaleType.Return);
 
         if (queryDto.DateFrom.HasValue)
             query = query.Where(s => s.CreatedAt >= queryDto.DateFrom.Value);
@@ -21,15 +22,12 @@ public class GetListSales(ISalesDbContext context)
         if (queryDto.DateTo.HasValue)
             query = query.Where(s => s.CreatedAt <= queryDto.DateTo.Value);
 
-        if (queryDto.HasReturn.HasValue)
-            query = query.Where(s => s.Returns.Any() == queryDto.HasReturn.Value);
-
         var totalCount = await query.CountAsync();
 
         var items = await query
             .OrderByDescending(s => s.CreatedAt)
             .ApplyPagination(queryDto)
-            .Select(s => new SaleListDto
+            .Select(s => new ReturnListDto
             {
                 Id = s.Id,
                 CreatedAt = s.CreatedAt,
@@ -39,17 +37,14 @@ public class GetListSales(ISalesDbContext context)
                     .OrderBy(si => si.Id)
                     .Select(si => si.ProductDisplayName)
                     .FirstOrDefault() ?? "",
-                TotalQuantity = s.SaleItems.Sum(si => si.Quantity),
+                TotalQuantity = s.SaleItems.Sum(si => Math.Abs(si.Quantity)),
                 PaymentMethod = s.PaymentMethod,
-                DocumentType = s.DocumentType,
-                InvoiceNumber = s.InvoiceNumber,
-                TransactionCode = s.TransactionCode,
-                HasReturn = s.Returns.Any(),
-                ReturnedAmount = s.Returns.Sum(r => r.TotalAmount),
+                OriginalSaleId = s.OriginalSaleId,
+                Notes = s.Notes,
             })
             .ToListAsync();
 
-        return new PagedResultDto<SaleListDto>
+        return new PagedResultDto<ReturnListDto>
         {
             Items = items,
             TotalCount = totalCount,

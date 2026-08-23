@@ -2,8 +2,6 @@ using Module.Sales.Domain;
 
 namespace Module.Sales.Application.UseCases.Sales.GetById;
 
-
-
 public class SaleDetailDto
 {
     public Guid Id { get; set; }
@@ -19,8 +17,17 @@ public class SaleDetailDto
     public int? InvoiceNumber { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
+    public Guid? OriginalSaleId { get; set; }
 
     public List<SaleItemDetailDto> Items { get; set; } = [];
+    public List<SaleRefundDto> Returns { get; set; } = [];
+}
+
+public class SaleRefundDto
+{
+    public Guid Id { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public decimal TotalAmount { get; set; }
 }
 
 public class SaleItemDetailDto
@@ -34,4 +41,5 @@ public class SaleItemDetailDto
     public decimal UnitCost { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal FinalPrice { get; set; }
+    public int ReturnedQuantity { get; set; }
 }

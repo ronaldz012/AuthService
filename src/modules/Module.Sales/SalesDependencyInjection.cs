@@ -15,6 +15,10 @@ using Module.Sales.Application.UseCases.Registers.TodaySales;
 using Module.Sales.Application.UseCases.Sales.Create;
 using Module.Sales.Application.UseCases.Sales.Get;
 using Module.Sales.Application.UseCases.Sales.GetById;
+using Module.Sales.Application.UseCases.Sales.Return;
+using Module.Sales.Application.UseCases.Sales.Return.GetSaleForReturn;
+using Module.Sales.Application.UseCases.Sales.Return.List;
+using Module.Sales.Application.UseCases.Sales.Search;
 using Module.Sales.Infrastructure;
 
 namespace Module.Sales;
@@ -28,6 +32,10 @@ public static class SalesDependencyInjection
                         .AddScoped<CreateSale>()
                         .AddScoped<GetListSales>()
                         .AddScoped<GetSaleDetail>()
+                        .AddScoped<CreateReturn>()
+                        .AddScoped<ListReturns>()
+                        .AddScoped<SearchSalesBySku>()
+                        .AddScoped<GetSaleForReturn>()
                         .AddScoped<RegisterUseCases>()
                         .AddScoped<OpenCashRegister>()
                         .AddScoped<CloseCashRegister>()

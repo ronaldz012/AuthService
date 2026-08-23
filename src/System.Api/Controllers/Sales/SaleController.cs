@@ -8,6 +8,10 @@ using Module.Auth.Application.Abstraction;
 using Module.Sales.Application.UseCases;
 using Module.Sales.Application.UseCases.Sales.Create;
 using Module.Sales.Application.UseCases.Sales.Get;
+using Module.Sales.Application.UseCases.Sales.Return;
+using Module.Sales.Application.UseCases.Sales.Return.GetSaleForReturn;
+using Module.Sales.Application.UseCases.Sales.Return.List;
+using Module.Sales.Application.UseCases.Sales.Search;
 
 namespace System.Api.Controllers.Sales
 {
@@ -40,6 +44,39 @@ namespace System.Api.Controllers.Sales
             var actorResult = currentUser.GetActorContext();
             if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
             return await saleUseCases.GetSaleDetail.Execute(actorResult.Value, id).ToValueOrProblemDetails();
+        }
+        [HttpGet("returns")]
+        //[RequireFeature("returns", "read")]
+        public async Task<IActionResult> GetReturns([FromQuery] ReturnsQueryDto queryDto)
+        {
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await saleUseCases.ListReturns.Execute(actorResult.Value, queryDto).ToValueOrProblemDetails();
+        }
+        [HttpPost("{id:guid}/returns")]
+        //[RequireFeature("returns", "create")]
+        public async Task<IActionResult> CreateReturn([FromRoute] Guid id, [FromBody] CreateReturnDto dto)
+        {
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            dto.OriginalSaleId = id;
+            return await saleUseCases.CreateReturn.Execute(actorResult.Value, dto).ToValueOrProblemDetails();
+        }
+        [HttpGet("search-by-sku")]
+        //[RequireFeature("pos", "read")]
+        public async Task<IActionResult> SearchBySku([FromQuery] SkuSearchQueryDto queryDto)
+        {
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await saleUseCases.SearchSalesBySku.Execute(actorResult.Value, queryDto).ToValueOrProblemDetails();
+        }
+        [HttpGet("{saleId:guid}/returnable")]
+        [RequireFeature("returns", "read")]
+        public async Task<IActionResult> GetSaleForReturn([FromRoute] Guid saleId)
+        {
+            var actorResult = currentUser.GetActorContext();
+            if (!actorResult.IsSuccess)  return actorResult.ToValueOrProblemDetails();
+            return await saleUseCases.GetSaleForReturn.Execute(actorResult.Value, saleId).ToValueOrProblemDetails();
         }
     }
 }

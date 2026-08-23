@@ -21,7 +21,6 @@ public class GetSaleDetail(ISalesDbContext context)
                 SoldById = s.SoldById,
                 SoldByName = s.SoldByName,
                 Type = s.Type,
-                TotalItems = s.SaleItems.Sum(si => si.Quantity),
                 DocumentType = s.DocumentType,
                 PaymentMethod = s.PaymentMethod,
                 TransactionCode = s.TransactionCode,
@@ -29,9 +28,9 @@ public class GetSaleDetail(ISalesDbContext context)
                 InvoiceNumber = s.InvoiceNumber,
                 Notes = s.Notes,
                 CreatedAt = s.CreatedAt,
+                OriginalSaleId = s.OriginalSaleId,
+                TotalItems = s.SaleItems.Sum(si => si.Quantity),
 
-                // Coincide con SaleItem.ProductDisplayName (dominio)
-                // Ej: "Air Max 90 (NIK-1-001) - Negro / 42"
                 Items = s.SaleItems.Select(si => new SaleItemDetailDto
                 {
                     Id = si.Id,
@@ -42,7 +41,15 @@ public class GetSaleDetail(ISalesDbContext context)
                     UnitCost = si.UnitCost,
                     Quantity = si.Quantity,
                     DiscountAmount = si.DiscountAmount,
-                    FinalPrice = si.FinalPrice
+                    FinalPrice = si.FinalPrice,
+                    ReturnedQuantity = (int)si.ChildReturns.Sum(cr => -cr.Quantity)
+                }).ToList(),
+
+                Returns = s.Returns.Select(r => new SaleRefundDto
+                {
+                    Id = r.Id,
+                    CreatedAt = r.CreatedAt,
+                    TotalAmount = r.TotalAmount
                 }).ToList()
             })
             .FirstOrDefaultAsync();
