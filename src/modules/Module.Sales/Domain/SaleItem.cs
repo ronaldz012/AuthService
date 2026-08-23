@@ -25,5 +25,7 @@ public class SaleItem : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUp
     public Guid? DeletedBy { get; set; }
     public string? DeletedByName { get; set; }
 
+    public Guid? OriginalSaleItemId { get; set; }
+
     public Sale Sale { get; set; } = null!;
 }

@@ -47,8 +47,8 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
         return dtos;
     }
 
-public async Task<Result<bool>> DeductStock(
-    List<StockDeductionDto> deductions, Guid branchId, Guid userId, string userName, Guid referenceId)
+    public async Task<Result<bool>> DeductStock(
+    List<StockDeductionDto> deductions, Guid branchId, Guid userId, string userName, Guid referenceId, bool saveChanges = true)
 {
     var variantIds = deductions.Select(d => d.ProductVariantId).ToList();
 
@@ -71,6 +71,9 @@ public async Task<Result<bool>> DeductStock(
         pv.SellStock(deduction.Quantity, branchId, userId, userName, referenceId);
     }
 
+    if (saveChanges)
+        await context.SaveChangesAsync();
+
     return true; 
 }
 
@@ -80,5 +83,36 @@ public async Task<Result<bool>> DeductStock(
             .AnyAsync(t =>
                 (t.FromBranchId == branchId || t.ToBranchId == branchId) &&
                 (t.Status == TransferStatus.Pending || t.Status == TransferStatus.Transit));
+    }
+
+    public async Task<Result<bool>> ReturnStock(
+        List<StockReturnDto> returns, Guid branchId, Guid userId, string userName, Guid referenceId, bool saveChanges = true)
+    {
+        var variantIds = returns.Select(r => r.ProductVariantId).ToList();
+
+        var variants = await context.ProductVariants
+            .Include(pv => pv.BranchInventories.Where(bi => bi.BranchId == branchId))
+            .Where(pv => variantIds.Contains(pv.Id))
+            .ToListAsync();
+
+        foreach (var returnItem in returns)
+        {
+            var pv = variants.FirstOrDefault(v => v.Id == returnItem.ProductVariantId);
+            if (pv == null)
+                return new Error(ErrorCode.NotFound, $"Product variant {returnItem.ProductVariantId} not found.");
+
+            // Sumar stock (la devolución ENTRADA)
+            pv.AddQuantity(returnItem.Quantity, branchId, userId, userName);
+
+            // Crear movimiento de devolución con el costo de la venta original
+            context.StockMovements.Add(StockMovement.CreateReturn(
+                branchId, returnItem.ProductVariantId, userId, userName, 
+                returnItem.Quantity, referenceId, returnItem.UnitCost));
+        }
+
+        if (saveChanges)
+            await context.SaveChangesAsync();
+
+        return true;
     }
 }

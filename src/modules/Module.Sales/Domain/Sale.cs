@@ -16,6 +16,7 @@ public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
     public int? InvoiceNumber { get; set; }
     public SaleType Type { get; set; }        
     public DocumentType DocumentType { get; set; }
+    public Guid? OriginalSaleId { get; set; }
 
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -27,9 +28,9 @@ public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
     public DateTime? DeletedAt { get; set; }
     public Guid? DeletedBy { get; set; }
     public string? DeletedByName { get; set; }
+
     public ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
     public CashRegisterClosure CashRegisterClosure { get; set; } = null!;
-
 
     public static Sale CreateSaleWithTicket(
         Guid branchId,
@@ -132,7 +133,68 @@ public class Sale : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
         sale.TotalAmount = total;
         return sale;
     }
-    
+
+    public static Sale CreateReturn(
+        Guid branchId,
+        Guid soldById,
+        string soldByName,
+        Guid createdBy,
+        string createdByName,
+        Guid cashRegisterClosureId,
+        PaymentMethod paymentMethod,
+        DocumentType documentType,
+        string? transactionCode,
+        string? notes,
+        Guid originalSaleId,
+        List<(Guid ProductVariantId, string ProductSku, string ProductDisplayName, decimal UnitPrice, int Quantity, decimal DiscountAmount, decimal UnitCost, Guid OriginalSaleItemId)> items)
+    {
+        if (items == null || !items.Any())
+            throw new InvalidOperationException("Cannot create a return without products.");
+
+        var now = DateTime.UtcNow;
+        var sale = new Sale
+        {
+            Id = Guid.NewGuid(),
+            BranchId = branchId,
+            SoldById = soldById,
+            SoldByName = soldByName,
+            CashRegisterClosureId = cashRegisterClosureId,
+            PaymentMethod = paymentMethod,
+            DocumentType = documentType,
+            Type = SaleType.Return,
+            OriginalSaleId = originalSaleId,
+            TransactionCode = transactionCode,
+            Notes = notes,
+            CreatedAt = now,
+            CreatedBy = createdBy,
+            CreatedByName = createdByName
+        };
+
+        decimal total = 0;
+        foreach (var item in items)
+        {
+            var subtotal = (item.UnitPrice - item.DiscountAmount) * item.Quantity;
+            sale.SaleItems.Add(new SaleItem
+            {
+                ProductVariantId = item.ProductVariantId,
+                ProductSku = item.ProductSku,
+                ProductDisplayName = item.ProductDisplayName,
+                Quantity = -item.Quantity, // NEGATIVO para devolución
+                UnitPrice = item.UnitPrice,
+                UnitCost = item.UnitCost, // Costo de la venta ORIGINAL (snapshot)
+                DiscountAmount = item.DiscountAmount,
+                FinalPrice = -subtotal, // NEGATIVO para que netee en reportes
+                CreatedAt = now,
+                CreatedBy = createdBy,
+                CreatedByName = createdByName,
+                OriginalSaleItemId = item.OriginalSaleItemId
+            });
+            total += subtotal;
+        }
+
+        sale.TotalAmount = -total; // NEGATIVO para que netee en reportes
+        return sale;
+    }
 }
 
 public enum PaymentMethod
@@ -143,8 +205,8 @@ public enum PaymentMethod
 
 public enum SaleType
 {
-    Sale,          // Transacción normal de salida de mercancía
-    Return         // Transacción de devolución para la entrada de mercancía
+    Sale,
+    Return
 }
 
 public enum DocumentType
@@ -153,4 +215,3 @@ public enum DocumentType
     Invoice,        // Facturado
     PendingInvoice  // Con factura pendiente en caso de que salga mal
 }
-

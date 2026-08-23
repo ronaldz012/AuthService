@@ -8,7 +8,10 @@ public interface IInventoryIntegrationService
         List<Guid> variantIds, Guid branchId);
 
     Task<Result<bool>> DeductStock(
-        List<StockDeductionDto> deductions, Guid branchId, Guid userId, string userName, Guid referenceId);
+        List<StockDeductionDto> deductions, Guid branchId, Guid userId, string userName, Guid referenceId, bool saveChanges = true);
+
+    Task<Result<bool>> ReturnStock(
+        List<StockReturnDto> returns, Guid branchId, Guid userId, string userName, Guid referenceId, bool saveChanges = true);
 
     Task<bool> BranchHasPendingTransfers(Guid branchId);
 }
@@ -25,3 +28,8 @@ public record ProductVariantStockDto(
 public record StockDeductionDto(
     Guid ProductVariantId,
     int Quantity);
+
+public record StockReturnDto(
+    Guid ProductVariantId,
+    int Quantity,
+    decimal UnitCost);

@@ -85,7 +85,7 @@ public class CreateSale(
                 .Select(i => new StockDeductionDto(i.ProductVariantId, i.Quantity))
                 .ToList();
 
-            var deductResult = await inventoryService.DeductStock(deductions, branchId, userId, userName, sale.Id);
+            var deductResult = await inventoryService.DeductStock(deductions, branchId, userId, userName, sale.Id, saveChanges: false);
             if (!deductResult.IsSuccess)
             {
                 await transaction.RollbackAsync();

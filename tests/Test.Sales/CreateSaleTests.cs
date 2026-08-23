@@ -112,7 +112,7 @@ public class CreateSaleTests
             });
         var deductError = new Error(ErrorCode.InvalidState, "Insufficient stock for product SKU-001.");
         inventoryMock
-            .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<string>(), It.IsAny<Guid>()))
+            .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(deductError);
 
         var sut = CreateSut(dbContext, inventoryMock.Object);
@@ -169,7 +169,7 @@ public class CreateSaleTests
                 new(VariantId, "SKU-001", "Test Product - Negro / 42", 100m, 10, true, 30m)
             });
         inventoryMock
-            .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<string>(), It.IsAny<Guid>()))
+            .Setup(s => s.DeductStock(It.IsAny<List<StockDeductionDto>>(), BranchId, UserId, It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<bool>()))
             .ReturnsAsync(true);
 
         var sut = CreateSut(dbContext, inventoryMock.Object);

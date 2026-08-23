@@ -155,14 +155,44 @@ public class StockMovement : Params, IMustHaveTenant
         };
         return (transferOut, transferIn);
     }
+
+    // Ingreso por devolución de venta
+    public static StockMovement CreateReturn(
+        Guid branchId,
+        Guid productVariantId,
+        Guid userId,
+        string userName,
+        decimal quantity,
+        Guid referenceId,
+        decimal unitCost,
+        string? notes = null)
+    {
+        if (quantity <= 0)
+            throw new InvalidOperationException("Quantity must be greater than zero");
+
+        return new StockMovement
+        {
+            BranchId = branchId,
+            ProductVariantId = productVariantId,
+            UserId = userId,
+            Quantity = quantity, // POSITIVO - el stock VUELVE
+            UnitCost = unitCost, // Costo de la venta ORIGINAL (snapshot)
+            MovementType = MovementType.Return,
+            Notes = notes ?? string.Empty,
+            ReferenceId = referenceId, // Id de la Sale tipo Return
+            CreatedBy = userId,
+            CreatedByName = userName
+        };
+    }
 }
 
 public enum MovementType
 {
-    Reception,   // ingreso por recepción de mercadería
-    Sale,        // egreso por venta
-    Adjustment,  // ajuste manual
-    TransferOut, // egreso por traspaso
-    TransferIn,  // ingreso por traspaso
-    ReceptionRevert // egreso por reversión de recepción
+    Reception,        // ingreso por recepción de mercadería
+    Sale,             // egreso por venta
+    Return,           // ingreso por devolución de venta
+    Adjustment,       // ajuste manual
+    TransferOut,      // egreso por traspaso
+    TransferIn,       // ingreso por traspaso
+    ReceptionRevert   // egreso por reversión de recepción
 }
