@@ -10,11 +10,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Module.Auth.Infrastructure.Persistence.Migrations
+namespace Module.Auth.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260820200217_Initial")]
-    partial class Initial
+    [Migration("20260825052045_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -389,6 +389,7 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -451,8 +452,7 @@ namespace Module.Auth.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("\"Email\" IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

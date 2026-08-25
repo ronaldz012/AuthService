@@ -66,8 +66,9 @@ public class GetClosureDetail(
                         CreatedAt = s.CreatedAt,
                         SoldByName = s.SoldByName,
                         TotalAmount = s.TotalAmount,
-                        PaymentMethod = s.PaymentMethod.ToString(),
-                        DocumentType = s.DocumentType.ToString(),
+                        PaymentMethod = s.PaymentMethod,
+                        DocumentType = s.DocumentType,
+                        Type = s.Type,
                         InvoiceNumber = s.InvoiceNumber,
                         TransactionCode = s.TransactionCode,
                         ItemsCount = s.SaleItems.Sum(si => si.Quantity),
@@ -91,7 +92,7 @@ public class GetClosureDetail(
                         CreatedAt = m.CreatedAt,
                         Amount = m.Amount,
                         Description = m.Description,
-                        Type = m.Type.ToString()
+                        Type = m.Type
                     }).ToList()
             })
             .FirstOrDefaultAsync();

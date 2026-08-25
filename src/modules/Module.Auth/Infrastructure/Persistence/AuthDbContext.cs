@@ -44,7 +44,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConne
 
         modelBuilder.Entity<User>(e =>
         {
-            e.HasIndex(u => u.Email).IsUnique().HasFilter("\"Email\" IS NOT NULL");
+            e.HasIndex(u => u.Email).IsUnique();
 
             e.HasMany(u => u.UserBranchRoles)
                 .WithOne(ubr => ubr.User)

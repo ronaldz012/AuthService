@@ -159,8 +159,9 @@ public class SessionStateService(
         else
         {
             var rawPermissions = await context.UserBranchRoles
+                .IgnoreQueryFilters()
                 .AsSplitQuery()
-                .Where(ubr => ubr.UserId == user.Id)
+                .Where(ubr => ubr.UserId == user.Id && ubr.TenantId == user.TenantId)
                 .Select(ubr => new
                 {
                     ubr.BranchId,

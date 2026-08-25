@@ -6,7 +6,7 @@ public class GetUserDetailsResponse
 {
     public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
-    public string? Email { get; set; }
+    public string Email { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string FullName => $"{FirstName} {LastName}";
@@ -18,6 +18,8 @@ public class GetUserDetailsResponse
     public UserStatus Status { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? SetupUrl { get; set; }
+    public DateTime? SetupUrlExpiresAt { get; set; }
     public List<UserBranchRoleDetailDto> BranchRoles { get; set; } = [];
 }
 

@@ -25,6 +25,8 @@ public class GetUserDetails(IAuthDbContext context)
                 Status = u.Status,
                 IsActive = u.IsActive,
                 CreatedAt = u.CreatedAt,
+                SetupUrl = u.PasswordChangeTicket,
+                SetupUrlExpiresAt = u.PasswordChangeTicketExpiresAt,
                 BranchRoles = u.UserBranchRoles.Select(ubr => new UserBranchRoleDetailDto
                 {
                     BranchId = ubr.BranchId,

@@ -14,8 +14,9 @@ public class User : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
     public bool IsAdmin => Type is UserType.TenantAdmin or UserType.Owner;
 
     public string PasswordHash { get; set; } = string.Empty;
+    [Required]
     [StringLength(100)]
-    public string? Email { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
     [StringLength(100)]
     public string FirstName { get; set; } = string.Empty;
     [StringLength(100)]
@@ -66,7 +67,7 @@ public class User : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
         };
     }
 
-    public static User CreateTenantAdmin(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate, Guid createdBy, string createdByName)
+    public static User CreateTenantAdmin(string email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate, Guid createdBy, string createdByName)
     {
         return new User
         {
@@ -87,12 +88,12 @@ public class User : IMustHaveTenant, ICreatedAt, ICreatedBy, IUpdatedAt, IUpdate
         };
     }
 
-    public static User CreateStandard(string? email, string username, string firstName, string lastName, string ci, string nationality, DateTime birthDate, Guid createdBy, string createdByName)
+    public static User CreateStandard(string email, string firstName, string lastName, string ci, string nationality, DateTime birthDate, Guid createdBy, string createdByName)
     {
         return new User
         {
             Email = email,
-            Username = username,
+            Username = email,
             FirstName = firstName,
             LastName = lastName,
             Ci = ci,

@@ -1,3 +1,5 @@
+using Module.Sales.Domain;
+
 namespace Module.Sales.Application.UseCases.Registers.GetById;
 
 public class ClosureDetailDto
@@ -26,8 +28,9 @@ public class ClosureSaleItemDto
     public DateTime CreatedAt { get; set; }
     public string SoldByName { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
-    public string PaymentMethod { get; set; } = string.Empty;
-    public string DocumentType { get; set; } = string.Empty;
+    public PaymentMethod PaymentMethod { get; set; }
+    public DocumentType DocumentType { get; set; }
+    public SaleType Type { get; set; }
     public int? InvoiceNumber { get; set; }
     public string? TransactionCode { get; set; }
     public int ItemsCount { get; set; }
@@ -60,5 +63,5 @@ public class ClosureMovementDto
     public DateTime CreatedAt { get; set; }
     public decimal Amount { get; set; }
     public string Description { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
+    public CashRegisterMovementType Type { get; set; }
 }
