@@ -28,10 +28,11 @@ public class GetListSalesTests
 
         var sut = new GetListSales(dbContext);
 
-        var result = await sut.Execute(CreateActorContext(), new SalesQueryDto());
+        var result = await sut.Execute(CreateActorContext(), new SalesQueryDto { Type = SaleType.Sale });
 
         Assert.True(result.IsSuccess);
         Assert.Single(result.Value.Items);
+        Assert.Equal(SaleType.Sale, result.Value.Items.First().Type);
     }
 
     [Fact]
@@ -43,7 +44,7 @@ public class GetListSalesTests
 
         var sut = new GetListSales(dbContext);
 
-        var result = await sut.Execute(CreateActorContext(), new SalesQueryDto { HasReturn = true });
+        var result = await sut.Execute(CreateActorContext(), new SalesQueryDto { Type = SaleType.Sale, HasReturn = true });
 
         Assert.True(result.IsSuccess);
         Assert.Single(result.Value.Items);
@@ -76,7 +77,7 @@ public class GetListSalesTests
 
         var sut = new GetListSales(dbContext);
 
-        var result = await sut.Execute(CreateActorContext(), new SalesQueryDto());
+        var result = await sut.Execute(CreateActorContext(), new SalesQueryDto { Type = SaleType.Sale });
 
         Assert.True(result.IsSuccess);
         // Only the Sale should be listed, not the Return

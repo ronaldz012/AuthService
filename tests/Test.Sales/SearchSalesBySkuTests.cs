@@ -29,9 +29,10 @@ public class SearchSalesBySkuTests
         var result = await sut.Execute(CreateActorContext(), new SkuSearchQueryDto { Sku = Sku, Days = 7 });
 
         Assert.True(result.IsSuccess);
-        Assert.Single(result.Value.Items);
-        //Assert.Single(result.Value.Items.First().MatchedItems);
-        //Assert.Equal(Sku, result.Value.Items.First().MatchedItems.First().ProductSku);
+        Assert.Single(result.Value.Sales.Items);
+        Assert.Equal(Sku, result.Value.SearchedSku);
+        Assert.Equal("Test Product", result.Value.SearchedDisplayName);
+        Assert.NotEqual(Guid.Empty, result.Value.Sales.Items.First().MatchedItem.SaleItemId);
     }
 
     [Fact]
@@ -46,7 +47,7 @@ public class SearchSalesBySkuTests
         var result = await sut.Execute(CreateActorContext(), new SkuSearchQueryDto { Sku = "NON-EXISTENT", Days = 7 });
 
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value.Items);
+        Assert.Empty(result.Value.Sales.Items);
     }
 
     [Fact]
@@ -61,11 +62,11 @@ public class SearchSalesBySkuTests
         var result = await sut.Execute(CreateActorContext(), new SkuSearchQueryDto { Sku = Sku, Days = 7 });
 
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value.Items);
+        Assert.Empty(result.Value.Sales.Items);
     }
 
     [Fact]
-    public async Task Execute_ShouldReturnMatchedItemsDetails()
+    public async Task Execute_ShouldReturnMatchedItemDetails()
     {
         var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
         using var dbContext = TestSalesDbContextFactory.Create(tenantCtx);
@@ -76,12 +77,10 @@ public class SearchSalesBySkuTests
         var result = await sut.Execute(CreateActorContext(), new SkuSearchQueryDto { Sku = Sku, Days = 7 });
 
         Assert.True(result.IsSuccess);
-        //var matchedItem = result.Value.Items.First().MatchedItems.First();
-        // Assert.False(Guid.Empty == matchedItem.SaleItemId);
-        // Assert.Equal("Test Product", matchedItem.ProductDisplayName);
-        // Assert.Equal(Sku, matchedItem.ProductSku);
-        // Assert.Equal(2, matchedItem.Quantity);
-        // Assert.Equal(50m, matchedItem.UnitPrice);
+        var matchedItem = result.Value.Sales.Items.First().MatchedItem;
+        Assert.NotEqual(Guid.Empty, matchedItem.SaleItemId);
+        Assert.Equal(2, matchedItem.Quantity);
+        Assert.Equal(50m, matchedItem.UnitPrice);
     }
 
     [Fact]
@@ -96,7 +95,7 @@ public class SearchSalesBySkuTests
         var result = await sut.Execute(CreateActorContext(), new SkuSearchQueryDto { Sku = Sku, Days = 7 });
 
         Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value.Items);
+        Assert.Empty(result.Value.Sales.Items);
     }
 
     private static ActorContext CreateActorContext()

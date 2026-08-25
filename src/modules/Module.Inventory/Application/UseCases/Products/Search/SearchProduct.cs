@@ -28,7 +28,7 @@ public class SearchProduct(IInvDbContext context)
 
             dbQuery = dbQuery.Where(x =>
                     EF.Functions.ILike(x.Name, pattern) ||
-                    EF.Functions.ILike(x.InternalCode, pattern) ||  // ← agregar esto
+                    EF.Functions.ILike(x.InternalCode, pattern) || 
                     EF.Functions.ILike(x.Brand.Name, pattern));
         }
 

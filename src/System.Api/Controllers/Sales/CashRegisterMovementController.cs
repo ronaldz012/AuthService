@@ -44,7 +44,7 @@ public class CashRegisterMovementController(MovementUseCases movementUseCases, I
     }
 
     [HttpDelete("{id:guid}")]
-    [RequireFeature("pos", "update")]
+    [RequireFeature("pos", "delete")]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
         var actorResult = currentUser.GetActorContext();

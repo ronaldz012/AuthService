@@ -58,9 +58,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ITenantConnect
         modelBuilder.Entity<StockMovement>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         modelBuilder.Entity<StockTransfer>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
         modelBuilder.Entity<StockTransferItem>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
-        modelBuilder.Entity<Sale>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
-        modelBuilder.Entity<SaleItem>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
-        modelBuilder.Entity<CashRegisterClosure>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId);
+        modelBuilder.Entity<Sale>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId && x.DeletedAt == null);
+        modelBuilder.Entity<SaleItem>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId && x.DeletedAt == null);
+        modelBuilder.Entity<CashRegisterClosure>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId && x.DeletedAt == null);
         modelBuilder.Entity<CashRegisterMovement>().HasQueryFilter(x => x.TenantId == tenantConnectionContext.TenantId && x.DeletedAt == null);
     }
 

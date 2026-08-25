@@ -21,6 +21,11 @@ namespace System.Api.Controllers.Auth
             return sessionStateService.GetSessionAsync().ToValueOrProblemDetails();
             
         }
+        [HttpGet("health")]
+        public async Task<IActionResult> HealthCheck()
+        {
+            return Ok();
+        }
 
  
 

@@ -8,7 +8,7 @@ namespace Module.Sales.Application.UseCases.Sales.Search;
 
 public class SearchSalesBySku(ISalesDbContext context)
 {
-    public async Task<Result<PagedResultDto<SaleSkuSearchDto>>> Execute(ActorContext ctx, SkuSearchQueryDto queryDto)
+    public async Task<Result<SkuSearchResponseDto>> Execute(ActorContext ctx, SkuSearchQueryDto queryDto)
     {
         var currentBranch = ctx.BranchIds[0];
         var dateFrom = DateTime.UtcNow.AddDays(-queryDto.Days);
@@ -32,27 +32,35 @@ public class SearchSalesBySku(ISalesDbContext context)
                 CreatedAt = s.CreatedAt,
                 TotalAmount = s.TotalAmount,
                 SoldByName = s.SoldByName,
-                TotalItems = s.SaleItems.Count(),
+                TotalItems = s.SaleItems.Count,
                 TotalUnitsSold = s.SaleItems.Sum(si => si.Quantity),
-                MatchedItems = s.SaleItems
+                MatchedItem = s.SaleItems
                     .Where(si => si.ProductSku == queryDto.Sku)
                     .Select(si => new MatchedItemDto
                     {
                         SaleItemId = si.Id,
-                        ProductDisplayName = si.ProductDisplayName,
-                        ProductSku = si.ProductSku,
                         Quantity = si.Quantity,
                         UnitPrice = si.UnitPrice
                     }).FirstOrDefault()!
             })
             .ToListAsync();
 
-        return new PagedResultDto<SaleSkuSearchDto>
+        var displayName = await context.SaleItems
+            .Where(si => si.ProductSku == queryDto.Sku)
+            .Select(si => si.ProductDisplayName)
+            .FirstOrDefaultAsync() ?? string.Empty;
+
+        return new SkuSearchResponseDto
         {
-            Items = items,
-            TotalCount = totalCount,
-            PageSize = queryDto.PageSize,
-            Page = queryDto.Page
+            SearchedSku = queryDto.Sku,
+            SearchedDisplayName = displayName,
+            Sales = new PagedResultDto<SaleSkuSearchDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageSize = queryDto.PageSize,
+                Page = queryDto.Page
+            }
         };
     }
 }

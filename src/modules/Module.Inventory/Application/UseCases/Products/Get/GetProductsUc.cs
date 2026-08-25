@@ -13,7 +13,10 @@ public class GetProductsUc(IInvDbContext context)
         var query = context.Products.AsQueryable();
         if (!string.IsNullOrEmpty(queryDto.Filter))
         {
-            query = query.Where(x => EF.Functions.ILike(x.Name, $"%{queryDto.Filter}%"));
+            var pattern = $"%{queryDto.Filter}%";
+            query = query.Where(x =>
+                EF.Functions.ILike(x.Name, pattern) ||
+                (x.InternalCode != null && EF.Functions.ILike(x.InternalCode, pattern)));
         }
 
         if (queryDto.IncludeInactive != true)

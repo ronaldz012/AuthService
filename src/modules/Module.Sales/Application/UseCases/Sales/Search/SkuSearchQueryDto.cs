@@ -1,7 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
 using Common.Utilities;
-using Org.BouncyCastle.Crypto.Engines;
 
 namespace Module.Sales.Application.UseCases.Sales.Search;
 
@@ -14,22 +12,27 @@ public class SkuSearchQueryDto : PaginationQueryDto
     public int Days { get; set; } = 7;
 }
 
+public class SkuSearchResponseDto
+{
+    public string SearchedSku { get; set; } = string.Empty;
+    public string SearchedDisplayName { get; set; } = string.Empty;
+    public PagedResultDto<SaleSkuSearchDto> Sales { get; set; } = new();
+}
+
 public class SaleSkuSearchDto
 {
     public Guid Id { get; set; }
     public DateTime CreatedAt { get; set; }
     public decimal TotalAmount { get; set; }
     public string SoldByName { get; set; } = string.Empty;
-    public int TotalItems { get; set; }  //3 Differente Producits
-    public decimal TotalUnitsSold { get; set; }   //total numner oof sold Produtcs
-    public MatchedItemDto MatchedItems { get; set; } = new();
+    public int TotalItems { get; set; }
+    public int TotalUnitsSold { get; set; }
+    public MatchedItemDto MatchedItem { get; set; } = new();
 }
 
 public class MatchedItemDto
 {
-    public Guid SaleItemId { get; set; }
-    public string ProductDisplayName { get; set; } = string.Empty;
-    public string ProductSku { get; set; } = string.Empty;
+    public Guid SaleItemId { get; set; } 
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
 }

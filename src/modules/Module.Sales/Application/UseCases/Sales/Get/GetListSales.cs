@@ -13,7 +13,10 @@ public class GetListSales(ISalesDbContext context)
 
         var query = context.Sales
             .AsNoTracking()
-            .Where(s => s.BranchId == currentBranch && s.Type == Domain.SaleType.Sale);
+            .Where(s => s.BranchId == currentBranch);
+
+        if (queryDto.Type.HasValue)
+            query = query.Where(s => s.Type == queryDto.Type.Value);
 
         if (queryDto.DateFrom.HasValue)
             query = query.Where(s => s.CreatedAt >= queryDto.DateFrom.Value);
@@ -39,7 +42,10 @@ public class GetListSales(ISalesDbContext context)
                     .OrderBy(si => si.Id)
                     .Select(si => si.ProductDisplayName)
                     .FirstOrDefault() ?? "",
-                TotalQuantity = s.SaleItems.Sum(si => si.Quantity),
+                TotalQuantity = s.SaleItems.Sum(si => Math.Abs(si.Quantity)),
+                TotalDistinctItems = s.SaleItems.Count,
+                Type = s.Type,
+                OriginalSaleId = s.OriginalSaleId,
                 PaymentMethod = s.PaymentMethod,
                 DocumentType = s.DocumentType,
                 InvoiceNumber = s.InvoiceNumber,
