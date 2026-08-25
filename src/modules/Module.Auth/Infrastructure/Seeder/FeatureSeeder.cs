@@ -76,8 +76,11 @@ public class FeatureSeeder(IAuthDbContext context) : IDataSeeder
                 // El POS suele requerir acciones más operativas, te dejo estas de base:
                 AvailableActions = [
                     new() { Key = "read", DisplayName = "Acceso al POS", Description = "Permite abrir la pantalla de caja y buscar productos." },
-                    new() { Key = "create", DisplayName = "Procesar Venta", Description = "Permite cobrar y emitir comprobantes de venta." },
-                    new() { Key = "update", DisplayName = "Modificar Carrito", Description = "Permite aplicar descuentos o alterar líneas de venta en curso." }
+                    new() { Key = "create", DisplayName = "Procesar Venta", Description = "Permite cobrar y emitir comprobantes de venta tambien crear gastos (movimientos)" },
+                    new() {Key = "returns", DisplayName ="Buscar y crear reembolos", Description = " todavia"},
+                    new() { Key = "update", DisplayName = "Modificar Carrito(no util de momento)", Description = "Permite aplicar descuentos o alterar líneas de venta en curso." },
+                    new() { Key = "delete", DisplayName = "eliminar movimientos", Description = "Permite aplicar descuentos o alterar líneas de venta en curso." }
+
                 ]
             },
             new()

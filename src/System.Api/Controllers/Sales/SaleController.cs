@@ -46,7 +46,7 @@ namespace System.Api.Controllers.Sales
             return await saleUseCases.GetSaleDetail.Execute(actorResult.Value, id).ToValueOrProblemDetails();
         }
         [HttpGet("returns")]
-        //[RequireFeature("returns", "read")]
+        [RequireFeature("pos", "read")]
         public async Task<IActionResult> GetReturns([FromQuery] ReturnsQueryDto queryDto)
         {
             var actorResult = currentUser.GetActorContext();
@@ -54,7 +54,7 @@ namespace System.Api.Controllers.Sales
             return await saleUseCases.ListReturns.Execute(actorResult.Value, queryDto).ToValueOrProblemDetails();
         }
         [HttpPost("{id:guid}/returns")]
-        //[RequireFeature("returns", "create")]
+        [RequireFeature("pos", "create")]
         public async Task<IActionResult> CreateReturn([FromRoute] Guid id, [FromBody] CreateReturnDto dto)
         {
             var actorResult = currentUser.GetActorContext();
@@ -63,7 +63,7 @@ namespace System.Api.Controllers.Sales
             return await saleUseCases.CreateReturn.Execute(actorResult.Value, dto).ToValueOrProblemDetails();
         }
         [HttpGet("search-by-sku")]
-        //[RequireFeature("pos", "read")]
+        [RequireFeature("pos", "read")]
         public async Task<IActionResult> SearchBySku([FromQuery] SkuSearchQueryDto queryDto)
         {
             var actorResult = currentUser.GetActorContext();
@@ -71,7 +71,7 @@ namespace System.Api.Controllers.Sales
             return await saleUseCases.SearchSalesBySku.Execute(actorResult.Value, queryDto).ToValueOrProblemDetails();
         }
         [HttpGet("{saleId:guid}/returnable")]
-        [RequireFeature("returns", "read")]
+        [RequireFeature("pos", "create")]
         public async Task<IActionResult> GetSaleForReturn([FromRoute] Guid saleId)
         {
             var actorResult = currentUser.GetActorContext();

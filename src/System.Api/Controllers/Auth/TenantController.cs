@@ -1,3 +1,4 @@
+using System.Api.Filters;
 using System.Api.Result;
 using Microsoft.AspNetCore.Mvc;
 using Module.Auth.Application.UseCases.Tenant;
@@ -8,6 +9,7 @@ namespace System.Api.Controllers.Auth;
 [ApiController]
 [Route("api/system/[controller]")]
 [Tags("Admin | System")]
+[ApiKey]
 public class TenantController(TenantDatabaseUseCases tenantDatabaseUseCases, TenantUseCases tenantUseCases) : ControllerBase
 {
     [HttpGet]

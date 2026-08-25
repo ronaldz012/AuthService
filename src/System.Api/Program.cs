@@ -1,6 +1,7 @@
 using System.Api.Middlewares;
 using System.Api.Result;
 using System.Text;
+using System.Threading.RateLimiting;
 using Common;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -141,6 +142,39 @@ builder.Services.AddMemoryCache();
 //EXTRAER en un DI
 builder.Services.AddSignalR();
 //
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, ct) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+            context.HttpContext.Response.Headers.RetryAfter = retryAfter.ToString();
+
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            StatusCode = 429,
+            Title = "TooManyRequests",
+            Detail = "Demasiadas peticiones. Intente nuevamente en unos segundos."
+        }, cancellationToken: ct);
+    };
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
+    {
+        var isApiKey = ctx.Request.Headers.ContainsKey("X-Api-Key");
+        var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var key = isApiKey ? $"{ip}:admin" : ip;
+        var permitLimit = isApiKey ? 10 : 60;
+        return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = permitLimit,
+            Window = TimeSpan.FromSeconds(60),
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        });
+    });
+});
+
 builder.Services.AddCors(options =>
 {
   options.AddPolicy("AllowAll", policy =>
@@ -163,6 +197,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseCors("AllowAll");
+app.UseRateLimiter();
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Configure the HTTP request pipeline.

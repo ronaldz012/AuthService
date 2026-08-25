@@ -11,16 +11,20 @@ using Module.Auth.Application.UseCases.Users.GetAllUsers;
 using Module.Auth.Application.UseCases.Users.UpdateUserStatus;
 using Module.Auth.Application.UseCases.Users.UpdateUser;
 using Module.Auth.Application.UseCases.Users.GetUserDetails;
+using System.Api.Attributes;
+using Module.Auth.Domain;
 
 namespace System.Api.Controllers.Auth
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     [Tags("Authentication | Users")]
     public class UserController(UserUserCases userUserCases, ISessionStateService currentUser) : ControllerBase
     {
 
         [HttpGet]
+        [RequireUserType(UserType.TenantAdmin)]
         public async Task<IActionResult> GetUsers([FromQuery]UserQueryDto request)
         {
             var actorResult = currentUser.GetActorContext();
@@ -29,6 +33,7 @@ namespace System.Api.Controllers.Auth
         }
 
         [HttpPost]
+        [RequireUserType(UserType.TenantAdmin)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             var actorResult = currentUser.GetActorContext();
@@ -37,6 +42,7 @@ namespace System.Api.Controllers.Auth
         }
 
         [HttpPost("tenant-admin")]
+        [RequireUserType(UserType.TenantAdmin)]
         public async Task<IActionResult> CreateTenantAdmin([FromBody] CreateTenantAdminRequest request)
         {
             var actorResult = currentUser.GetActorContext();
@@ -45,6 +51,7 @@ namespace System.Api.Controllers.Auth
         }
 
         [HttpPatch("{id:guid}/status")]
+        [RequireUserType(UserType.TenantAdmin)]
         public async Task<IActionResult> UpdateUserStatus([FromRoute] Guid id)
         {
             var actorResult = currentUser.GetActorContext();
@@ -53,6 +60,7 @@ namespace System.Api.Controllers.Auth
         }
 
         [HttpPut("{id:guid}")]
+        [RequireUserType(UserType.TenantAdmin)]
         public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] UpdateUserRequest request)
         {
             var actorResult = currentUser.GetActorContext();
@@ -61,12 +69,14 @@ namespace System.Api.Controllers.Auth
         }
 
         [HttpGet("{id:guid}/details")]
+        [RequireUserType(UserType.TenantAdmin)]
         public async Task<IActionResult> GetUserDetails([FromRoute] Guid id)
         {
             return await userUserCases.GetUserDetails.Execute(id).ToValueOrProblemDetails();
         }
 
         [HttpPatch("{id:guid}/type")]
+        [RequireUserType(UserType.TenantAdmin)]
         public async Task<IActionResult> ToggleUserType([FromRoute] Guid id)
         {
             var actorResult = currentUser.GetActorContext();

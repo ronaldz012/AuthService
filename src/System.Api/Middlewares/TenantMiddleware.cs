@@ -22,6 +22,12 @@ public class TenantMiddleware(RequestDelegate next)
             return;
         }
 
+        if (endpoint.Metadata.GetMetadata<System.Api.Filters.ApiKeyAttribute>() is not null)
+        {
+            await next(context);
+            return;
+        }
+
         if (context.User.Identity?.IsAuthenticated != true)
         {
             await next(context);
