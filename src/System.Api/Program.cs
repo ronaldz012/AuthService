@@ -87,7 +87,7 @@ builder.Services.AddAuthentication(options =>
   var auth0SpaSecret = builder.Configuration["Auth0:SpaClientSecret"];
 
   var configManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-      $"{auth0Issuer}/.well-known/openid-configuration",
+      $"{auth0Issuer}.well-known/openid-configuration",
       new OpenIdConnectConfigurationRetriever(),
       new HttpDocumentRetriever { RequireHttps = true });
 
