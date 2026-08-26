@@ -10,7 +10,6 @@ namespace Module.Auth.Application.UseCases.Users.CreateUser;
 
 public class CreateUser(
     IAuthDbContext context,
-    ITenantConnectionContext tenantConnectionContext,
     IAuth0ProvisioningService auth0Provisioning,
     IOptions<ProjectInfo> projectInfo,
     ILogger<CreateUser> logger)
