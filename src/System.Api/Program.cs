@@ -82,12 +82,12 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-  var auth0Domain = builder.Configuration["Auth0:Domain"];
+  var auth0Issuer = builder.Configuration["Auth0:Issuer"];
   var auth0Audience = builder.Configuration["Auth0:Audience"];
   var auth0SpaSecret = builder.Configuration["Auth0:SpaClientSecret"];
 
   var configManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-      $"https://{auth0Domain}/.well-known/openid-configuration",
+      $"{auth0Issuer}/.well-known/openid-configuration",
       new OpenIdConnectConfigurationRetriever(),
       new HttpDocumentRetriever { RequireHttps = true });
 
@@ -98,7 +98,7 @@ builder.Services.AddAuthentication(options =>
     ValidateLifetime = true,
     ValidateIssuerSigningKey = true,
     ClockSkew = TimeSpan.FromMinutes(2),
-    ValidIssuer = $"https://{auth0Domain}/",
+    ValidIssuer = auth0Issuer,
     ValidAudience = auth0Audience,
     RequireSignedTokens = false,
     TokenDecryptionKey = new SymmetricSecurityKey(
