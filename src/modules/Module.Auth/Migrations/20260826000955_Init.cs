@@ -148,8 +148,7 @@ namespace Module.Auth.Migrations
                     CreatedByName = table.Column<string>(type: "text", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
-                    FeatureKey1 = table.Column<string>(type: "character varying(100)", nullable: true)
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -159,12 +158,7 @@ namespace Module.Auth.Migrations
                         column: x => x.FeatureKey,
                         principalTable: "Features",
                         principalColumn: "Key",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RoleFeaturePermissions_Features_FeatureKey1",
-                        column: x => x.FeatureKey1,
-                        principalTable: "Features",
-                        principalColumn: "Key");
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_RoleFeaturePermissions_Roles_RoleId",
                         column: x => x.RoleId,
@@ -285,11 +279,6 @@ namespace Module.Auth.Migrations
                 name: "IX_RoleFeaturePermissions_FeatureKey",
                 table: "RoleFeaturePermissions",
                 column: "FeatureKey");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RoleFeaturePermissions_FeatureKey1",
-                table: "RoleFeaturePermissions",
-                column: "FeatureKey1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleFeaturePermissions_RoleId_FeatureKey",

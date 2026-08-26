@@ -16,6 +16,7 @@ public class ClosureDetailDto
     public decimal Difference { get; set; }
     public decimal TotalSales { get; set; }
     public decimal CashSales { get; set; }
+    public decimal QrSales {get;set;}
     public decimal TotalExpenses { get; set; }
     public List<ClosureSaleItemDto> Sales { get; set; } = [];
     public List<ClosureMovementDto> Movements { get; set; } = [];

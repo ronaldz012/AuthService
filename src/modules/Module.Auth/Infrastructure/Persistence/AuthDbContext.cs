@@ -121,8 +121,9 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options, ITenantConne
             e.HasIndex(rfp => new { rfp.RoleId, rfp.FeatureKey }).IsUnique();
 
             e.HasOne(rfp => rfp.Feature)
-                .WithMany()
-                .HasForeignKey(rfp => rfp.FeatureKey);
+                .WithMany(f => f.RoleFeaturePermissions)
+                .HasForeignKey(rfp => rfp.FeatureKey)
+                .OnDelete(DeleteBehavior.Restrict);
 
             e.HasQueryFilter(rfp => rfp.TenantId == tenantConnectionContext.TenantId);
         });

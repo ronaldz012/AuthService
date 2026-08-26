@@ -57,6 +57,7 @@ public class GetClosureDetail(
                 Difference = c.RealCountedAmount - c.SystemSalesAmount,
                 TotalSales = c.Sales.Sum(s => s.TotalAmount),
                 CashSales = c.Sales.Where(s => s.PaymentMethod == PaymentMethod.Cash).Sum(s => s.TotalAmount),
+                QrSales = c.Sales.Where(s => s.PaymentMethod == PaymentMethod.QrCode).Sum(s => s.TotalAmount),
                 TotalExpenses = c.Movements.Where(m => m.Type == CashRegisterMovementType.Outflow).Sum(m => m.Amount),
                 Sales = c.Sales
                     .OrderByDescending(s => s.CreatedAt)

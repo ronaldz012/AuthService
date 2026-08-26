@@ -239,9 +239,6 @@ namespace Module.Auth.Migrations
                         .IsRequired()
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("FeatureKey1")
-                        .HasColumnType("character varying(100)");
-
                     b.PrimitiveCollection<List<string>>("Permissions")
                         .IsRequired()
                         .HasColumnType("text[]");
@@ -264,8 +261,6 @@ namespace Module.Auth.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("FeatureKey");
-
-                    b.HasIndex("FeatureKey1");
 
                     b.HasIndex("RoleId", "FeatureKey")
                         .IsUnique();
@@ -713,14 +708,10 @@ namespace Module.Auth.Migrations
             modelBuilder.Entity("Module.Auth.Domain.RoleFeaturePermission", b =>
                 {
                     b.HasOne("Module.Auth.Domain.Feature", "Feature")
-                        .WithMany()
-                        .HasForeignKey("FeatureKey")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Module.Auth.Domain.Feature", null)
                         .WithMany("RoleFeaturePermissions")
-                        .HasForeignKey("FeatureKey1");
+                        .HasForeignKey("FeatureKey")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Module.Auth.Domain.Role", "Role")
                         .WithMany("RoleFeaturePermissions")
