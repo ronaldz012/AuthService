@@ -54,8 +54,14 @@ public class ProductDetails(IInvDbContext context, IBranchService branchService)
 
         var branchNames = branchesResult.Value.ToDictionary(b => b.Id, b => b.Name);
 
-        foreach (var stock in result.Variants.SelectMany(v => v.BranchStocks))
-            stock.BranchName = branchNames.GetValueOrDefault(stock.BranchId) ?? "Unknown";
+        foreach (var variant in result.Variants)
+        {
+            var existing = variant.BranchStocks.ToDictionary(b => b.BranchId);
+            variant.BranchStocks = userBranches.Select(bid => existing.TryGetValue(bid, out var bs)
+                ? new BranchStockDto { BranchId = bid, BranchName = branchNames.GetValueOrDefault(bid) ?? "Unknown", Stock = bs.Stock }
+                : new BranchStockDto { BranchId = bid, BranchName = branchNames.GetValueOrDefault(bid) ?? "Unknown", Stock = 0 }
+            ).ToList();
+        }
 
         result.TotalAvailable = result.Variants.Sum(v => v.TotalAvailable);
         return result;
