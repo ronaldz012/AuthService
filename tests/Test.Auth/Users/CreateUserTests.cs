@@ -30,7 +30,7 @@ public class CreateUserTests
             AppBranding = new AppBranding { FrontendDomain = "test.example.com" }
         });
 
-        return new CreateUser(dbContext, tenantConnectionContext, auth0Mock, projMock, Mock.Of<ILogger<CreateUser>>());
+        return new CreateUser(dbContext, auth0Mock, projMock, Mock.Of<ILogger<CreateUser>>());
     }
 
     private static void SeedTenant(IAuthDbContext dbContext, Guid tenantId, string displayName = "TestTenant")

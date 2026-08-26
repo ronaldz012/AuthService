@@ -18,7 +18,7 @@ public class ProductVariant: Params, IMustHaveTenant
     public Guid SizeId { get; set; }
     public decimal AverageCost { get; set; }
 
-    public Color Color { get; set; } = null;
+    public Color Color { get; set; } = null!;
     public Size Size { get; set; } = null!;
     
     public Product Product { get; set; } = default!;

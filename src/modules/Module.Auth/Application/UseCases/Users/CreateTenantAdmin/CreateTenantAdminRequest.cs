@@ -8,7 +8,8 @@ public class CreateTenantAdminRequest
     public string Username { get; set; } = string.Empty;
 
     [EmailAddress]
-    public string? Email { get; set; }
+    [Required]
+    public string Email { get; set; } = string.Empty;
 
     [Required, MinLength(3)]
     public string FirstName { get; set; } = string.Empty;
