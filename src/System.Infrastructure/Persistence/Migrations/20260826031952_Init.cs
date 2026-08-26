@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace System.Infrastructure.Persistence.Migrations
+namespace System.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,6 +20,7 @@ namespace System.Infrastructure.Persistence.Migrations
                     Prefix = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     ProductCounter = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
@@ -76,6 +77,7 @@ namespace System.Infrastructure.Persistence.Migrations
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedByName = table.Column<string>(type: "text", nullable: false),
@@ -97,6 +99,7 @@ namespace System.Infrastructure.Persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
@@ -138,6 +141,30 @@ namespace System.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Providers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sizes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByName = table.Column<string>(type: "text", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedByName = table.Column<string>(type: "text", nullable: true),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletedByName = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sizes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -215,6 +242,7 @@ namespace System.Infrastructure.Persistence.Migrations
                     InvoiceNumber = table.Column<int>(type: "integer", nullable: true),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     DocumentType = table.Column<int>(type: "integer", nullable: false),
+                    OriginalSaleId = table.Column<Guid>(type: "uuid", nullable: true),
                     Notes = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
@@ -235,6 +263,12 @@ namespace System.Infrastructure.Persistence.Migrations
                         principalTable: "CashRegisterClosures",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Sales_Sales_OriginalSaleId",
+                        column: x => x.OriginalSaleId,
+                        principalTable: "Sales",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -254,6 +288,7 @@ namespace System.Infrastructure.Persistence.Migrations
                     UnitMeasurementSin = table.Column<int>(type: "integer", nullable: false),
                     EconomicActivity = table.Column<string>(type: "text", nullable: false),
                     ProductCodeSin = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedByName = table.Column<string>(type: "text", nullable: false),
@@ -288,7 +323,7 @@ namespace System.Infrastructure.Persistence.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     BranchId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProviderId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ProviderId = table.Column<Guid>(type: "uuid", nullable: false),
                     ReceivedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true),
@@ -309,7 +344,8 @@ namespace System.Infrastructure.Persistence.Migrations
                         name: "FK_StockReceptions_Providers_ProviderId",
                         column: x => x.ProviderId,
                         principalTable: "Providers",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -324,6 +360,7 @@ namespace System.Infrastructure.Persistence.Migrations
                     ProductDisplayName = table.Column<string>(type: "text", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    UnitCost = table.Column<decimal>(type: "numeric", nullable: false),
                     DiscountAmount = table.Column<decimal>(type: "numeric", nullable: false),
                     FinalPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -334,11 +371,18 @@ namespace System.Infrastructure.Persistence.Migrations
                     UpdatedByName = table.Column<string>(type: "text", nullable: true),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletedByName = table.Column<string>(type: "text", nullable: true)
+                    DeletedByName = table.Column<string>(type: "text", nullable: true),
+                    OriginalSaleItemId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SaleItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SaleItems_SaleItems_OriginalSaleItemId",
+                        column: x => x.OriginalSaleItemId,
+                        principalTable: "SaleItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_SaleItems_Sales_SaleId",
                         column: x => x.SaleId,
@@ -355,10 +399,11 @@ namespace System.Infrastructure.Persistence.Migrations
                     ProductId = table.Column<Guid>(type: "uuid", nullable: false),
                     Sku = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    Size = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: false),
                     ColorId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SizeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AverageCost = table.Column<decimal>(type: "numeric", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedByName = table.Column<string>(type: "text", nullable: false),
@@ -382,6 +427,12 @@ namespace System.Infrastructure.Persistence.Migrations
                         name: "FK_ProductVariants_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductVariants_Sizes_SizeId",
+                        column: x => x.SizeId,
+                        principalTable: "Sizes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -427,6 +478,7 @@ namespace System.Infrastructure.Persistence.Migrations
                     ProductVariantId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Quantity = table.Column<decimal>(type: "numeric", nullable: false),
+                    UnitCost = table.Column<decimal>(type: "numeric", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: false),
                     MovementType = table.Column<int>(type: "integer", nullable: false),
                     TransferToBranchId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -538,6 +590,24 @@ namespace System.Infrastructure.Persistence.Migrations
                 column: "ProductVariantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BranchInventories_TenantId_BranchId_ProductVariantId",
+                table: "BranchInventories",
+                columns: new[] { "TenantId", "BranchId", "ProductVariantId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Brands_TenantId_Name",
+                table: "Brands",
+                columns: new[] { "TenantId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Brands_TenantId_Prefix",
+                table: "Brands",
+                columns: new[] { "TenantId", "Prefix" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CashRegisterClosures_Tenant_Branch_OpenOnly",
                 table: "CashRegisterClosures",
                 columns: new[] { "TenantId", "BranchId" },
@@ -550,6 +620,18 @@ namespace System.Infrastructure.Persistence.Migrations
                 column: "CashRegisterClosureId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Categories_TenantId_Name",
+                table: "Categories",
+                columns: new[] { "TenantId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Colors_TenantId_Name",
+                table: "Colors",
+                columns: new[] { "TenantId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_BrandId",
                 table: "Products",
                 column: "BrandId");
@@ -558,6 +640,19 @@ namespace System.Infrastructure.Persistence.Migrations
                 name: "IX_Products_CategoryId",
                 table: "Products",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_TenantId_CategoryId_BrandId_Name",
+                table: "Products",
+                columns: new[] { "TenantId", "CategoryId", "BrandId", "Name" },
+                unique: true,
+                filter: "\"DeletedAt\" IS NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_TenantId_InternalCode",
+                table: "Products",
+                columns: new[] { "TenantId", "InternalCode" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_ColorId",
@@ -570,6 +665,35 @@ namespace System.Infrastructure.Persistence.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_SizeId",
+                table: "ProductVariants",
+                column: "SizeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_TenantId_ProductId_ColorId_SizeId",
+                table: "ProductVariants",
+                columns: new[] { "TenantId", "ProductId", "ColorId", "SizeId" },
+                unique: true,
+                filter: "\"DeletedAt\" IS NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_TenantId_Sku",
+                table: "ProductVariants",
+                columns: new[] { "TenantId", "Sku" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Providers_TenantId_Name",
+                table: "Providers",
+                columns: new[] { "TenantId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SaleItems_OriginalSaleItemId",
+                table: "SaleItems",
+                column: "OriginalSaleItemId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SaleItems_SaleId",
                 table: "SaleItems",
                 column: "SaleId");
@@ -578,6 +702,17 @@ namespace System.Infrastructure.Persistence.Migrations
                 name: "IX_Sales_CashRegisterClosureId",
                 table: "Sales",
                 column: "CashRegisterClosureId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sales_OriginalSaleId",
+                table: "Sales",
+                column: "OriginalSaleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sizes_TenantId_Name",
+                table: "Sizes",
+                columns: new[] { "TenantId", "Name" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StockMovements_ProductVariantId",
@@ -659,6 +794,9 @@ namespace System.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Sizes");
 
             migrationBuilder.DropTable(
                 name: "Brands");

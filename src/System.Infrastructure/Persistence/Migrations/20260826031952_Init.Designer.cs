@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace System.Infrastructure.Persistence.Migrations
+namespace System.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260822030737_AddCostTracking")]
-    partial class AddCostTracking
+    [Migration("20260826031952_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1041,6 +1041,9 @@ namespace System.Infrastructure.Persistence.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("OriginalSaleId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("integer");
 
@@ -1076,6 +1079,8 @@ namespace System.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CashRegisterClosureId");
 
+                    b.HasIndex("OriginalSaleId");
+
                     b.ToTable("Sales");
                 });
 
@@ -1109,6 +1114,9 @@ namespace System.Infrastructure.Persistence.Migrations
 
                     b.Property<decimal>("FinalPrice")
                         .HasColumnType("numeric");
+
+                    b.Property<Guid?>("OriginalSaleItemId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ProductDisplayName")
                         .IsRequired()
@@ -1146,6 +1154,8 @@ namespace System.Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OriginalSaleItemId");
 
                     b.HasIndex("SaleId");
 
@@ -1292,16 +1302,30 @@ namespace System.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Module.Sales.Domain.Sale", "OriginalSale")
+                        .WithMany("Returns")
+                        .HasForeignKey("OriginalSaleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("CashRegisterClosure");
+
+                    b.Navigation("OriginalSale");
                 });
 
             modelBuilder.Entity("Module.Sales.Domain.SaleItem", b =>
                 {
+                    b.HasOne("Module.Sales.Domain.SaleItem", "OriginalSaleItem")
+                        .WithMany("ChildReturns")
+                        .HasForeignKey("OriginalSaleItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Module.Sales.Domain.Sale", "Sale")
                         .WithMany("SaleItems")
                         .HasForeignKey("SaleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("OriginalSaleItem");
 
                     b.Navigation("Sale");
                 });
@@ -1368,7 +1392,14 @@ namespace System.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Module.Sales.Domain.Sale", b =>
                 {
+                    b.Navigation("Returns");
+
                     b.Navigation("SaleItems");
+                });
+
+            modelBuilder.Entity("Module.Sales.Domain.SaleItem", b =>
+                {
+                    b.Navigation("ChildReturns");
                 });
 #pragma warning restore 612, 618
         }
