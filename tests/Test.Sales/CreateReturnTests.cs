@@ -194,6 +194,41 @@ public class CreateReturnTests
     }
 
     [Fact]
+    public async Task Execute_ShouldCreateReturn_WithAllNegatives()
+    {
+        var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
+        using var dbContext = TestSalesDbContextFactory.Create(tenantCtx);
+        SeedOriginalSale(dbContext, SaleType.Sale);
+        SeedOpenCashClosure(dbContext);
+
+        var inventoryMock = new Mock<IInventoryIntegrationService>();
+        inventoryMock
+            .Setup(s => s.ReturnStock(It.IsAny<List<StockReturnDto>>(), BranchId, UserId, It.IsAny<string>(), It.IsAny<Guid>(), false))
+            .ReturnsAsync(true);
+
+        var sut = CreateSut(dbContext, inventoryMock.Object);
+
+        var result = await sut.Execute(CreateActorContext(), new CreateReturnDto
+        {
+            OriginalSaleId = OriginalSaleId,
+            Items = [new CreateReturnItemDto { OriginalSaleItemId = OriginalSaleItemId, Quantity = 2 }]
+        });
+
+        Assert.True(result.IsSuccess);
+
+        var saved = await dbContext.Sales.Include(s => s.SaleItems).FirstAsync(s => s.Type == SaleType.Return);
+        Assert.True(saved.TotalAmount < 0, $"TotalAmount should be negative, was {saved.TotalAmount}");
+        Assert.True(saved.SaleItems.All(si => si.Quantity < 0), "SaleItem Quantity should be negative");
+        Assert.True(saved.SaleItems.All(si => si.FinalPrice < 0), "SaleItem FinalPrice should be negative");
+        // UnitCost snapshot stays positive (cost history), UnitPrice stays positive
+        Assert.True(saved.SaleItems.All(si => si.UnitCost > 0), "UnitCost should remain positive");
+        Assert.True(saved.SaleItems.All(si => si.UnitPrice > 0), "UnitPrice should remain positive");
+        // Sum checks
+        Assert.Equal(-200m, saved.TotalAmount); // 2 * 100 = 200 -> -200
+        Assert.Equal(-200m, saved.SaleItems.First().FinalPrice);
+    }
+
+    [Fact]
     public async Task Execute_ShouldReturnError_WhenSaleBelongsToDifferentTenant()
     {
         var otherTenantId = Guid.Parse("00000000-0000-0000-0000-000000000099");
