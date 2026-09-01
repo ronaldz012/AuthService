@@ -1,128 +1,109 @@
-# DriveCore.System 🚀
+# DriveCore — One instance, many businesses
 
-A robust **Modular Monolith BACKEND** built with **.NET 8** and **PostgreSQL**, following the **Driven Core System** architecture. This project manages Authentication, Inventory, and Branch infrastructure with a strictly decoupled data approach.
+> A multi-tenant, modular ERP backend built to make small-retailer SaaS in LatAm actually profitable — one deploy serves every client, from a feria stall with SKUs like `NIK12-011` to a formal distributor.
 
-## 🏗️ Architecture: Driven Core
-Each module is structured to ensure high maintainability and testability:
-* **Data:** Entity Framework Core persistence and PostgreSQL configurations.
-* **UseCases:** Pure business logic and application flows.
-* **Infrastructure:** Implementations for SMTP, Google OAuth, and external services.
-* **Contracts:** DTOs and interfaces for cross-module communication.
-* **Shared:** A single transversal project containing the `Result<T>` pattern and global utilities.
-
-## 🔐 Authentication Policy
-* **Internal Mode (PublicAuthentication: false):** Self-registration is restricted. Access is granted only when an Administrator creates an account via the internal management modules.
-* **Open Mode (PublicAuthentication: true):** Enables self-service signup with mandatory SMTP email verification before the account becomes active.
-
-## 📊 Database Architecture
-Each module manages its own independent schema within PostgreSQL to prevent tight coupling.
-
-```mermaid
-graph LR
-    API[System.Api] --> Auth[Auth Module]
-    API --> Inv[Inventory Module]
-    API --> Br[Branches Module]
-    
-    subgraph Databases
-        Auth --- DB1[(AuthService DB)]
-        Inv --- DB2[(InventoryService DB)]
-        Br --- DB3[(BranchService DB)]
-    end
-```
-## 🛠️ Setup & Installation
-
-Follow these steps to get your development environment running.
-
-### 1. Prerequisites
-* **.NET 8 SDK**
-* **PostgreSQL** (Ensure the service is running)
-* **EF Core Tools:** ```bash
-  dotnet tool install --global dotnet-ef
-## 2. Configuration
-
-The project uses an example configuration file. You must create your local settings:
-
-1. Locate `appsettings.Example.json` in `src/System.Api`.
-2. Duplicate it and rename the copy to `appsettings.json`.
-3. Update the connection strings with your PostgreSQL credentials:
-
-```json
-"ConnectionStrings": {
-  "AuthConnection": "Server=localhost,5432;Database=AuthService;User Id=postgres;Password=your_password;",
-  "BranchConnection": "Server=localhost,5432;Database=BranchService;User Id=postgres;Password=your_password;",
-  "InventoryConnection": "Server=localhost,5432;Database=InventoryService;User Id=postgres;Password=your_password;"
-}
-
-```
-## 3. Database Initialization
-
-This project uses three independent databases. You must apply migrations for each context separately from the root directory:
-
-```bash
-# Update Auth Database (Identity, Roles, Menus)
-dotnet ef database update --context AuthDbContext --project src/modules/auth/Auth.Data --startup-project src/System.Api
-
-# Update Branches Database (Physical Locations)
-dotnet ef database update --context BranchDbContext --project src/modules/branches/Branches.module --startup-project src/System.Api
-
-# Update Inventory Database (Products, Stock, POS)
-dotnet ef database update --context InvDbContext --project src/modules/inventory/Inventory.Data --startup-project src/System.Api
-```
-
-## 4. Run the Project
-
-Once the configuration and database setup are complete, you can run the project using the following commands:
-
-```bash
-dotnet restore
-dotnet run --project src/System.Api
-```
-## 🛠️ Design Patterns
-
-### Result Pattern
-
-We use a custom `Result<T>` instead of throwing exceptions for business logic failures.
-
-- **IsSuccess**: Boolean flag indicating if the operation was successful.  
-- **Error**: Object containing:
-  - `Code` (e.g., `"NOT_FOUND"`)
-  - `Message` (description of the error)
+**Frontend:** [Talla — POS for how South America actually sells](https://github.com/ronaldz012/inventory_system) — Angular 21 · Tailwind · Auth0 · PWA
+**Stack:** .NET 9 · EF Core · PostgreSQL · Auth0 (custom domain `auth.ronaldz.work`)
+**Tests:** 144/144 passing (Auth 25 | Sales 35 | Inventory 84)
 
 ---
 
-### Global Response Handling
+## Why this exists
 
-The API utilizes the `ToValueOrProblemDetails()` extension to automatically map results to appropriate HTTP status codes:
+70% of retail in Bolivia and across LatAm is informal — corner stores and ferias where a product is `Forum Low / 42 / Navy Blue` with a loose SKU, not a GTIN. A formal ERP per client means a DB per client, and the hosting bill kills your margin at $15-30/month.
 
-```csharp
-// UseCase execution in Controller
-return await useCases.CreateStockTransfer
-    .Execute(dto)
-    .ToValueOrProblemDetails();
+**DriveCore fixes the economics:** one deploy, many businesses. Each tenant sees only its own data, but you run a single `erp_db` and a single API. Onboarding takes minutes, marginal cost is near zero — so you can actually charge what the market can pay.
+
+---
+
+## Architecture at a glance
+
+```mermaid
+flowchart LR
+    Client[POS / Admin / Browser] --> API[System.Api<br/>Auth + TenantMiddleware<br/>Rate Limiter 60/min]
+
+    API --> Auth[Module.Auth<br/>AuthDbContext: public<br/>JWT + Google OAuth<br/>RBAC: Standard < TenantAdmin < Owner]
+    API --> Sales[Module.Sales<br/>Sales, Returns,<br/>Closures & Movements]
+    API --> Inv[Module.Inventory<br/>Products, Variants,<br/>Receptions & Transfers]
+
+    Sales -.->|IInventoryIntegrationService| Inv
+    Sales & Inv --- Infra[System.Infrastructure<br/>AppDbContext: tenant_db<br/>One connection per request]
+    Auth --- SharedDB[(erp_db<br/>public schema)]
+    Infra --- SharedDB
+    Infra --- TenantDB[(erp_db<br/>tenant_db schemas)]
+
+    style Auth fill:#E8F0FE,stroke:#4F46E5
+    style Sales fill:#FFF7ED,stroke:#FB923C
+    style Inv fill:#F0FDF4,stroke:#22C55E
+    style API fill:#111827,color:#fff
 ```
-### Module Communication (Contracts-Based Architecture)
 
-Communication between modules is handled through interfaces to maintain loose coupling.
+*One codebase, one deploy today — extract a module to a service tomorrow without rewriting.*
 
-- If a service or use case from another module is required, the dependency is defined in a **Contracts project**.
-- The Contracts project exposes only interfaces (no implementations).
-- Each module implements its own logic while depending only on abstractions.
+Modules never reference each other directly, only shared contracts (`IInventoryIntegrationService`, `IBranchService`). `Auth` lives on its own schema and can provision a tenant before that tenant even has a data context — everything else shares one `AppDbContext` per request, with full ACID transactions across modules.
 
-This approach ensures:
-- Clear separation of concerns  
-- Low coupling between modules  
-- Easier testing and maintainability
+---
 
-## 📘 API Documentation (Swagger)
+## The hard part: multi-tenant without a rewrite
 
-You can explore the API using Swagger UI:
+Most multi-tenant systems start multi-tenant. DriveCore didn't — it started as single-tenant code, and stayed that way *from the developer's point of view*.
 
-🔗 http://localhost:5253/swagger
+Your `ListProducts` and `CreateSale` methods look identical to how they'd look in a single-client system. Under the hood, three things make it multi-tenant:
 
+1. A `TenantId` column plus a global query filter — every query automatically gets an invisible `WHERE TenantId = ...`. There's no way to accidentally query across tenants.
+2. `SaveChangesAsync` auto-seals `TenantId` on every new record and freezes it on updates — services never have to remember to set it themselves.
+3. One migration (`AddColumn TenantId`) turned the whole system multi-tenant. No parallel rewrite, no duplicated logic.
 
-> **Note:**  
-> Modules should never directly reference other module implementations—only their contracts.
+That's roughly 80% of the multi-tenancy work, and your business logic never had to know it exists.
 
-<p align="center">
-  <img src="Documentation/swagger.png" alt="Swagger UI" />
-</p>
+**Flexible enough for the street, strict enough for accounting**
+
+- No rigid catalog required: quick SKUs, `Size/Color` variants, manual price/stock patches.
+- Returns are first-class, not a bolt-on: a return stores a negative quantity and amount, so every report nets correctly with a simple `SUM` — no special-casing in reporting code.
+- Cash registers enforce one open drawer per branch at the database level, not just in application code.
+- Feature flags per branch (`AllowedFeatureKeys`) let a small kiosk run POS-only while a depot runs transfers and receptions — same codebase, gated by plan.
+
+---
+
+## What it does
+
+**Sales that survive the rush** — Stock-guarded sale creation with a fail-fast validation pattern, returns as first-class citizens (full or partial, with tracked returnable quantity), and a single-lookup search built for fast POS checkout.
+
+**Cash you can audit** — Full register lifecycle (open → live session → close) with expected vs. counted totals and the difference automatically calculated; soft-deleted movements are excluded everywhere by default, not filtered ad hoc.
+
+**Inventory that matches the street** — Product search by name or internal code, missing branch inventory defaults to zero instead of breaking the UI, and receptions/transfers keep a running weighted average cost.
+
+**Auth that scales** — New users are provisioned directly in Auth0 and receive a password-setup invitation; sessions are cached for 30 minutes to cut down on auth roundtrips, with a separate API-key path for admin/system access.
+
+---
+
+## Try it
+
+```bash
+git clone https://github.com/ronaldz012/DriveCore.System.Monolith.git
+cd DriveCore.System.Monolith
+dotnet build src/System.Api/System.Api.csproj
+
+# Auth DB (public schema)
+dotnet ef database update --project src/modules/Module.Auth/Module.Auth.csproj --startup-project src/System.Api/System.Api.csproj --context AuthDbContext
+# Tenant DB (tenant_db schema)
+dotnet ef database update --project src/System.Infrastructure/System.Infrastructure.csproj --startup-project src/System.Api/System.Api.csproj --context AppDbContext
+
+dotnet run --project src/System.Api
+# API docs: https://localhost:5253/scalar/v1
+```
+
+Requires `appsettings.json` with `ConnectionStrings:DefaultConnection/TenantConnection` and `Auth0:Domain/Issuer/Audience` — see `appsettings.Example.json`.
+
+```bash
+dotnet test
+# → 144/144 passing (Auth 25 | Sales 35 | Inventory 84)
+```
+
+---
+
+## See the frontend
+
+The API is only half the story. The counter-first UI that drives it:
+
+**→ Frontend: [Talla — POS for how South America actually sells](https://github.com/ronaldz012/inventory_system)** — scanner-first cart, signal-driven totals, bottom-sheet modals, per-branch view memory.
