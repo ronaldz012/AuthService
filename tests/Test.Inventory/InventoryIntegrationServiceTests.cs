@@ -133,4 +133,45 @@ public class InventoryIntegrationServiceTests
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorCode.NotFound, result.Error.Code);
     }
+
+    [Fact]
+    public async Task ReturnStock_ShouldRecalculateAverageCost_AtHistoricCost()
+    {
+        // Caso del enunciado: stock 5 @10 -> venta 1 -> compra 3 @15 -> devolucion 1 @10
+        // Control sin venta/devolucion: 5@10 + 3@15 = stock 8, avg 11.875
+        // Con fix, devolucion debe dar avg 11.875; sin fix da 12.142857
+        using var ctx = CreateDbContext();
+        await SeedVariant(ctx, 5);
+        var variant = await ctx.ProductVariants.Include(pv => pv.BranchInventories).SingleAsync(pv => pv.Id == VariantId);
+        variant.AverageCost = 10m;
+        await ctx.SaveChangesAsync();
+
+        var sut = CreateSut(ctx);
+
+        // venta 1 unidad (no toca AverageCost)
+        var sell = await sut.DeductStock([new StockDeductionDto(VariantId, 1)], BranchId, UserId, "Test User", Guid.NewGuid());
+        Assert.True(sell.IsSuccess);
+        await ctx.SaveChangesAsync();
+        Assert.Equal(10m, (await ctx.ProductVariants.SingleAsync(pv => pv.Id == VariantId)).AverageCost);
+
+        // recepcion 3 @15 (simulada via RegisterPurchase + AddQuantity)
+        variant = await ctx.ProductVariants.Include(pv => pv.BranchInventories).SingleAsync(pv => pv.Id == VariantId);
+        variant.RegisterPurchase(3, 15m);
+        variant.AddQuantity(3, BranchId, UserId, "Test User");
+        await ctx.SaveChangesAsync();
+        var afterPurchase = await ctx.ProductVariants.SingleAsync(pv => pv.Id == VariantId);
+        Assert.Equal(85m / 7m, afterPurchase.AverageCost, precision: 5);
+        Assert.Equal(7, afterPurchase.BranchInventories.Sum(bi => bi.Stock));
+
+        // devolucion 1 @ costo historico 10 (de la venta original)
+        var ret = await sut.ReturnStock([new StockReturnDto(VariantId, 1, 10m)], BranchId, UserId, "Test User", Guid.NewGuid());
+        Assert.True(ret.IsSuccess);
+        await ctx.SaveChangesAsync();
+
+        var afterReturn = await ctx.ProductVariants.Include(pv => pv.BranchInventories).SingleAsync(pv => pv.Id == VariantId);
+        var stockAfterReturn = afterReturn.BranchInventories.Sum(bi => bi.Stock);
+        Assert.Equal(8, stockAfterReturn);
+        // El comportamiento correcto (b) coincide con control: 11.875
+        Assert.Equal(95m / 8m, afterReturn.AverageCost, precision: 5);
+    }
 }

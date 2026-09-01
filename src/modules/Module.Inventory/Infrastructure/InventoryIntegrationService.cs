@@ -101,7 +101,8 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
             if (pv == null)
                 return new Error(ErrorCode.NotFound, $"Product variant {returnItem.ProductVariantId} not found.");
 
-            // Sumar stock (la devolución ENTRADA)
+            // Re-adquisición al costo histórico: recalcula AVCO antes de sumar stock
+            pv.RegisterPurchase(returnItem.Quantity, returnItem.UnitCost);
             pv.AddQuantity(returnItem.Quantity, branchId, userId, userName);
 
             // Crear movimiento de devolución con el costo de la venta original
