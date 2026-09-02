@@ -35,6 +35,9 @@ public class ClosureSaleItemDto
     public int? InvoiceNumber { get; set; }
     public string? TransactionCode { get; set; }
     public int ItemsCount { get; set; }
+    public bool HasReturn { get; set; }
+    public bool CanReturn { get; set; }
+    public string? CantReturnReason { get; set; } //ALREADY_REFUNDED | IS_RETURN | null
     public List<ClosureSaleItemDetailDto> Items { get; set; } = [];
 }
 

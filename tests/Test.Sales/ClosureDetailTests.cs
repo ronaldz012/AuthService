@@ -124,6 +124,147 @@
             }
         }
 
+        [Fact]
+        public async Task Execute_ShouldReturnHasReturnFalse_AndCanReturnTrue_WhenSaleWithoutReturn()
+        {
+            var dbName = $"ClosureTest_{Guid.NewGuid()}";
+            var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
+            Guid closureId;
+            Guid saleId;
+            using (var db = TestSalesDbContextFactory.Create(tenantCtx, dbName))
+            {
+                var closure = CashRegisterClosure.Open(BranchId, 500m, UserId, "Test User");
+                closureId = closure.Id;
+                db.CashRegisterClosures.Add(closure);
+                await db.SaveChangesAsync();
+                var sale = CreateSale(closure.Id, PaymentMethod.Cash, 100m);
+                saleId = sale.Id;
+                db.Sales.Add(sale);
+                await db.SaveChangesAsync();
+            }
+            using (var db = TestSalesDbContextFactory.Create(tenantCtx, dbName))
+            {
+                var inventoryMock = new Mock<IInventoryIntegrationService>();
+                inventoryMock.Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), It.IsAny<Guid>()))
+                    .ReturnsAsync(new List<ProductVariantStockDto>());
+                var sut = new GetClosureDetail(db, inventoryMock.Object);
+                var result = await sut.Execute(CreateActorContext(), closureId);
+                Assert.True(result.IsSuccess);
+                var saleDto = Assert.Single(result.Value.Sales.Where(s => s.Id == saleId));
+                Assert.False(saleDto.HasReturn);
+                Assert.True(saleDto.CanReturn);
+                Assert.Null(saleDto.CantReturnReason);
+                Assert.Equal(SaleType.Sale, saleDto.Type);
+            }
+        }
+
+        [Fact]
+        public async Task Execute_ShouldReturnHasReturnTrue_AndCanReturnFalse_WhenSaleAlreadyRefunded()
+        {
+            var dbName = $"ClosureTest_{Guid.NewGuid()}";
+            var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
+            Guid closureId;
+            Guid saleId;
+            using (var db = TestSalesDbContextFactory.Create(tenantCtx, dbName))
+            {
+                var closure = CashRegisterClosure.Open(BranchId, 500m, UserId, "Test User");
+                closureId = closure.Id;
+                db.CashRegisterClosures.Add(closure);
+                await db.SaveChangesAsync();
+                var sale = CreateSale(closure.Id, PaymentMethod.Cash, 100m);
+                saleId = sale.Id;
+                db.Sales.Add(sale);
+                await db.SaveChangesAsync();
+                var ret = new Sale
+                {
+                    Id = Guid.NewGuid(),
+                    BranchId = BranchId,
+                    SoldById = UserId,
+                    SoldByName = "Test User",
+                    CreatedBy = UserId,
+                    CreatedByName = "Test User",
+                    CashRegisterClosureId = closure.Id,
+                    PaymentMethod = PaymentMethod.Cash,
+                    DocumentType = DocumentType.Ticket,
+                    Type = SaleType.Return,
+                    OriginalSaleId = saleId,
+                    TotalAmount = -100m,
+                    TenantId = TenantId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.Sales.Add(ret);
+                await db.SaveChangesAsync();
+            }
+            using (var db = TestSalesDbContextFactory.Create(tenantCtx, dbName))
+            {
+                var inventoryMock = new Mock<IInventoryIntegrationService>();
+                inventoryMock.Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), It.IsAny<Guid>()))
+                    .ReturnsAsync(new List<ProductVariantStockDto>());
+                var sut = new GetClosureDetail(db, inventoryMock.Object);
+                var result = await sut.Execute(CreateActorContext(), closureId);
+                Assert.True(result.IsSuccess);
+                var saleDto = result.Value.Sales.First(s => s.Id == saleId);
+                Assert.True(saleDto.HasReturn);
+                Assert.False(saleDto.CanReturn);
+                Assert.Equal("ALREADY_REFUNDED", saleDto.CantReturnReason);
+            }
+        }
+
+        [Fact]
+        public async Task Execute_ShouldReturnCanReturnFalse_WhenSaleIsReturnItself()
+        {
+            var dbName = $"ClosureTest_{Guid.NewGuid()}";
+            var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
+            Guid closureId;
+            Guid saleId = Guid.NewGuid();
+            Guid returnId = Guid.NewGuid();
+            using (var db = TestSalesDbContextFactory.Create(tenantCtx, dbName))
+            {
+                var closure = CashRegisterClosure.Open(BranchId, 500m, UserId, "Test User");
+                closureId = closure.Id;
+                db.CashRegisterClosures.Add(closure);
+                await db.SaveChangesAsync();
+                var sale = CreateSale(closure.Id, PaymentMethod.Cash, 100m);
+                sale.Id = saleId;
+                sale.Type = SaleType.Sale;
+                db.Sales.Add(sale);
+                await db.SaveChangesAsync();
+                var ret = new Sale
+                {
+                    Id = returnId,
+                    BranchId = BranchId,
+                    SoldById = UserId,
+                    SoldByName = "Test User",
+                    CreatedBy = UserId,
+                    CreatedByName = "Test User",
+                    CashRegisterClosureId = closure.Id,
+                    PaymentMethod = PaymentMethod.Cash,
+                    DocumentType = DocumentType.Ticket,
+                    Type = SaleType.Return,
+                    OriginalSaleId = saleId,
+                    TotalAmount = -100m,
+                    TenantId = TenantId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.Sales.Add(ret);
+                await db.SaveChangesAsync();
+            }
+            using (var db = TestSalesDbContextFactory.Create(tenantCtx, dbName))
+            {
+                var inventoryMock = new Mock<IInventoryIntegrationService>();
+                inventoryMock.Setup(s => s.GetVariantsWithStock(It.IsAny<List<Guid>>(), It.IsAny<Guid>()))
+                    .ReturnsAsync(new List<ProductVariantStockDto>());
+                var sut = new GetClosureDetail(db, inventoryMock.Object);
+                var result = await sut.Execute(CreateActorContext(), closureId);
+                Assert.True(result.IsSuccess);
+                var returnDto = result.Value.Sales.First(s => s.Id == returnId);
+                Assert.False(returnDto.HasReturn);
+                Assert.False(returnDto.CanReturn);
+                Assert.Equal("IS_RETURN", returnDto.CantReturnReason);
+                Assert.Equal(SaleType.Return, returnDto.Type);
+            }
+        }
+
         private static ActorContext CreateActorContext()
             => new(TenantId, UserId, "Test User", BranchId, [BranchId]);
 

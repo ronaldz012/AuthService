@@ -73,6 +73,9 @@ public class GetClosureDetail(
                         InvoiceNumber = s.InvoiceNumber,
                         TransactionCode = s.TransactionCode,
                         ItemsCount = s.SaleItems.Sum(si => si.Quantity),
+                        HasReturn = s.Returns.Any(),
+                        CanReturn = s.Type == SaleType.Sale && !s.Returns.Any(),
+                        CantReturnReason = s.Type == SaleType.Return ? "IS_RETURN" : s.Returns.Any() ? "ALREADY_REFUNDED" : null,
                         Items = s.SaleItems.Select(si => new ClosureSaleItemDetailDto
                         {
                             ProductVariantId = si.ProductVariantId,
