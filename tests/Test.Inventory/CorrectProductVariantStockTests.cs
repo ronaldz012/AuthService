@@ -90,6 +90,8 @@ public class CorrectProductVariantStockTests
         var movement = await ctx.StockMovements.SingleAsync();
         Assert.Equal(MovementType.Adjustment, movement.MovementType);
         Assert.Equal(-3m, movement.Quantity);
+        Assert.Equal(10, movement.StockBefore);
+        Assert.Equal(7, movement.StockAfter);
         Assert.Equal(-3m, await MovementSum(ctx));
         Assert.Equal(7m, 10m + await MovementSum(ctx));
     }
@@ -106,6 +108,9 @@ public class CorrectProductVariantStockTests
         Assert.True(result.IsSuccess);
         Assert.Equal(3, (await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == VariantId)).Stock);
         Assert.Equal(-7m, await MovementSum(ctx));
+        var movement = await ctx.StockMovements.SingleAsync();
+        Assert.Equal(10, movement.StockBefore);
+        Assert.Equal(3, movement.StockAfter);
     }
 
     [Fact]

@@ -55,13 +55,15 @@ public class CreateReceptionUc(
             foreach (var item in dto.Items)
             {
                 var variant = variantMap[item.ProductVariantId];
+                var stockBefore = variant.GetStockByBranch(branchId);
+                var stockAfter = stockBefore + item.QuantityReceived;
 
                 reception.AddExistingVariant(variant.Id, userId, userName, item.QuantityReceived, item.UnitCost);
                 variant.RegisterPurchase(item.QuantityReceived, item.UnitCost);
                 variant.AddQuantity(item.QuantityReceived, branchId, userId, userName);
 
                 stockMovements.Add(StockMovement.CreateReception(
-                    branchId, variant.Id, userId, userName, item.QuantityReceived, reception.Id, item.UnitCost));
+                    branchId, variant.Id, userId, userName, item.QuantityReceived, reception.Id, item.UnitCost, stockBefore, stockAfter));
             }
 
             context.StockReceptions.Add(reception);

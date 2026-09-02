@@ -92,6 +92,8 @@ public class InventoryIntegrationServiceTests
         Assert.Equal(MovementType.Sale, movement.MovementType);
         Assert.Equal(-3m, movement.Quantity);
         Assert.Equal(BranchId, movement.BranchId);
+        Assert.Equal(10, movement.StockBefore);
+        Assert.Equal(7, movement.StockAfter);
     }
 
     [Fact]
@@ -173,5 +175,10 @@ public class InventoryIntegrationServiceTests
         Assert.Equal(8, stockAfterReturn);
         // El comportamiento correcto (b) coincide con control: 11.875
         Assert.Equal(95m / 8m, afterReturn.AverageCost, precision: 5);
+
+        var retMovement = await ctx.StockMovements.SingleAsync(m => m.MovementType == MovementType.Return);
+        Assert.Equal(1m, retMovement.Quantity);
+        Assert.Equal(7, retMovement.StockBefore);
+        Assert.Equal(8, retMovement.StockAfter);
     }
 }

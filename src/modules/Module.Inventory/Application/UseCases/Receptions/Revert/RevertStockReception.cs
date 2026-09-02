@@ -56,11 +56,13 @@ public class RevertStockReception(
             foreach (var item in reception.Items)
             {
                 var variant = variants.First(v => v.Id == item.ProductVariantId);
+                var stockBefore = variant.GetStockByBranch(branchId);
                 variant.RevertPurchase(item.QuantityReceived, item.UnitCost);
                 variant.RemoveQuantity(item.QuantityReceived, branchId);
+                var stockAfter = variant.GetStockByBranch(branchId);
 
                 context.StockMovements.Add(StockMovement.CreateReceptionRevert(
-                    branchId, variant.Id, userId, userName, item.QuantityReceived, reception.Id, item.UnitCost));
+                    branchId, variant.Id, userId, userName, item.QuantityReceived, reception.Id, item.UnitCost, stockBefore, stockAfter));
             }
 
             reception.Status = ReceptionStatus.Reverted;

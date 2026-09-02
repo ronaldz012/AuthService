@@ -110,6 +110,8 @@ public class CreateSaleStockTests
         Assert.Equal(MovementType.Sale, movement.MovementType);
         Assert.Equal(-3m, movement.Quantity);
         Assert.Equal(BranchId, movement.BranchId);
+        Assert.Equal(10, movement.StockBefore);
+        Assert.Equal(7, movement.StockAfter);
     }
 
     [Fact]

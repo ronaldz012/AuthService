@@ -60,8 +60,14 @@ public class ResolveStockTransfer(IInvDbContext context)
             {
                 var productVariant = productVariants.First(pv => pv.Id == item.ProductVariantId);
 
+                var fromBefore = productVariant.GetStockByBranch(transfer.FromBranchId);
+                var toBefore = productVariant.GetStockByBranch(transfer.ToBranchId);
+
                 productVariant.AddQuantity(-item.QuantityRequested, transfer.FromBranchId, userId, userName);
                 productVariant.AddQuantity(item.QuantityRequested, transfer.ToBranchId, userId, userName);
+
+                var fromAfter = productVariant.GetStockByBranch(transfer.FromBranchId);
+                var toAfter = productVariant.GetStockByBranch(transfer.ToBranchId);
 
                 // StockMovements
                 var (movOut, movIn) = StockMovement.CreateTransfer(
@@ -72,8 +78,8 @@ public class ResolveStockTransfer(IInvDbContext context)
                     userName,
                     item.QuantityRequested,
                     transfer.Id,
-                    productVariant.AverageCost
-
+                    productVariant.AverageCost,
+                    fromBefore, fromAfter, toBefore, toAfter
                 );
                 transfer.StockMovements.Add(movIn);
                 transfer.StockMovements.Add(movOut);

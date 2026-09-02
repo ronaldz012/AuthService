@@ -125,8 +125,8 @@ public class ResolveStockTransferTests
 
         var movements = await ctx.StockMovements.Where(m => m.ReferenceId == TransferId).ToListAsync();
         Assert.Equal(2, movements.Count);
-        Assert.Contains(movements, m => m.MovementType == MovementType.TransferOut && m.Quantity == -3m && m.BranchId == FromBranchId);
-        Assert.Contains(movements, m => m.MovementType == MovementType.TransferIn && m.Quantity == 3m && m.BranchId == ToBranchId);
+        Assert.Contains(movements, m => m.MovementType == MovementType.TransferOut && m.Quantity == -3m && m.BranchId == FromBranchId && m.StockBefore == 10 && m.StockAfter == 7);
+        Assert.Contains(movements, m => m.MovementType == MovementType.TransferIn && m.Quantity == 3m && m.BranchId == ToBranchId && m.StockBefore == 0 && m.StockAfter == 3);
     }
 
     [Fact]

@@ -63,8 +63,10 @@ public class ProductVariant: Params, IMustHaveTenant
         if (branchInventory.Stock < quantity)
             throw new InvalidOperationException($"Stock insuficiente para {Sku}");
 
+        var stockBefore = branchInventory.Stock;
         branchInventory.Stock -= quantity;
-        StockMovements.Add(StockMovement.CreateSale(branchId, Id, userId, userName, quantity, referenceId, AverageCost, notes));
+        var stockAfter = branchInventory.Stock;
+        StockMovements.Add(StockMovement.CreateSale(branchId, Id, userId, userName, quantity, referenceId, AverageCost, stockBefore, stockAfter, notes));
     }
 
     public void RegisterPurchase(int quantity, decimal unitCost)

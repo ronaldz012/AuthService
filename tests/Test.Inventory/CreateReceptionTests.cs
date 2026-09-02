@@ -107,6 +107,8 @@ public class CreateReceptionTests
         var movement = await ctx.StockMovements.SingleAsync(m => m.ReferenceId == reception.Id);
         Assert.Equal(MovementType.Reception, movement.MovementType);
         Assert.Equal(5m, movement.Quantity);
+        Assert.Equal(5, movement.StockBefore);
+        Assert.Equal(10, movement.StockAfter);
     }
 
     [Fact]

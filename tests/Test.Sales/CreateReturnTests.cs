@@ -3,10 +3,14 @@ using Common.Contracts.inventory;
 using Common.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Module.Inventory.Domain.Inventory;
+using Module.Inventory.Domain.Products;
+using Module.Inventory.Infrastructure;
 using Module.Sales.Application.Abstraction;
 using Module.Sales.Application.UseCases.Sales.Return;
 using Module.Sales.Domain;
 using Moq;
+using System.Infrastructure.Persistence;
 
 namespace Test.Sales;
 
@@ -246,6 +250,89 @@ public class CreateReturnTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ReturnErrors.OriginalSaleNotFound, result.Error);
+    }
+
+    [Fact]
+    public async Task Execute_WithRealInventory_ShouldCreateReturnMovement_WithStockBeforeAfter()
+    {
+        var tenantCtx = TestSalesDbContextFactory.CreateTenantContext(TenantId);
+        using var ctx = TestSalesDbContextFactory.Create(tenantCtx);
+
+        // Seed catalog + variant with stock 5
+        var brand = new Brand { Id = Guid.NewGuid(), Name = "Nike", Prefix = "NIK", CreatedBy = TenantId, CreatedByName = "Test User" };
+        var category = new Category { Id = Guid.NewGuid(), Name = "Zapatillas", CreatedBy = TenantId, CreatedByName = "Test User" };
+        var color = new Color { Id = Guid.NewGuid(), Name = "Negro", CreatedBy = TenantId, CreatedByName = "Test User" };
+        var size = new Size { Id = Guid.NewGuid(), Name = "42", SortOrder = 1, CreatedBy = TenantId, CreatedByName = "Test User" };
+        ctx.Brands.Add(brand);
+        ctx.Categories.Add(category);
+        ctx.Colors.Add(color);
+        ctx.Sizes.Add(size);
+        var product = Product.Create("Air Max", "d", category.Id, brand.Id, Gender.Unisex, "NIK-1", TenantId, UserId, "Test User");
+        ctx.Products.Add(product);
+        await ctx.SaveChangesAsync();
+
+        var variant = ProductVariant.Create(product.Id, color.Id, size.Id, 100m, "NIK-1-001", TenantId, UserId, "Test User");
+        variant.Id = VariantId;
+        variant.AverageCost = 30m;
+        ctx.ProductVariants.Add(variant);
+        await ctx.SaveChangesAsync();
+
+        ctx.BranchInventories.Add(new BranchInventory
+        {
+            ProductVariantId = VariantId,
+            BranchId = BranchId,
+            Stock = 5,
+            CreatedBy = UserId,
+            CreatedByName = "Test User"
+        });
+        await ctx.SaveChangesAsync();
+
+        // Seed original sale that sold 3 units
+        SeedOriginalSale(ctx, SaleType.Sale);
+        // Adjust sale item to use our variant's SKU/cost
+        var originalSale = await ctx.Sales.Include(s => s.SaleItems).FirstAsync(s => s.Id == OriginalSaleId);
+        originalSale.SaleItems.First().ProductVariantId = VariantId;
+        originalSale.SaleItems.First().Quantity = 3;
+        originalSale.SaleItems.First().UnitCost = 30m;
+        originalSale.SaleItems.First().UnitPrice = 100m;
+        originalSale.SaleItems.First().FinalPrice = 300m;
+        await ctx.SaveChangesAsync();
+
+        // Reduce stock to simulate sale (5 -> 2)
+        var inv = await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == VariantId);
+        inv.Stock = 2;
+        await ctx.SaveChangesAsync();
+
+        ctx.CashRegisterClosures.Add(new CashRegisterClosure
+        {
+            Id = CashClosureId,
+            BranchId = BranchId,
+            IsOpen = true,
+            OpenAt = DateTime.UtcNow,
+            OpeningBalance = 500m,
+        });
+        await ctx.SaveChangesAsync();
+
+        var inventoryService = new InventoryIntegrationService(ctx);
+        var sut = new CreateReturn(ctx, inventoryService, Mock.Of<ILogger<CreateReturn>>());
+
+        var result = await sut.Execute(CreateActorContext(), new CreateReturnDto
+        {
+            OriginalSaleId = OriginalSaleId,
+            Items = [new CreateReturnItemDto { OriginalSaleItemId = OriginalSaleItemId, Quantity = 2 }]
+        });
+
+        Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Code} - {result.Error?.Message}");
+
+        var movement = await ctx.StockMovements.SingleAsync(m => m.MovementType == MovementType.Return);
+        Assert.Equal(2m, movement.Quantity);
+        Assert.Equal(30m, movement.UnitCost);
+        Assert.Equal(MovementType.Return, movement.MovementType);
+        Assert.Equal(2, movement.StockBefore);
+        Assert.Equal(4, movement.StockAfter);
+
+        var updatedInv = await ctx.BranchInventories.SingleAsync(bi => bi.ProductVariantId == VariantId);
+        Assert.Equal(4, updatedInv.Stock);
     }
 
     private static ActorContext CreateActorContext()

@@ -178,6 +178,8 @@ public class RevertStockReceptionTests
             .SingleAsync(m => m.ReferenceId == reception.Id);
         Assert.Equal(MovementType.ReceptionRevert, movement.MovementType);
         Assert.Equal(-10m, movement.Quantity);
+        Assert.Equal(100, movement.StockBefore);
+        Assert.Equal(90, movement.StockAfter);
     }
 
     [Fact]
@@ -215,7 +217,7 @@ public class RevertStockReceptionTests
         var sut = CreateSut(ctx);
 
         ctx.StockMovements.Add(StockMovement.CreateSale(
-            BranchId, variant.Id, UserId, "Test User", 1, Guid.NewGuid(), 50m, null));
+            BranchId, variant.Id, UserId, "Test User", 1, Guid.NewGuid(), 50m, 100, 99));
         await ctx.SaveChangesAsync();
 
         var result = await sut.Check(CreateActorContext(), reception.Id);
@@ -234,7 +236,7 @@ public class RevertStockReceptionTests
         var sut = CreateSut(ctx);
 
         ctx.StockMovements.Add(StockMovement.CreateAdjustment(
-            BranchId, variant.Id, UserId, "Test User", -1, "Faltante", 50m));
+            BranchId, variant.Id, UserId, "Test User", -1, "Faltante", 50m, 100, 99));
         await ctx.SaveChangesAsync();
 
         var result = await sut.Check(CreateActorContext(), reception.Id);
@@ -253,7 +255,7 @@ public class RevertStockReceptionTests
         var sut = CreateSut(ctx);
 
         ctx.StockMovements.Add(StockMovement.CreateAdjustment(
-            BranchId, variant.Id, UserId, "Test User", -1, "Faltante", 50m));
+            BranchId, variant.Id, UserId, "Test User", -1, "Faltante", 50m, 100, 99));
         await ctx.SaveChangesAsync();
 
         var result = await sut.Execute(CreateActorContext(), reception.Id);

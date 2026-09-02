@@ -102,13 +102,15 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
                 return new Error(ErrorCode.NotFound, $"Product variant {returnItem.ProductVariantId} not found.");
 
             // Re-adquisición al costo histórico: recalcula AVCO antes de sumar stock
+            var stockBefore = pv.GetStockByBranch(branchId);
             pv.RegisterPurchase(returnItem.Quantity, returnItem.UnitCost);
             pv.AddQuantity(returnItem.Quantity, branchId, userId, userName);
+            var stockAfter = pv.GetStockByBranch(branchId);
 
             // Crear movimiento de devolución con el costo de la venta original
             context.StockMovements.Add(StockMovement.CreateReturn(
                 branchId, returnItem.ProductVariantId, userId, userName, 
-                returnItem.Quantity, referenceId, returnItem.UnitCost));
+                returnItem.Quantity, referenceId, returnItem.UnitCost, stockBefore, stockAfter));
         }
 
         if (saveChanges)

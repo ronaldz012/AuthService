@@ -17,10 +17,12 @@ public class StockMovement : Params, IMustHaveTenant
     public MovementType MovementType { get; set; }
     public Guid? TransferToBranchId { get; set; }
     public Guid? ReferenceId { get; set; }
+    public int StockBefore { get; set; }
+    public int StockAfter { get; set; }
     public ProductVariant ProductVariant { get; set; } = null!;
 
     // Ingreso por recepción
-    public static StockMovement CreateReception(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, decimal unitCost, string? notes = null)
+    public static StockMovement CreateReception(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, decimal unitCost, int stockBefore, int stockAfter, string? notes = null)
     {
         return new StockMovement
         {
@@ -30,13 +32,15 @@ public class StockMovement : Params, IMustHaveTenant
             Quantity = quantity,
             UnitCost = unitCost,
             MovementType = MovementType.Reception,
+            StockBefore = stockBefore,
+            StockAfter = stockAfter,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
             CreatedBy = userId,
             CreatedByName = userName
         };
     }
-    public static StockMovement CreateReceptionForNewVariant(Guid branchId, ProductVariant productVariant, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, string? notes = null)
+    public static StockMovement CreateReceptionForNewVariant(Guid branchId, ProductVariant productVariant, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, int stockBefore, int stockAfter, string? notes = null)
     {
         return new StockMovement
         {
@@ -46,6 +50,8 @@ public class StockMovement : Params, IMustHaveTenant
             Quantity = quantity,
             UnitCost = unitCost,
             MovementType = MovementType.Reception,
+            StockBefore = stockBefore,
+            StockAfter = stockAfter,
             Notes = notes ?? string.Empty,
             ReferenceId =  referenceId,
             CreatedBy = userId,
@@ -55,7 +61,7 @@ public class StockMovement : Params, IMustHaveTenant
     }
 
     // Egreso por venta
-    public static StockMovement CreateSale(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, string? notes = null)
+    public static StockMovement CreateSale(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, int stockBefore, int stockAfter, string? notes = null)
     {
         if (quantity <= 0)
             throw new InvalidOperationException("Quantity must be greater than zero");
@@ -68,6 +74,8 @@ public class StockMovement : Params, IMustHaveTenant
             Quantity = -quantity, // negativo representa egreso
             UnitCost = unitCost,
             MovementType = MovementType.Sale,
+            StockBefore = stockBefore,
+            StockAfter = stockAfter,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
             CreatedBy = userId,
@@ -77,7 +85,7 @@ public class StockMovement : Params, IMustHaveTenant
     }
 
     // Ajuste manual (puede ser positivo o negativo)
-    public static StockMovement CreateAdjustment(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity,  string notes, decimal unitCost = 0)
+    public static StockMovement CreateAdjustment(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity,  string notes, decimal unitCost, int stockBefore, int stockAfter)
     {
         if (string.IsNullOrEmpty(notes))
             throw new InvalidOperationException("Adjustment requires a note explaining the reason");
@@ -90,6 +98,8 @@ public class StockMovement : Params, IMustHaveTenant
             Quantity = quantity,
             UnitCost = unitCost,
             MovementType = MovementType.Adjustment,
+            StockBefore = stockBefore,
+            StockAfter = stockAfter,
             Notes = notes,
             CreatedBy = userId,
             CreatedByName = userName
@@ -98,7 +108,7 @@ public class StockMovement : Params, IMustHaveTenant
     }
 
     // Egreso por reversión de recepción
-    public static StockMovement CreateReceptionRevert(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, decimal unitCost, string? notes = null)
+    public static StockMovement CreateReceptionRevert(Guid branchId, Guid productVariantId, Guid userId, string userName, decimal quantity, Guid referenceId, decimal unitCost, int stockBefore, int stockAfter, string? notes = null)
     {
         if (quantity <= 0)
             throw new InvalidOperationException("Quantity must be greater than zero");
@@ -111,6 +121,8 @@ public class StockMovement : Params, IMustHaveTenant
             Quantity = -quantity,
             UnitCost = unitCost,
             MovementType = MovementType.ReceptionRevert,
+            StockBefore = stockBefore,
+            StockAfter = stockAfter,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
             CreatedBy = userId,
@@ -120,7 +132,7 @@ public class StockMovement : Params, IMustHaveTenant
 
     // Traspaso — devuelve los dos movimientos linkeados
     public static (StockMovement Out, StockMovement In) CreateTransfer(
-        Guid fromBranchId, Guid toBranchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, string? notes = null)
+        Guid fromBranchId, Guid toBranchId, Guid productVariantId, Guid userId, string userName, decimal quantity,Guid referenceId, decimal unitCost, int fromStockBefore, int fromStockAfter, int toStockBefore, int toStockAfter, string? notes = null)
     {
         if (quantity <= 0)
             throw new InvalidOperationException("Quantity must be greater than zero");
@@ -134,6 +146,8 @@ public class StockMovement : Params, IMustHaveTenant
             UnitCost = unitCost,
             MovementType = MovementType.TransferOut,
             TransferToBranchId = toBranchId,
+            StockBefore = fromStockBefore,
+            StockAfter = fromStockAfter,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
             CreatedBy = userId,
@@ -148,6 +162,8 @@ public class StockMovement : Params, IMustHaveTenant
             Quantity = quantity,
             UnitCost = unitCost,
             MovementType = MovementType.TransferIn,
+            StockBefore = toStockBefore,
+            StockAfter = toStockAfter,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId,
             CreatedBy = userId,
@@ -165,6 +181,8 @@ public class StockMovement : Params, IMustHaveTenant
         decimal quantity,
         Guid referenceId,
         decimal unitCost,
+        int stockBefore,
+        int stockAfter,
         string? notes = null)
     {
         if (quantity <= 0)
@@ -178,6 +196,8 @@ public class StockMovement : Params, IMustHaveTenant
             Quantity = quantity, // POSITIVO - el stock VUELVE
             UnitCost = unitCost, // Costo de la venta ORIGINAL (snapshot)
             MovementType = MovementType.Return,
+            StockBefore = stockBefore,
+            StockAfter = stockAfter,
             Notes = notes ?? string.Empty,
             ReferenceId = referenceId, // Id de la Sale tipo Return
             CreatedBy = userId,

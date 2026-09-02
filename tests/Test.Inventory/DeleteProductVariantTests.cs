@@ -58,7 +58,7 @@ public class DeleteProductVariantTests
         if (withMovement)
         {
             ctx.StockMovements.Add(StockMovement.CreateReception(
-                BranchId, VariantId, UserId, "Test User", 5, Guid.NewGuid(), 10m));
+                BranchId, VariantId, UserId, "Test User", 5, Guid.NewGuid(), 10m, 0, 5));
             await ctx.SaveChangesAsync();
         }
     }

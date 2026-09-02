@@ -38,7 +38,9 @@ public class CorrectProductVariantStock(IInvDbContext context)
                     ctx.FullName,
                     delta,
                     request.Notes,
-                    pv.AverageCost)
+                    pv.AverageCost,
+                    previousStock,
+                    request.Stock)
                 : null;
 
             pv.CorrectQuantity(request.Stock, currentBranch, ctx.UserId, ctx.FullName);
