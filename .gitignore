@@ -494,3 +494,4 @@ Common/GooglePopUp/google.html
 Dockerfile
 docker-compose.yml
 post.md
+src/System.Infrastructure/Persistence/Examples/CalculateMonthlyGainsExample.cs
