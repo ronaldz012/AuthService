@@ -91,7 +91,7 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
         var variantIds = returns.Select(r => r.ProductVariantId).ToList();
 
         var variants = await context.ProductVariants
-            .Include(pv => pv.BranchInventories.Where(bi => bi.BranchId == branchId))
+            .Include(pv => pv.BranchInventories)
             .Where(pv => variantIds.Contains(pv.Id))
             .ToListAsync();
 
@@ -101,7 +101,7 @@ public class InventoryIntegrationService(IInvDbContext context) : IInventoryInte
             if (pv == null)
                 return new Error(ErrorCode.NotFound, $"Product variant {returnItem.ProductVariantId} not found.");
 
-            // Re-adquisición al costo histórico: recalcula AVCO antes de sumar stock
+            // Re-adquisición al costo histórico: recalcula AVCO sobre stock GLOBAL antes de sumar stock en la branch
             var stockBefore = pv.GetStockByBranch(branchId);
             pv.RegisterPurchase(returnItem.Quantity, returnItem.UnitCost);
             pv.AddQuantity(returnItem.Quantity, branchId, userId, userName);
