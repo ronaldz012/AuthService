@@ -190,10 +190,20 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
-  
-  var seeder = scope.ServiceProvider
-    .GetRequiredService<DatabaseSeeder>();
-  await seeder.SeedAllAsync();
+  var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Seeder");
+  var seederSettings = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Common.Services.SeederSettings>>().Value;
+  if (seederSettings.Enabled)
+  {
+    logger.LogInformation("Seeder enabled (AdminEmail={AdminEmail}) - running DatabaseSeeder...", seederSettings.AdminEmail);
+    var seeder = scope.ServiceProvider
+      .GetRequiredService<DatabaseSeeder>();
+    await seeder.SeedAllAsync();
+    logger.LogInformation("Database seeding completed.");
+  }
+  else
+  {
+    logger.LogInformation("Seeder disabled - skipping DatabaseSeeder (Seeder:Enabled=false).");
+  }
 }
 
 app.UseCors("AllowAll");

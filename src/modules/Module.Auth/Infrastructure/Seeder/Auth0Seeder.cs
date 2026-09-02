@@ -1,6 +1,8 @@
 using Common.Contracts.Seeder;
+using Common.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Domain;
 
@@ -9,14 +11,15 @@ namespace Module.Auth.Infrastructure.Seeder;
 public class Auth0Seeder(
     IAuthDbContext context,
     IAuth0ProvisioningService provisioning,
+    IOptions<SeederSettings> seederSettings,
     ILogger<Auth0Seeder> logger) : IDataSeeder
 {
     public int Order => 5;
 
     public async Task SeedAsync()
     {
-        const string email = "admin@drivecore.com";
-        const string password = "DriveCore@2026";
+        var email = seederSettings.Value.AdminEmail;
+        var password = seederSettings.Value.AdminPassword;
 
         var owner = await context.Users
             .IgnoreQueryFilters()

@@ -1,6 +1,8 @@
 using Common.Contracts.authentication;
 using Common.Contracts.Seeder;
+using Common.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Module.Auth.Application.Abstraction;
 using Module.Auth.Application.UseCases.Branches.CreateBranch;
 using Module.Auth.Domain;
@@ -10,7 +12,8 @@ namespace Module.Auth.Infrastructure.Seeder;
 public class TenantSeeder(
     IAuthDbContext context,
     ITenantConnectionContext tenantConnectionContext,
-    CreateBranch createBranch) : IDataSeeder
+    CreateBranch createBranch,
+    IOptions<SeederSettings> seederSettings) : IDataSeeder
 {
     public int Order => 4;
 
@@ -37,12 +40,12 @@ public class TenantSeeder(
         tenantConnectionContext.DatabaseName = db.Name;
         tenantConnectionContext.Schema = db.Schema;
 
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword("DriveCore@2026");
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(seederSettings.Value.AdminPassword);
 
         var ownerUser = new User
         {
             Id = ownerUserId,
-            Email = "admin@drivecore.com",
+            Email = seederSettings.Value.AdminEmail,
             Username = "admin",
             FirstName = "Admin",
             LastName = "Admin",

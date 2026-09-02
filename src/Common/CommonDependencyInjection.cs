@@ -13,6 +13,7 @@ public static class CommonDependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         IConfigurationSection tokenSettingsSection = configuration.GetSection(SmtpSettings.SectionName);
         services.Configure<SmtpSettings>(tokenSettingsSection);
+        services.Configure<SeederSettings>(configuration.GetSection(SeederSettings.SectionName));
         services.AddScoped<DatabaseSeeder>();
         return services;
 
