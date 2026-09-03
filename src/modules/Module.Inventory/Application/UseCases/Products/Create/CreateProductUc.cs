@@ -63,8 +63,16 @@ public class CreateProductUc(IInvDbContext context, IProductCodeService codeServ
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
+            // Ordenar antes de asignar SKUs para que el correlativo siga color -> talla
+            var colorOrder = colors.ToDictionary(c => c.Id, c => c.Name);
+            var sizeOrder = sizes.ToDictionary(s => s.Id, s => s.SortOrder);
+            var orderedVariants = request.Variants
+                .OrderBy(v => colorOrder[v.ColorId])
+                .ThenBy(v => sizeOrder[v.SizeId])
+                .ToList();
+
             var variants = new List<ProductVariant>();
-            foreach (var pv in request.Variants)
+            foreach (var pv in orderedVariants)
             {
                 var sku = await codeService.ReserveVariantCounter(product.Id, product.InternalCode);
                 variants.Add(new ProductVariant
