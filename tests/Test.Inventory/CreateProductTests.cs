@@ -111,6 +111,55 @@ public class CreateProductTests
     }
 
     [Fact]
+    public async Task Execute_ShouldAssignSkusInColorSizeOrder_WhenVariantsAreUnordered()
+    {
+        using var ctx = CreateDbContext();
+        SeedBrand(ctx);
+        SeedCategory(ctx);
+
+        var aceroId = Guid.NewGuid();
+        var arenaId = Guid.NewGuid();
+        var size34Id = Guid.NewGuid();
+        var size35Id = Guid.NewGuid();
+        ctx.Colors.Add(new Color { Id = aceroId, Name = "acero", CreatedBy = TenantId, CreatedByName = "Test User" });
+        ctx.Colors.Add(new Color { Id = arenaId, Name = "arena", CreatedBy = TenantId, CreatedByName = "Test User" });
+        ctx.Sizes.Add(new Size { Id = size34Id, Name = "34", SortOrder = 1, CreatedBy = TenantId, CreatedByName = "Test User" });
+        ctx.Sizes.Add(new Size { Id = size35Id, Name = "35", SortOrder = 2, CreatedBy = TenantId, CreatedByName = "Test User" });
+        await ctx.SaveChangesAsync();
+
+        var counter = 0;
+        var codeMock = new Mock<IProductCodeService>();
+        codeMock.Setup(s => s.ReserveBrandCounter(It.IsAny<Guid>(), It.IsAny<string>())).ReturnsAsync("BRD-1");
+        codeMock.Setup(s => s.ReserveVariantCounter(It.IsAny<Guid>(), It.IsAny<string>()))
+            .ReturnsAsync(() => $"BRD-1-{++counter:000}");
+        var sut = new CreateProductUc(ctx, codeMock.Object);
+
+        var result = await sut.Execute(CreateActorContext(), new CreateProductRequest
+        {
+            Name = "Test Product",
+            BrandId = BrandId,
+            CategoryId = CategoryId,
+            // Intencionalmente desordenado: arena 35, acero 35, arena 34, acero 34
+            Variants =
+            [
+                new CreateProductVariantForProductDto { ColorId = arenaId, SizeId = size35Id, Price = 100 },
+                new CreateProductVariantForProductDto { ColorId = aceroId, SizeId = size35Id, Price = 100 },
+                new CreateProductVariantForProductDto { ColorId = arenaId, SizeId = size34Id, Price = 100 },
+                new CreateProductVariantForProductDto { ColorId = aceroId, SizeId = size34Id, Price = 100 }
+            ]
+        });
+
+        Assert.True(result.IsSuccess, $"Expected success but got: {result.Error?.Code} - {result.Error?.Message}");
+        Assert.Equal(4, result.Value.Variants.Count);
+
+        var bySku = result.Value.Variants.OrderBy(v => v.Sku).ToList();
+        Assert.Equal(("acero", "34", "BRD-1-001"), (bySku[0].ColorName, bySku[0].Size, bySku[0].Sku));
+        Assert.Equal(("acero", "35", "BRD-1-002"), (bySku[1].ColorName, bySku[1].Size, bySku[1].Sku));
+        Assert.Equal(("arena", "34", "BRD-1-003"), (bySku[2].ColorName, bySku[2].Size, bySku[2].Sku));
+        Assert.Equal(("arena", "35", "BRD-1-004"), (bySku[3].ColorName, bySku[3].Size, bySku[3].Sku));
+    }
+
+    [Fact]
     public async Task Execute_ShouldReturnError_WhenProductNameAlreadyExistsForCategoryAndBrand()
     {
         using var ctx = CreateDbContext();
