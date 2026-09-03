@@ -23,7 +23,7 @@ public class GetReception(IInvDbContext context)
                 Notes = r.Notes,
                 Status = r.Status,
                 TotalCost = r.Items.Sum(i => i.UnitCost * i.QuantityReceived),
-                Items = r.Items.Select(i => new StockReceptionItemDetailDto
+                Items = r.Items.OrderBy(i => i.ProductVariant.Product.Name).ThenBy(i => i.ProductVariant.Color.Name).ThenBy(i => i.ProductVariant.Size.SortOrder).ThenBy(i => i.ProductVariant.Sku).Select(i => new StockReceptionItemDetailDto
                 {
                     Id = i.Id,
                     Sku = i.ProductVariant.Sku,
@@ -35,7 +35,7 @@ public class GetReception(IInvDbContext context)
                     QuantityReceived = i.QuantityReceived,
                     UnitCost = i.UnitCost,
                     Subtotal = i.UnitCost * i.QuantityReceived
-                }).OrderBy(i => i.ProductName).ToList()
+                }).ToList()
             })
             .FirstOrDefaultAsync();
         if(reception == null)

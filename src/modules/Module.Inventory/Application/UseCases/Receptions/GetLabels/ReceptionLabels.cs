@@ -12,7 +12,7 @@ public class ReceptionLabels(IInvDbContext context)
         {
             ReceptionId = r.Id,
             ReceptionDate = r.ReceivedAt,
-            Items = r.Items.Select(ri =>new ReceptionLabelItemDto
+            Items = r.Items.OrderBy(ri => ri.ProductVariant.Product.Name).ThenBy(ri => ri.ProductVariant.Color.Name).ThenBy(ri => ri.ProductVariant.Size.SortOrder).ThenBy(ri => ri.ProductVariant.Sku).Select(ri =>new ReceptionLabelItemDto
             {
                 VariantId = ri.ProductVariantId,
                 Sku = ri.ProductVariant.Sku,
@@ -20,7 +20,7 @@ public class ReceptionLabels(IInvDbContext context)
                 Color = ri.ProductVariant.Color.Name,
                 Gender = ri.ProductVariant.Product.Gender,
                 Price = ri.ProductVariant.Price,
-                ProductName = ri.ProductVariant.Product.Name+"/"+ri.ProductVariant.Description +"/"+ri.ProductVariant.Description,
+                ProductName = ri.ProductVariant.Product.Name,
                 BrandName = ri.ProductVariant.Product.Brand.Name,
                 CategoryName = ri.ProductVariant.Product.Category.Name,
                 Quantity = ri.QuantityReceived
